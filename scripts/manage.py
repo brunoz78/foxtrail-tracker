@@ -11,6 +11,9 @@ Verwaltungs-CLI fuer den Foxtrail-Tracker.
   manage.py set-password NAME             Passwort neu setzen
   manage.py list-users
   manage.py import-excel DATEI.xlsx       "Gemacht?"-Spalte aus der Excel-Uebersicht uebernehmen
+  manage.py import-bestellungen DATEI     Bestellungen von foxtrail.ch (Kontoseite als HTML oder
+                                          Text, "-" = stdin) als gemacht eintragen; ohne
+                                          --schreiben nur Probelauf
   manage.py export-json [datei]           Komplette Liste inkl. eigener Eintraege als JSON sichern
   manage.py stats
 
@@ -25,7 +28,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from foxtrail import config, db, sync, trails, users  # noqa: E402
+from foxtrail import bestellungen, config, db, sync, trails, users  # noqa: E402
 
 
 def _pw(prompt="Passwort: "):
@@ -103,6 +106,35 @@ def cmd_export_json(a):
         print(f"{len(rows)} Trails nach {a.datei} exportiert.")
     else:
         print(out)
+
+
+def cmd_import_bestellungen(a):
+    """Kontoseite foxtrail.ch -> Deine Bestellungen: als "Webseite, vollstaendig" gespeichert
+    oder den Seitentext in eine Datei kopiert. Zuordnung ueber den exakten Trail-Namen."""
+    if a.datei == "-":
+        inhalt = sys.stdin.read()
+    else:
+        with open(a.datei, encoding="utf-8", errors="replace") as fh:
+            inhalt = fh.read()
+    eintraege = bestellungen.parse(inhalt)
+    if not eintraege:
+        sys.exit("Keine Bestellungen gefunden - ist das die Seite 'Deine Bestellungen'?")
+    with db.session() as conn:
+        plan = bestellungen.zuordnen(conn, eintraege)
+        breite = max(len(e["name"]) for e, *_ in plan) + 2
+        for e, t, aktion, grund in plan:
+            ziel = f"{t['ort']} | {t['name']}" if t else "-"
+            pers = f"{e['personen']} Pers." if e["personen"] else "?"
+            print(f"{e['datum'] or '??????????'}  {('Trail ' + e['name']).ljust(breite + 6)} {pers:>8}  "
+                  f"-> {aktion:12s} {ziel}{('  (' + grund + ')') if grund else ''}")
+        n_setzen = sum(1 for *_, a_, _ in plan if a_ == "setzen")
+        if not a.schreiben:
+            print(f"\nProbelauf: {n_setzen} Trail(s) wuerden als gemacht eingetragen. "
+                  "Zum Schreiben --schreiben anhaengen.")
+            conn.rollback()
+            return
+        n = bestellungen.anwenden(conn, plan, a.benutzer)
+    print(f"\n{n} Trail(s) als gemacht eingetragen.")
 
 
 def cmd_import_excel(a):
@@ -192,6 +224,9 @@ def main():
     s = sub.add_parser("export-json"); s.add_argument("datei", nargs="?"); s.set_defaults(fn=cmd_export_json)
     s = sub.add_parser("import-excel"); s.add_argument("datei"); s.add_argument("--benutzer", default="import")
     s.set_defaults(fn=cmd_import_excel)
+    s = sub.add_parser("import-bestellungen"); s.add_argument("datei", help="HTML/Text oder - fuer stdin")
+    s.add_argument("--schreiben", action="store_true", help="wirklich eintragen (sonst Probelauf)")
+    s.add_argument("--benutzer", default="import"); s.set_defaults(fn=cmd_import_bestellungen)
     a = p.parse_args()
     a.fn(a)
 

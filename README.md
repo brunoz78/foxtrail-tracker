@@ -130,6 +130,7 @@ foxtrailctl sync                         # Abgleich jetzt (macht der Timer sonst
 foxtrailctl stats
 foxtrailctl export-json [datei]          # komplette Liste inkl. eigener Einträge
 foxtrailctl import-excel liste.xlsx      # "Gemacht?"-Spalte aus der Excel-Übersicht übernehmen
+foxtrailctl import-bestellungen datei    # eigene Bestellungen von foxtrail.ch übernehmen (s. unten)
 journalctl -u foxtrail -u foxtrail-sync  # Logs
 systemctl list-timers foxtrail-sync.timer
 ```
@@ -137,6 +138,24 @@ systemctl list-timers foxtrail-sync.timer
 `import-excel` erwartet die Spalten `Ort / Region`, `Trail-Name`, `Gemacht?` (Ja/Nein),
 `Datum gemacht`, `Bemerkung` und optional `Mitspieler`; Zeilen unterhalb einer Zeile,
 die mit „Manuell ergänzte Trails“ beginnt, werden als manuelle Trails angelegt.
+
+### Eigene Bestellungen von foxtrail.ch übernehmen
+
+Auf foxtrail.ch unter **Account → Deine Bestellungen** stehen alle gebuchten
+Trails mit Startzeit und Personenzahl. Die Seite als „Webseite, vollständig“
+speichern (oder den Seitentext in eine Textdatei kopieren), in den Container
+bringen und importieren:
+
+```bash
+foxtrailctl import-bestellungen bestellungen.html              # Probelauf, zeigt nur an
+foxtrailctl import-bestellungen bestellungen.html --schreiben  # trägt ein
+```
+
+Zuordnung über den genauen Trail-Namen („Trail Columban“ → Columban, nicht
+Columban Mini). Eingetragen werden Datum (Startzeit) und Mitspieler (Erwachsene
+plus Kinder, mehrere Teams zusammengezählt). Bereits gemachte Trails, stornierte
+Bestellungen und Startzeiten in der Zukunft werden übersprungen, unbekannte Namen
+aufgelistet. Mit `-` statt Dateiname liest der Befehl von der Standardeingabe.
 
 ## Lokal entwickeln
 

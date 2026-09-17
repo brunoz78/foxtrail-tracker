@@ -77,18 +77,22 @@ foxtrail/users.py      Benutzer, Hashing, UserError
 foxtrail/scraper.py    parse_page(html) rein + offline testbar, fetch_all() mit Netz
 foxtrail/sync.py       apply(conn, scraped, ausloeser) – die Regeln oben
 foxtrail/trails.py     Lesen/Schreiben, manuelle Trails, seed_from_file (insert-only)
+foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse (HTML/Text),
+                       zuordnen (Plan), anwenden - Zuordnung nur ueber exakten Namen
 foxtrail/templates/    base, login, index, archiv, trail_form, trail_new, profil,
                        benutzer, sync, fehler, _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
 data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Erstbefüllung
 scripts/manage.py      CLI: init-db, seed, sync, create-user, set-password, list-users,
-                       stats, export-json, import-excel
+                       stats, export-json, import-excel, import-bestellungen (Probelauf
+                       ohne --schreiben)
 deploy/                install.sh (Debian-LXC), foxtrail.service, foxtrail-sync.service,
                        foxtrail-sync.timer, foxtrailctl, env-Beispiel,
                        dev-update.sh (Branch-Stand ohne Release in den Test-LXC)
 proxmox/               community-scripts: ct/, install/, json/ + README.md (Quelle;
                        Fork brunoz78/ProxmoxVED ist nur die Auslieferung)
 docs/logo.svg          Logo fuer die JSON-Metadaten
-tests/                 pytest: test_scraper (Fixture-HTML), test_sync, test_app (Testclient)
+tests/                 pytest: test_scraper (Fixture-HTML), test_sync, test_app (Testclient),
+                       test_bestellungen (anonymisiertes Muster der Kontoseite)
 ```
 
 ## Befehle
