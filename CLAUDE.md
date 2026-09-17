@@ -153,4 +153,10 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
 
 - Excel-Export der Liste (Gegenstück zu `import-excel`)
 - Karte nach Region (Filter, Sortierung und Gruppen-Zeilen nach Region gibt es seit 2026-09)
-- Statistik-Seite (Trails pro Jahr, Mitspieler gesamt)
+- Statistik-Seite (Trails pro Jahr, Mitspieler gesamt, Spielzeit gesamt und im Schnitt,
+  schnellster und laengster Trail, Verteilung nach Region und Typ) - von Bruno bestaetigt
+- Fotos von Hand pflegen: eigenes Foto hochladen, vorhandenes ersetzen oder loeschen
+  (bisher kommen Fotos nur ueber den Bestellungs-Import)
+- Statt des Kamera-Symbols in der Liste eine Mini-Vorschau des Schlussfotos
+- Kachelansicht als zweite Ansicht der Liste: grosse Fotos, drei pro Reihe,
+  Klick fuehrt auf die Detailseite
