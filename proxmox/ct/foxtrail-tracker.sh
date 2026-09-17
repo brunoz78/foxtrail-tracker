@@ -56,8 +56,9 @@ function update_script() {
     $STD uv venv --python 3.13 /opt/foxtrail-tracker/.venv
     $STD uv pip install --python /opt/foxtrail-tracker/.venv -r /opt/foxtrail-tracker/requirements.txt
     install -m 755 /opt/foxtrail-tracker/deploy/foxtrailctl /usr/local/bin/foxtrailctl
-    # init-db applies schema migrations to the existing database.
+    # init-db applies schema migrations; seed only adds trails/values that are missing.
     $STD foxtrailctl init-db
+    $STD foxtrailctl seed
     msg_ok "Updated Python Environment"
 
     msg_info "Starting Services"

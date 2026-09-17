@@ -130,7 +130,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/atlas/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "neu_seit": "2025-05-03"
   },
   {
    "slug": "ostschweiz/baccara",
@@ -754,7 +755,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/neptun/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "neu_seit": "2025-10-14"
   },
   {
    "slug": "westschweiz/neuchatel-foxtrail-go",
@@ -858,7 +860,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "neu_seit": "2026-01-26"
   },
   {
    "slug": "bern-und-umgebung/quarz-mini",
@@ -871,7 +874,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz-mini/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "neu_seit": "2026-01-26"
   },
   {
    "slug": "ostschweiz/rosalie",
@@ -1001,7 +1005,8 @@
    "dauer": "3-4 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/wallis/simplon/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "neu_seit": "2026-05-01"
   },
   {
    "slug": "wallis/sion-foxtrail-go",
@@ -1092,7 +1097,8 @@
    "dauer": "3-4 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/klosterhalbinsel-wettingen/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "neu_seit": "2024-06-28"
   },
   {
    "slug": "graubuenden/striunau",
@@ -1118,7 +1124,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/veritas/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "neu_seit": "2025-04-17"
   },
   {
    "slug": "aargau/victoria",
@@ -1131,7 +1138,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/victoria/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "neu_seit": "2025-04-17"
   },
   {
    "slug": "zuerich-und-umgebung/winterthur-foxtrail-go",
@@ -1263,5 +1271,6 @@
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zuerich-hb-rollstuhlgaengig/",
    "schwierigkeit": "mittel"
   }
- ]
+ ],
+ "neu_seit_quelle": "https://foxtrail.ch/thema/neuigkeiten/ (Datum des Beitrags), Stand 2026-09-17"
 }

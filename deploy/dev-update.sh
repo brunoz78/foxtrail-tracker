@@ -41,6 +41,7 @@ fi
 echo "== CLI, Schema-Migration, Neustart"
 install -m 755 "$APP_DIR/deploy/foxtrailctl" /usr/local/bin/foxtrailctl
 foxtrailctl init-db
+foxtrailctl seed      # nur neue Trails und fehlende Seed-Werte (z. B. neu_seit), nichts wird ueberschrieben
 systemctl restart foxtrail
 
 commit="$(curl -fsSL "https://api.github.com/repos/$REPO/commits/$BRANCH" 2>/dev/null \

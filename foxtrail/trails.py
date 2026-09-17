@@ -279,6 +279,9 @@ def seed_from_file(conn, path=None):
 
     Fuegt nur Trails ein, die noch nicht existieren, und archiviert nichts - der
     Seed ist eine Momentaufnahme und darf eine aktuellere DB nicht zurueckdrehen.
+    Einzige Ausnahme: im Seed hinterlegte Werte fuer neu_seit (aus den Neuigkeiten auf
+    foxtrail.ch) und schwierigkeit werden bei vorhandenen Trails nachgetragen, wenn dort
+    noch nichts steht - nie ueberschrieben.
     Gibt die Anzahl neu eingefuegter Trails zurueck."""
     with open(path or config.SEED_FILE, encoding="utf-8") as fh:
         data = json.load(fh)
@@ -286,16 +289,24 @@ def seed_from_file(conn, path=None):
     ts = now()
     n = 0
     for t in items:
+        neu_seit = t.get("neu_seit") if _DATE_RE.match(t.get("neu_seit") or "") else None
+        grad = t.get("schwierigkeit") if t.get("schwierigkeit") in GRADE else None
         if conn.execute("SELECT 1 FROM trails WHERE slug = ?", (t["slug"],)).fetchone():
+            if neu_seit:
+                conn.execute("UPDATE trails SET neu_seit = ? WHERE slug = ? AND neu_seit IS NULL",
+                             (neu_seit, t["slug"]))
+            if grad:
+                conn.execute("UPDATE trails SET schwierigkeit = ? WHERE slug = ? AND schwierigkeit IS NULL",
+                             (grad, t["slug"]))
             continue
         conn.execute(
             "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, dauer, "
-            "preis, url, schwierigkeit, im_angebot, first_seen, last_seen) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?)",
+            "preis, url, schwierigkeit, neu_seit, im_angebot, first_seen, last_seen) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,1,?,?)",
             (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""),
              typ_aus_name(t["name"], go=(t.get("typ") == "go")) if t.get("typ") in (None, "foxtrail", "go")
              else t["typ"],
              t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
-             t.get("url", ""), t.get("schwierigkeit") if t.get("schwierigkeit") in GRADE else None, ts, ts))
+             t.get("url", ""), grad, neu_seit, ts, ts))
         n += 1
     return n

@@ -37,6 +37,7 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 | Situation | Ergebnis |
 |---|---|
 | Trail neu auf foxtrail.ch | wird angelegt (offen), in der Liste ein Jahr lang „Neu ab MM/JJ“ |
+| Trail schon im Seed, aber laut [Neuigkeiten](https://foxtrail.ch/thema/neuigkeiten/) kürzlich eröffnet | „Neu ab“ aus dem Seed (`neu_seit`), `foxtrailctl seed` trägt es auch in bestehende Datenbanken nach |
 | Trail weiterhin gelistet | Metadaten (Preis, Dauer, Bewertung, Route) aktualisiert – eigene Einträge bleiben |
 | Trail nicht mehr gelistet, **bereits gemacht** | bleibt in der Hauptliste, markiert „nicht mehr im Angebot seit MM/JJ“ |
 | Trail nicht mehr gelistet, **noch offen** | erscheint im **Archiv** |

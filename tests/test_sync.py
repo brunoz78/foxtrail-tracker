@@ -50,14 +50,29 @@ def test_typ_ableitung_und_migration():
 def test_neu_seit():
     c = conn_mem()
     heute = db.now()[:10]
-    # Seed setzt neu_seit nicht, der Abgleich schon
-    trails.seed_from_file(c, os.path.join(os.path.dirname(__file__), "..", "data", "trails_seed.json"))
-    assert c.execute("SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL").fetchone()[0] == 0
+    # Seed: neu_seit nur fuer die im Seed hinterlegten Trails (aus den Neuigkeiten), der
+    # Abgleich setzt es fuer alles, was er neu anlegt
+    seed_file = os.path.join(os.path.dirname(__file__), "..", "data", "trails_seed.json")
+    trails.seed_from_file(c, seed_file)
+    assert c.execute("SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL").fetchone()[0] == 8
+    assert c.execute("SELECT neu_seit FROM trails WHERE slug = 'bern-und-umgebung/quarz'").fetchone()[0] == "2026-01-26"
+    # bestehende DB ohne die Werte: erneutes seed fuellt nur leere neu_seit nach
+    c.execute("UPDATE trails SET neu_seit = NULL")
+    c.execute("UPDATE trails SET neu_seit = '2020-01-01' WHERE slug = 'aargau/veritas'")
+    assert trails.seed_from_file(c, seed_file) == 0
+    assert c.execute("SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL").fetchone()[0] == 8
+    assert c.execute("SELECT neu_seit FROM trails WHERE slug = 'aargau/veritas'").fetchone()[0] == "2020-01-01"
+    # dasselbe fuer die Schwierigkeit (bestehende DB vor der Spalte)
+    c.execute("UPDATE trails SET schwierigkeit = NULL")
+    c.execute("UPDATE trails SET schwierigkeit = 'schwierig' WHERE slug = 'aargau/aquae'")
+    trails.seed_from_file(c, seed_file)
+    assert c.execute("SELECT COUNT(*) FROM trails WHERE schwierigkeit IS NOT NULL").fetchone()[0] == 73
+    assert c.execute("SELECT schwierigkeit FROM trails WHERE slug = 'aargau/aquae'").fetchone()[0] == "schwierig"
     seed_slugs = [r[0] for r in c.execute("SELECT slug FROM trails")]
     sync.apply(c, [mk(s) for s in seed_slugs] + [mk("jura/ganz-neu")], "test")
     t = trails.get(c, c.execute("SELECT id FROM trails WHERE slug = 'jura/ganz-neu'").fetchone()[0])
     assert t["neu_seit"] == heute and t["neu"]
-    assert not trails.get(c, 1)["neu"]
+    assert not trails.get(c, 1)["neu"]                  # Allalin Maxi: im Seed ohne neu_seit
     assert trails.ist_neu("2026-01-01", heute=__import__("datetime").date(2026, 9, 17))
     assert not trails.ist_neu("2024-01-01", heute=__import__("datetime").date(2026, 9, 17))
     assert not trails.ist_neu(None) and not trails.ist_neu("kaputt")

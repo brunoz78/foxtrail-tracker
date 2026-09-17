@@ -44,8 +44,12 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
   - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt „Neu ab MM/JJ“
-    für `trails.NEU_TAGE` = 365 Tage, Detailseite immer). Seed und manuelle Trails haben
-    `neu_seit` NULL, sonst wären nach der Erstinstallation alle Trails „neu“.
+    für `trails.NEU_TAGE` = 365 Tage, Detailseite immer). Manuelle Trails haben `neu_seit`
+    NULL. Der Seed auch, ausser bei Trails, die laut foxtrail.ch/thema/neuigkeiten/ kürzlich
+    eröffnet wurden (Datum des Blog-Beitrags, von Hand gepflegt, kein Scraping – die
+    Seite ist ein Blog ohne Trail-Links, das NEW-Badge ist wie MINI/MAXI nur im Bild).
+    `seed_from_file` trägt `neu_seit` aus dem Seed bei bestehenden Trails nach, wenn dort
+    NULL steht; `dev-update.sh` und das community-script rufen `seed` nach dem Update auf.
   - weiterhin gelistet → Metadaten aktualisieren, eigene Einträge unangetastet
   - nicht mehr gelistet + gemacht → bleibt in der Hauptliste, „nicht mehr im Angebot
     seit MM/JJ“ (Monat aus `last_seen`, keine eigene Spalte)
