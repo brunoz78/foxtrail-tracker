@@ -59,6 +59,8 @@ tr.done a.check { color: var(--green); }
 .actions-cell form { margin: 2px 0; }
 @media (max-width: 900px) { .wide { display: none; } }
 
+img.foto { max-width: 100%; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+code { font-size: 13px; background: var(--bg); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
 .card { background: var(--card); border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 2px rgba(0,0,0,.06); margin-bottom: 16px; }
 .card.narrow { max-width: 640px; }
 form label { display: block; margin: 8px 0; font-size: 13px; color: var(--muted); }

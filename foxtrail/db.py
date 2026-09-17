@@ -41,6 +41,13 @@ CREATE TABLE IF NOT EXISTS trails (
     neu_seit      TEXT,                              -- Datum, an dem der Abgleich den Trail neu
                                                      -- angelegt hat (NULL: Seed oder manuell)
     schwierigkeit TEXT,                              -- 'einfach' | 'mittel' | 'schwierig', NULL = unbekannt/GO
+    -- aus dem Import der eigenen Bestellungen (foxtrail/bestellungen.py):
+    start_zeit    TEXT,                              -- tatsaechlicher Start 'JJJJ-MM-TT HH:MM'
+    ziel_zeit     TEXT,                              -- Ankunft im Ziel; Spielzeit wird daraus abgeleitet
+    team_code     TEXT,
+    bestellung    TEXT,                              -- Bestellnummer bei foxtrail.ch
+    foto_url      TEXT,                              -- Quelle des Schlussfotos
+    foto          TEXT,                              -- Dateiname unter config.foto_dir()
     gemacht       INTEGER NOT NULL DEFAULT 0,
     gemacht_datum TEXT,
     mitspieler    INTEGER,
@@ -109,6 +116,10 @@ def _migrate(conn):
     if "schwierigkeit" not in spalten:
         # 2026-09: Schwierigkeitsgrad; wird vom naechsten Abgleich gefuellt (foxtrailctl sync).
         conn.execute("ALTER TABLE trails ADD COLUMN schwierigkeit TEXT")
+    for spalte in ("start_zeit", "ziel_zeit", "team_code", "bestellung", "foto_url", "foto"):
+        if spalte not in spalten:
+            # 2026-09: Import der Bestellungen (Zeiten, Team-Code, Bestellnummer, Schlussfoto)
+            conn.execute(f"ALTER TABLE trails ADD COLUMN {spalte} TEXT")
     # 2026-09: Mini/Maxi als eigener Typ (vorher alles 'foxtrail'). Nur Website-Trails -
     # bei manuell erfassten entscheidet der Benutzer selbst. LIKE ist in SQLite fuer
     # ASCII case-insensitive, deckt also "Maxi"/"MAXI" ab (vgl. trails.typ_aus_name).

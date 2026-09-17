@@ -9,6 +9,8 @@ Konfiguration ueber Umgebungsvariablen (z. B. systemd EnvironmentFile).
                        jedem Neustart ein zufaelliger Key erzeugt und alle Logins
                        verfallen)
   FORCE_HTTPS          "1" -> Session-Cookie nur ueber HTTPS (hinter Reverse-Proxy)
+  FOXTRAIL_FOTOS       Ordner fuer Schlussfotos aus dem Bestellungs-Import
+                       (Default: <Ordner der DB>/fotos)
   FOXTRAIL_LIST_URL    Kategorie-URL, die der Scraper abgrast
   SCRAPER_USER_AGENT   User-Agent des Scrapers
   SCRAPER_DELAY        Pause zwischen zwei Seitenabrufen in Sekunden (Default 1.0)
@@ -31,6 +33,11 @@ def db_path():
     if os.path.isdir("/var/lib/foxtrail-tracker"):
         return "/var/lib/foxtrail-tracker/foxtrail.db"
     return os.path.join(REPO_ROOT, "data", "foxtrail.local.db")
+
+
+def foto_dir():
+    p = os.environ.get("FOXTRAIL_FOTOS", "").strip()
+    return p or os.path.join(os.path.dirname(os.path.abspath(db_path())), "fotos")
 
 
 def secret_key():

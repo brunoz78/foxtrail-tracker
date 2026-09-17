@@ -40,6 +40,12 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Steht ein Trail in zwei Stufen (Varianten), zählt die höhere. `None` vom Scraper heisst
   „nicht ermittelt“: der Abgleich überschreibt einen bekannten Wert nie mit NULL (COALESCE).
   GO-Trails haben keine Stufe. Mit Bruno am 2026-09-17 besprochen.
+- **Import-Daten** (`start_zeit`, `ziel_zeit`, `team_code`, `bestellung`, `foto_url`, `foto`)
+  kommen nur aus dem Bestellungs-Import und werden vom Abgleich nie angefasst. Spielzeit
+  wird aus Start/Ziel abgeleitet (`trails.spielzeit_min`), nicht gespeichert. Schlussfotos
+  liegen als `<id>.jpg` in `config.foto_dir()` (LXC: `/var/lib/foxtrail-tracker/fotos`,
+  lokal `data/fotos`, gitignored) und werden ueber `/foto/<id>` nur angemeldet ausgeliefert.
+  Kein Weg B (Tracker meldet sich selbst bei foxtrail.ch an) ohne neue Absprache.
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
@@ -79,10 +85,13 @@ foxtrail/sync.py       apply(conn, scraped, ausloeser) – die Regeln oben
 foxtrail/trails.py     Lesen/Schreiben, manuelle Trails, seed_from_file (insert-only)
 foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse (JSON von
                        /wp-json/foxtrail/v1/proxy/account, HTML oder Seitentext), zuordnen
-                       (Plan), anwenden - Zuordnung nur ueber exakten Namen. Die JSON-Adresse
-                       braucht das Session-Cookie des Browsers; der Tracker ruft sie nie selbst ab.
+                       (Plan: setzen | ergaenzen | uebersprungen | unbekannt), anwenden (inkl.
+                       Schlussfoto-Download nach config.foto_dir()). Zuordnung nur ueber
+                       exakten Namen. Die JSON-Adresse braucht das Session-Cookie des Browsers;
+                       der Tracker ruft sie nie selbst ab - Upload auf der Seite /import.
 foxtrail/templates/    base, login, index, archiv, trail_form, trail_new, profil,
-                       benutzer, sync, fehler, _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
+                       benutzer, sync, fehler, import (Upload + Probelauf + Bestaetigen),
+                       _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
 data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Erstbefüllung
 scripts/manage.py      CLI: init-db, seed, sync, create-user, set-password, list-users,
                        stats, export-json, import-excel, import-bestellungen (Probelauf

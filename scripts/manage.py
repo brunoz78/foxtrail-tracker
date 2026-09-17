@@ -128,13 +128,15 @@ def cmd_import_bestellungen(a):
             print(f"{e['datum'] or '??????????'}  {('Trail ' + e['name']).ljust(breite + 6)} {pers:>8}  "
                   f"-> {aktion:12s} {ziel}{('  (' + grund + ')') if grund else ''}")
         n_setzen = sum(1 for *_, a_, _ in plan if a_ == "setzen")
+        n_erg = sum(1 for *_, a_, _ in plan if a_ == "ergaenzen")
         if not a.schreiben:
-            print(f"\nProbelauf: {n_setzen} Trail(s) wuerden als gemacht eingetragen. "
+            print(f"\nProbelauf: {n_setzen} Trail(s) wuerden als gemacht eingetragen, {n_erg} ergaenzt. "
                   "Zum Schreiben --schreiben anhaengen.")
             conn.rollback()
             return
-        n = bestellungen.anwenden(conn, plan, a.benutzer)
-    print(f"\n{n} Trail(s) als gemacht eingetragen.")
+        res = bestellungen.anwenden(conn, plan, a.benutzer, None if a.ohne_fotos else config.foto_dir())
+    print(f"\n{res['gesetzt']} Trail(s) als gemacht eingetragen, {res['ergaenzt']} ergaenzt, "
+          f"{res['fotos']} Schlussfoto(s) geladen, {res['foto_fehler']} nicht ladbar.")
 
 
 def cmd_import_excel(a):
@@ -226,6 +228,7 @@ def main():
     s.set_defaults(fn=cmd_import_excel)
     s = sub.add_parser("import-bestellungen"); s.add_argument("datei", help="HTML/Text oder - fuer stdin")
     s.add_argument("--schreiben", action="store_true", help="wirklich eintragen (sonst Probelauf)")
+    s.add_argument("--ohne-fotos", action="store_true", help="Schlussfotos nicht herunterladen")
     s.add_argument("--benutzer", default="import"); s.set_defaults(fn=cmd_import_bestellungen)
     a = p.parse_args()
     a.fn(a)

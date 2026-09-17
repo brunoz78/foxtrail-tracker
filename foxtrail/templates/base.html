@@ -17,6 +17,7 @@
     <a href="{{ url_for('archiv') }}" class="{{ 'on' if request.endpoint == 'archiv' }}">Archiv
       {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</a>
     <a href="{{ url_for('trail_new') }}" class="{{ 'on' if request.endpoint == 'trail_new' }}">+ Manuell</a>
+    <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if request.endpoint == 'import_bestellungen' }}">Import</a>
     {% if me.is_admin %}
     <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if request.endpoint == 'sync_admin' }}">Abgleich</a>
     <a href="{{ url_for('user_admin') }}" class="{{ 'on' if request.endpoint == 'user_admin' }}">Benutzer</a>

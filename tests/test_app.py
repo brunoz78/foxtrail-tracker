@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """End-to-End ueber den Flask-Testclient (temporaere SQLite-Datei)."""
 
+import io
+import json
 import os
 import sys
 
@@ -180,6 +182,42 @@ def test_liste_sortieren_filtern(app):
     # Sortierung bleibt beim Suchen erhalten (hidden fields), Links tragen den Zustand mit
     html = c.get("/?sort=preis&dir=desc&q=a").get_data(as_text=True)
     assert 'name="sort" value="preis"' in html and "sort=preis" in html
+
+
+def test_import_seite(app, monkeypatch, tmp_path):
+    from foxtrail import bestellungen
+    from tests.test_bestellungen import MUSTER_JSON, _Antwort
+    app.config["FOTO_DIR"] = str(tmp_path / "fotos")
+    monkeypatch.setattr(bestellungen.requests, "get", lambda url, timeout=None, headers=None: _Antwort())
+    c = app.test_client()
+    login(c, "gast")
+    assert "konto.json" in c.get("/import").get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET name = 'Columban' WHERE slug = 'aargau/aquae'")
+    daten = json.dumps(MUSTER_JSON).encode("utf-8")
+    r = c.post("/import", data={"datei": (io.BytesIO(daten), "konto.json")}, content_type="multipart/form-data")
+    html = r.get_data(as_text=True)
+    assert "eintragen</span>" in html and "Columban" in html and "unbekannt" in html   # Hera, Granit
+    assert 'name="daten"' in html and "2:50 h" in html
+    # Schritt 2 mit den geprueften Daten
+    eintraege = bestellungen.parse(daten.decode("utf-8"))
+    r = c.post("/import", data={"schritt": "schreiben", "daten": json.dumps(eintraege)}, follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert "1 als gemacht eingetragen" in html and "1 Schlussfoto" in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        t = trails.get(conn, 1)
+    assert t["gemacht"] == 1 and t["spielzeit"] == "2:50 h" and t["foto"] == "1.jpg" and t["team_code"] == "AAAAAA"
+    r = c.get("/foto/1")
+    assert r.status_code == 200 and r.data == b"\xff\xd8bild"
+    assert c.get("/foto/2").status_code == 404
+    html = c.get("/trail/1").get_data(as_text=True)
+    assert "2:50 h" in html and "AAAAAA" in html and "/foto/1" in html and "418324" in html
+    assert "2:50 h" in c.get("/?sort=spielzeit").get_data(as_text=True)
+    assert "Keine Bestellungen gefunden" in c.post("/import", data={"text": "nix"}).get_data(as_text=True)
+    r = c.post("/import", data={"schritt": "schreiben", "daten": "{"}, follow_redirects=True)
+    assert "Ungueltige Daten" in r.get_data(as_text=True)
+    c.get("/logout")
+    assert c.get("/foto/1").status_code == 302                    # nur angemeldet
 
 
 def test_healthz(app):

@@ -13,6 +13,16 @@
     {% endif %}
   </p>
 
+  {% if t.start_zeit or t.team_code or t.bestellung %}
+  <p class="muted small">
+    {% if t.start_zeit %}Start {{ t.start_zeit[11:16] }}{% if t.ziel_zeit %} · Ziel {{ t.ziel_zeit[11:16] }}{% endif %}{% if t.spielzeit %} · Spielzeit <b>{{ t.spielzeit }}</b>{% endif %}{% endif %}
+    {% if t.team_code %} · Team-Code {{ t.team_code }}{% endif %}
+    {% if t.bestellung %} · Bestellung #{{ t.bestellung }}
+      <a href="https://api.foxtrail.ch/invoice/print/{{ t.bestellung }}" target="_blank" rel="noopener" title="Rechnung als PDF (Anmeldung bei foxtrail.ch noetig)">Rechnung ↗</a>{% endif %}
+  </p>
+  {% endif %}
+  {% if t.foto %}<p id="foto"><img class="foto" src="{{ url_for('foto', tid=t.id) }}" alt="Schlussfoto {{ t.name }}"></p>{% endif %}
+
   <form method="post">
     <input type="hidden" name="next" value="{{ next }}">
     {% if t.quelle == 'manual' %}

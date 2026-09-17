@@ -43,13 +43,14 @@
     <th>{{ sortlink('dauer', 'Dauer') }}{{ hfilter('dauer', opts.dauer) }}</th>
     <th class="r">{{ sortlink('preis', 'CHF') }}</th>
     <th>{{ sortlink('datum', 'Datum', 'desc') }}</th>
+    <th class="r">{{ sortlink('spielzeit', 'Zeit', 'desc') }}</th>
     <th class="r">Pers.</th>
     <th>Bemerkung</th>
   </tr></thead>
   <tbody>
   {% for t in rows %}
   {% if sort == 'region' and (loop.first or t.region != loop.previtem.region) %}
-  <tr class="grp"><td colspan="13">{{ t.region_label or 'Ohne Region' }}</td></tr>
+  <tr class="grp"><td colspan="14">{{ t.region_label or 'Ohne Region' }}</td></tr>
   {% endif %}
   <tr class="{{ 'done' if t.gemacht }} {{ 'gone' if (not t.im_angebot and t.quelle == 'foxtrail') }}">
     <td class="c"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}" class="check" title="Bearbeiten">{{ '✔' if t.gemacht else '○' }}</a></td>
@@ -58,7 +59,8 @@
       {% if t.quelle == 'manual' %}<span class="tag">manuell</span>
       {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }}">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span>
       {% elif t.neu %}<span class="tag new" title="Vom Abgleich am {{ t.neu_seit|datum }} neu auf foxtrail.ch gefunden">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
-      {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch oeffnen">↗</a>{% endif %}</td>
+      {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch oeffnen">↗</a>{% endif %}
+      {% if t.foto %}<a class="ext" href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}#foto" title="Schlussfoto ansehen">📷</a>{% endif %}</td>
     <td class="wide muted">{{ t.route }}</td>
     <td class="nowrap muted">{{ t.region_label }}</td>
     <td>{{ typ_badge(t) }}</td>
@@ -67,11 +69,12 @@
     <td class="nowrap">{{ t.dauer|dauer }}</td>
     <td class="r">{{ t.preis|chf }}</td>
     <td class="nowrap">{{ t.gemacht_datum|datum }}</td>
+    <td class="r nowrap">{{ t.spielzeit }}</td>
     <td class="r">{{ t.mitspieler or '' }}</td>
     <td class="muted">{{ t.bemerkung }}</td>
   </tr>
   {% else %}
-  <tr><td colspan="13" class="empty">Keine Trails gefunden.</td></tr>
+  <tr><td colspan="14" class="empty">Keine Trails gefunden.</td></tr>
   {% endfor %}
   </tbody>
 </table></div>

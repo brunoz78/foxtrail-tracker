@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Lesen/Schreiben der Trail-Liste (Hauptliste, Archiv, eigene Eintraege, manuelle Trails)."""
 
+import datetime
 import json
 import re
 import uuid
@@ -72,6 +73,21 @@ def dauer_kurz(s):
     return re.sub(r"(\d)\s*-\s*(\d)", r"\1–\2", s)
 
 
+def spielzeit_min(start, ziel):
+    """'JJJJ-MM-TT HH:MM' x2 -> Minuten zwischen Start und Ziel; None wenn unvollstaendig/unsinnig."""
+    try:
+        a = datetime.datetime.strptime(start or "", "%Y-%m-%d %H:%M")
+        b = datetime.datetime.strptime(ziel or "", "%Y-%m-%d %H:%M")
+    except ValueError:
+        return None
+    m = int((b - a).total_seconds() // 60)
+    return m if m > 0 else None
+
+
+def spielzeit_label(minuten):
+    return f"{minuten // 60}:{minuten % 60:02d} h" if minuten else ""
+
+
 def _row(r):
     d = dict(r)
     d["archiviert"] = bool(d["quelle"] == "foxtrail" and not d["im_angebot"] and not d["gemacht"])
@@ -80,6 +96,8 @@ def _row(r):
     d["dauer_von"], d["dauer_bis"] = parse_dauer(d["dauer"])
     d["neu"] = bool(d.get("neu_seit"))      # "Neu ab MM/JJ": bleibt, solange neu_seit gesetzt ist
     d["grad_label"] = GRAD_LABEL.get(d.get("schwierigkeit") or "", "")
+    d["spielzeit_min"] = spielzeit_min(d.get("start_zeit"), d.get("ziel_zeit"))
+    d["spielzeit"] = spielzeit_label(d["spielzeit_min"])
     return d
 
 
@@ -101,6 +119,7 @@ SORTS = {
     "preis": lambda t: t["preis"],
     "datum": lambda t: t["gemacht_datum"],
     "neu": lambda t: t.get("neu_seit"),
+    "spielzeit": lambda t: t["spielzeit_min"],
 }
 
 
@@ -214,6 +233,19 @@ def update_done(conn, trail_id, form, username):
         "erfasst_von=?, erfasst_am=? WHERE id=?",
         (gemacht, datum, mit, bemerkung, username, now(), trail_id))
     return get(conn, trail_id)
+
+
+def set_import(conn, trail_id, start=None, ziel=None, code=None, bestellung=None, foto_url=None):
+    """Zusatzdaten aus dem Bestellungs-Import; None laesst den bestehenden Wert stehen."""
+    conn.execute(
+        "UPDATE trails SET start_zeit=COALESCE(?, start_zeit), ziel_zeit=COALESCE(?, ziel_zeit), "
+        "team_code=COALESCE(?, team_code), bestellung=COALESCE(?, bestellung), "
+        "foto_url=COALESCE(?, foto_url) WHERE id=?",
+        (start, ziel, code, bestellung, foto_url, trail_id))
+
+
+def set_foto(conn, trail_id, dateiname):
+    conn.execute("UPDATE trails SET foto=? WHERE id=?", (dateiname, trail_id))
 
 
 def _typ_aus_form(form, name):

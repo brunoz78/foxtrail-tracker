@@ -84,9 +84,9 @@ def test_migration_neu_seit():
     # Datenbank ohne die Spalte (Stand vor 2026-09): Seed-Trails teilen sich den fruehesten
     # Zeitstempel, ein spaeter per Abgleich angelegter Trail bekommt neu_seit rueckwirkend.
     c = db.connect(":memory:")
-    alt = "\n".join(z for z in db.SCHEMA.splitlines()
-                   if not any(k in z for k in ("neu_seit", "angelegt hat (NULL: Seed oder manuell)",
-                                               "schwierigkeit")))
+    neu = ("neu_seit", "angelegt hat (NULL: Seed oder manuell)", "schwierigkeit", "aus dem Import",
+           "start_zeit", "ziel_zeit", "team_code", "bestellung", "foto_url", "    foto ")
+    alt = "\n".join(z for z in db.SCHEMA.splitlines() if not any(k in z for k in neu))
     c.executescript(alt)
     spalten = {r[1] for r in c.execute("PRAGMA table_info(trails)")}
     assert "neu_seit" not in spalten and "schwierigkeit" not in spalten
@@ -100,7 +100,8 @@ def test_migration_neu_seit():
         "a/1": None, "a/2": None, "a/3": "2026-10-05", "manual-1": None}
     db.init_db(c)                                       # zweiter Lauf aendert nichts
     assert c.execute("SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL").fetchone()[0] == 1
-    assert "schwierigkeit" in {r[1] for r in c.execute("PRAGMA table_info(trails)")}
+    spalten = {r[1] for r in c.execute("PRAGMA table_info(trails)")}
+    assert {"schwierigkeit", "start_zeit", "ziel_zeit", "team_code", "bestellung", "foto_url", "foto"} <= spalten
 
 
 def test_schwierigkeit_sync():

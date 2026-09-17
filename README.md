@@ -142,16 +142,23 @@ die mit „Manuell ergänzte Trails“ beginnt, werden als manuelle Trails angel
 ### Eigene Bestellungen von foxtrail.ch übernehmen
 
 Auf foxtrail.ch unter **Account → Deine Bestellungen** stehen alle gebuchten
-Trails mit Startzeit und Personenzahl. Am einfachsten: im selben Browser,
-angemeldet, die Adresse `https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account`
-öffnen und mit Ctrl+S als `konto.json` speichern. Alternativ die Bestellseite als
-„Webseite, vollständig“ speichern oder den Seitentext in eine Textdatei kopieren.
-Die Datei in den Container bringen und importieren:
+Trails. Am einfachsten: im selben Browser, angemeldet, die Adresse
+`https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account` öffnen und mit Ctrl+S als
+`konto.json` speichern. Dann in der App unter **Import** hochladen: Die Seite
+zeigt einen Probelauf und trägt nach Bestätigung ein. Alternativ die Bestellseite
+als „Webseite, vollständig“ speichern oder den Seitentext einfügen (dann ohne
+Zeiten und Foto). Dasselbe auf der Kommandozeile:
 
 ```bash
 foxtrailctl import-bestellungen konto.json              # Probelauf, zeigt nur an
-foxtrailctl import-bestellungen konto.json --schreiben  # trägt ein
+foxtrailctl import-bestellungen konto.json --schreiben  # trägt ein (--ohne-fotos: keine Fotos laden)
 ```
+
+Aus dem JSON kommen zusätzlich Start- und Zielzeit (daraus die **Spielzeit**,
+sortierbare Spalte „Zeit“), Team-Code und Bestellnummer. Das **Schlussfoto** wird
+einmalig heruntergeladen, unter `/var/lib/foxtrail-tracker/fotos` abgelegt und auf
+der Detailseite gezeigt. Bereits gemachte Trails werden nur um fehlende Angaben
+ergänzt, nie überschrieben.
 
 Zuordnung über den genauen Trail-Namen („Trail Columban“ → Columban, nicht
 Columban Mini). Eingetragen werden Datum (Startzeit) und Mitspieler (Erwachsene

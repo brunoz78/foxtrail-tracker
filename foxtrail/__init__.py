@@ -9,12 +9,13 @@ zu vielen Fehlversuchen (In-Memory). Kein 2FA, keine Rollen ausser dem Flag
 """
 
 import functools
+import json
 import time
 
-from flask import (Flask, abort, flash, g, redirect, render_template, request, session,
-                   url_for)
+from flask import (Flask, abort, flash, g, redirect, render_template, request,
+                   send_from_directory, session, url_for)
 
-from . import config, db, sync, trails, users
+from . import bestellungen, config, db, sync, trails, users
 
 _ATTEMPTS = {}   # username -> [fails, lock_until_ts]
 
@@ -26,7 +27,8 @@ def create_app(test_config=None):
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_SECURE"] = config.force_https()
     app.config["DB_PATH"] = config.db_path()
-    app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
+    app.config["FOTO_DIR"] = config.foto_dir()
+    app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024      # konto.json mit vielen Bestellungen
     if test_config:
         app.config.update(test_config)
 
@@ -232,6 +234,51 @@ def create_app(test_config=None):
         except trails.TrailError as ex:
             flash(str(ex))
         return redirect(url_for("index"))
+
+    # ---- Import der eigenen Bestellungen (foxtrail.ch-Konto) ------------ #
+    @app.route("/import", methods=["GET", "POST"])
+    @login_required
+    def import_bestellungen():
+        conn = get_conn()
+        if request.method == "POST" and request.form.get("schritt") == "schreiben":
+            try:
+                eintraege = bestellungen.eintraege_aus_json(request.form.get("daten", ""))
+            except ValueError:
+                flash("Ungueltige Daten - bitte die Datei nochmals pruefen.")
+                return redirect(url_for("import_bestellungen"))
+            plan = bestellungen.zuordnen(conn, eintraege)
+            res = bestellungen.anwenden(conn, plan, current_user()["username"], app.config["FOTO_DIR"])
+            msg = (f"Import: {res['gesetzt']} als gemacht eingetragen, {res['ergaenzt']} ergaenzt, "
+                   f"{res['fotos']} Schlussfoto(s) geladen")
+            if res["foto_fehler"]:
+                msg += f", {res['foto_fehler']} Foto(s) nicht ladbar"
+            flash(msg + ".")
+            return redirect(url_for("index", f="gemacht"))
+        zeilen, daten = None, ""
+        if request.method == "POST":
+            f = request.files.get("datei")
+            inhalt = f.read().decode("utf-8", "replace") if f and f.filename else (request.form.get("text") or "")
+            eintraege = bestellungen.parse(inhalt)
+            if not eintraege:
+                flash("Keine Bestellungen gefunden. Erwartet wird die Datei konto.json oder der Text "
+                      "der Seite „Deine Bestellungen“.")
+            else:
+                zeilen = [{"e": e, "t": t, "aktion": aktion, "grund": grund,
+                           "spielzeit": trails.spielzeit_label(trails.spielzeit_min(e["start"], e["ziel"]))}
+                          for e, t, aktion, grund in bestellungen.zuordnen(conn, eintraege)]
+                daten = json.dumps(eintraege, ensure_ascii=False)
+        n = {a: sum(1 for z in (zeilen or []) if z["aktion"] == a)
+             for a in ("setzen", "ergaenzen", "uebersprungen", "unbekannt")}
+        return render_template("import.html", zeilen=zeilen, daten=daten, n_setzen=n["setzen"],
+                               n_erg=n["ergaenzen"], n_skip=n["uebersprungen"], n_unbekannt=n["unbekannt"])
+
+    @app.route("/foto/<int:tid>")
+    @login_required
+    def foto(tid):
+        t = trails.get(get_conn(), tid)
+        if not t or not t.get("foto"):
+            abort(404)
+        return send_from_directory(app.config["FOTO_DIR"], t["foto"], max_age=86400)
 
     # ---- Profil -------------------------------------------------------- #
     @app.route("/profil", methods=["GET", "POST"])
