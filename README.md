@@ -69,6 +69,19 @@ Das Script nutzt das Framework von [community-scripts](https://community-scripts
 liegt aber in einem eigenen Fork und ist **nicht** Teil der offiziellen
 Sammlung. Aufbau und Hintergründe: [`proxmox/README.md`](proxmox/README.md).
 
+### Testen vor dem Release
+
+Das Script installiert immer das neueste GitHub-Release. Um einen Stand aus
+`main` (oder einem anderen Branch) vorher im Test-Container auszuprobieren,
+dort als root:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/brunoz78/foxtrail-tracker/main/deploy/dev-update.sh)
+```
+
+Optional mit Branch-Namen als Argument. Datenbank und Konfiguration bleiben
+erhalten; `update` setzt später wieder das neueste Release ein.
+
 ### Von Hand im Container
 
 Getestet mit Debian 12/13 (unprivilegierter Container, 512 MB RAM reichen).

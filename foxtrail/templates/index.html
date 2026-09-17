@@ -78,6 +78,7 @@
 // direkt neu geladen (der "Anwenden"-Knopf bleibt als Weg ohne JavaScript).
 (function () {
   var form = document.getElementById('liste');
+  var wrap = form.querySelector('.tablewrap');
   document.addEventListener('click', function (e) {
     form.querySelectorAll('details.hf[open]').forEach(function (d) {
       if (!d.contains(e.target)) { d.removeAttribute('open'); }
@@ -89,6 +90,7 @@
       return Array.prototype.map.call(d.querySelectorAll('input:checked'), function (i) { return i.value; }).join('|');
     };
     d.addEventListener('toggle', function () {
+      wrap.classList.toggle('menu-open', !!form.querySelector('details.hf[open]'));
       if (d.open) {
         start = state();
         // Menue am rechten Rand nach links aufklappen, damit es im Fenster bleibt

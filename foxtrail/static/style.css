@@ -99,8 +99,11 @@ details.hf summary b { font-size: 10px; margin-left: 2px; }
 .hf-menu label input { margin: 0; width: auto; }
 .hf-menu.right { left: auto; right: 0; }
 .hf-actions { display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line); margin-top: 6px; padding-top: 6px; }
-/* Waehrend ein Menue offen ist, darf der Tabellen-Container es nicht abschneiden */
-.tablewrap:has(details.hf[open]) { overflow: visible; }
+/* Waehrend ein Menue offen ist, duerfen weder der scrollbare Container noch die Tabelle
+   (overflow hidden wegen der runden Ecken) es abschneiden - sonst fehlt bei kurzen Listen
+   der untere Teil. JS setzt .menu-open, :has() ist der Weg ohne JS. */
+.tablewrap.menu-open, .tablewrap.menu-open table.trails,
+.tablewrap:has(details.hf[open]), .tablewrap:has(details.hf[open]) table.trails { overflow: visible; }
 td.nowrap { white-space: nowrap; }
 tr.grp td { background: var(--green-light); color: var(--green); font-weight: bold; font-size: 13px; padding: 5px 9px; }
 @media (prefers-color-scheme: dark) { tr.grp td { color: #a9d8b8; } }

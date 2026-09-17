@@ -69,7 +69,8 @@ data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Ers
 scripts/manage.py      CLI: init-db, seed, sync, create-user, set-password, list-users,
                        stats, export-json, import-excel
 deploy/                install.sh (Debian-LXC), foxtrail.service, foxtrail-sync.service,
-                       foxtrail-sync.timer, foxtrailctl, env-Beispiel
+                       foxtrail-sync.timer, foxtrailctl, env-Beispiel,
+                       dev-update.sh (Branch-Stand ohne Release in den Test-LXC)
 proxmox/               community-scripts: ct/, install/, json/ + README.md (Quelle;
                        Fork brunoz78/ProxmoxVED ist nur die Auslieferung)
 docs/logo.svg          Logo fuer die JSON-Metadaten
@@ -114,6 +115,9 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
   Dort laeuft alles als root ohne Dienstbenutzer (community-scripts-Konvention);
   Kommentare und Ausgaben in `proxmox/` bleiben englisch. Das Repo muss dafuer
   oeffentlich sein.
+- **Kein Release ohne Freigabe.** Ablauf: Aenderung auf `main` pushen, Bruno testet im
+  LXC mit `deploy/dev-update.sh` (holt den Branch-Stand ohne Release), erst nach seinem
+  OK Tag + Release erstellen.
 
 ## Offene Ideen (nicht begonnen)
 
