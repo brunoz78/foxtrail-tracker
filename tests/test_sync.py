@@ -114,10 +114,13 @@ def test_schwierigkeit_sync():
     r = sync.apply(c, [mk("a/x", schwierigkeit="einfach"), mk("a/go", typ="go", schwierigkeit=None)], "test")
     assert r["aktualisiert"] == 1 and trails.get(c, 1)["schwierigkeit"] == "einfach"
     # manuell: nur gueltige Werte
-    tid = trails.add_manual(c, {"ort": "O", "name": "M", "schwierigkeit": "mittel"}, "u")
-    assert trails.get(c, tid)["schwierigkeit"] == "mittel"
-    trails.update_manual(c, tid, {"ort": "O", "name": "M", "schwierigkeit": "unsinn"})
-    assert trails.get(c, tid)["schwierigkeit"] is None
+    tid = trails.add_manual(c, {"ort": "O", "name": "M", "schwierigkeit": "mittel", "region": "wallis"}, "u")
+    assert trails.get(c, tid)["schwierigkeit"] == "mittel" and trails.get(c, tid)["region"] == "wallis"
+    assert trails.get(c, tid)["region_label"] == "Wallis"
+    trails.update_manual(c, tid, {"ort": "O", "name": "M", "schwierigkeit": "unsinn", "region": "mars"})
+    assert trails.get(c, tid)["schwierigkeit"] is None and trails.get(c, tid)["region"] == ""
+    trails.update_manual(c, tid, {"ort": "O", "name": "M", "region": "tessin"})
+    assert trails.get(c, tid)["region"] == "tessin"
 
 
 def test_dauer_parsen_und_kuerzen():

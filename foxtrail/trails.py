@@ -224,6 +224,10 @@ def _grad_aus_form(form):
     return form.get("schwierigkeit") if form.get("schwierigkeit") in GRADE else None
 
 
+def _region_aus_form(form):
+    return form.get("region") if form.get("region") in REGION_LABEL else ""
+
+
 def add_manual(conn, form, username):
     """Manuell erfasster Trail (z. B. frueher gemacht, heute nicht mehr im Angebot)."""
     ort = (form.get("ort") or "").strip()[:100]
@@ -238,9 +242,9 @@ def add_manual(conn, form, username):
         "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, dauer, schwierigkeit, "
         "im_angebot, first_seen, gemacht, gemacht_datum, mitspieler, bemerkung, erfasst_von, erfasst_am) "
         "VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?)",
-        (slug, "manual", ort, name, (form.get("route") or "").strip()[:300], typ, "",
-         (form.get("dauer") or "").strip()[:50], _grad_aus_form(form), ts, gemacht, datum, mit,
-         bemerkung, username, ts))
+        (slug, "manual", ort, name, (form.get("route") or "").strip()[:300], typ,
+         _region_aus_form(form), (form.get("dauer") or "").strip()[:50], _grad_aus_form(form), ts,
+         gemacht, datum, mit, bemerkung, username, ts))
     return conn.execute("SELECT id FROM trails WHERE slug = ?", (slug,)).fetchone()[0]
 
 
@@ -252,9 +256,11 @@ def update_manual(conn, trail_id, form):
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
         raise TrailError("Ort und Name sind Pflichtfelder.")
-    conn.execute("UPDATE trails SET ort=?, name=?, route=?, typ=?, dauer=?, schwierigkeit=? WHERE id=?",
+    conn.execute("UPDATE trails SET ort=?, name=?, route=?, typ=?, region=?, dauer=?, schwierigkeit=? "
+                 "WHERE id=?",
                  (ort, name, (form.get("route") or "").strip()[:300], _typ_aus_form(form, name),
-                  (form.get("dauer") or "").strip()[:50], _grad_aus_form(form), trail_id))
+                  _region_aus_form(form), (form.get("dauer") or "").strip()[:50], _grad_aus_form(form),
+                  trail_id))
 
 
 def delete_manual(conn, trail_id):

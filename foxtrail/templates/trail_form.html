@@ -17,7 +17,13 @@
     <input type="hidden" name="next" value="{{ next }}">
     {% if t.quelle == 'manual' %}
     <fieldset><legend>Trail-Daten</legend>
-      <label>Ort <input name="ort" value="{{ t.ort }}" required maxlength="100"></label>
+      <div class="row">
+        <label>Ort <input name="ort" value="{{ t.ort }}" required maxlength="100"></label>
+        <label>Region <select name="region">
+          <option value="">–</option>
+          {% for v, label in regionen.items() %}<option value="{{ v }}" {{ 'selected' if t.region == v }}>{{ label }}</option>{% endfor %}
+        </select></label>
+      </div>
       <label>Name <input name="name" value="{{ t.name }}" required maxlength="100"></label>
       <label>Route <input name="route" value="{{ t.route }}" maxlength="300"></label>
       <div class="row">

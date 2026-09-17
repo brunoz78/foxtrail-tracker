@@ -83,11 +83,12 @@ def test_validierung(app):
 def test_manueller_trail(app):
     c = app.test_client()
     login(c, "gast")
-    r = c.post("/trail/neu", data={"ort": "Altdorf", "name": "Tell", "gemacht": "1",
+    r = c.post("/trail/neu", data={"ort": "Altdorf", "name": "Tell", "gemacht": "1", "region": "luzern-und-umgebung",
                                    "gemacht_datum": "2018-07-01", "mitspieler": "2"}, follow_redirects=True)
     assert "manuell erfasst" in r.get_data(as_text=True)
     html = c.get("/").get_data(as_text=True)
-    assert "Tell" in html and "manuell" in html
+    assert "Tell" in html and "manuell" in html and "Luzern und Umgebung" in html
+    assert "Tell" in c.get("/?region=luzern-und-umgebung").get_data(as_text=True)
     r = c.post("/trail/3/loeschen", follow_redirects=True)
     assert "geloescht" in r.get_data(as_text=True)
     assert c.post("/trail/1/loeschen", follow_redirects=True).status_code == 200

@@ -112,7 +112,8 @@ def create_app(test_config=None):
     @app.context_processor
     def _inject():
         return {"me": current_user(), "stats": trails.stats(get_conn()) if current_user() else None,
-                "typen": trails.TYP_LABEL, "grade": trails.GRAD_LABEL}
+                "typen": trails.TYP_LABEL, "grade": trails.GRAD_LABEL,
+                "regionen": trails.REGION_LABEL}
 
     @app.errorhandler(403)
     def _forbidden(_):
