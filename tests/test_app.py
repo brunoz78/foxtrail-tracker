@@ -60,7 +60,9 @@ def test_bearbeiten_und_archiv(app):
     with db.session(app.config["DB_PATH"]) as conn:
         sync.apply(conn, [mk("a/neu")], "test")
     html = c.get("/").get_data(as_text=True)
-    assert "Aquae" in html and "nicht mehr im Angebot" in html and "Simplon" not in html
+    assert "Aquae" in html and "nicht mehr im Angebot seit" in html and "Simplon" not in html
+    assert "Neu ab " in html                             # a/neu kam per Abgleich dazu
+    assert "Neu ab " in c.get("/trail/3").get_data(as_text=True)
     html = c.get("/archiv").get_data(as_text=True)
     assert "Simplon" in html
     # aus dem Archiv als gemacht markieren -> zurueck in die Liste

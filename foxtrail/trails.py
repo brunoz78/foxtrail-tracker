@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Lesen/Schreiben der Trail-Liste (Hauptliste, Archiv, eigene Eintraege, manuelle Trails)."""
 
+import datetime
 import json
 import re
 import uuid
@@ -27,6 +28,9 @@ REGION_LABEL = {
 }
 
 _DAUER_RE = re.compile(r"(\d+(?:[.,]\d+)?)(?:\s*[-–]\s*(\d+(?:[.,]\d+)?))?")
+
+# So lange traegt ein vom Abgleich neu angelegter Trail in der Liste "Neu ab MM/JJ".
+NEU_TAGE = 365
 
 
 class TrailError(Exception):
@@ -72,7 +76,19 @@ def _row(r):
     d["typ_label"] = TYP_LABEL.get(d["typ"], d["typ"])
     d["region_label"] = region_label(d["region"])
     d["dauer_von"], d["dauer_bis"] = parse_dauer(d["dauer"])
+    d["neu"] = ist_neu(d.get("neu_seit"))
     return d
+
+
+def ist_neu(neu_seit, heute=None):
+    if not neu_seit:
+        return False
+    heute = heute or datetime.date.today()
+    try:
+        seit = datetime.date.fromisoformat(neu_seit[:10])
+    except ValueError:
+        return False
+    return (heute - seit).days <= NEU_TAGE
 
 
 def get(conn, trail_id):

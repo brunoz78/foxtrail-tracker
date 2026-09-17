@@ -54,7 +54,8 @@
     <td>{{ t.ort }}</td>
     <td><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}"><b>{{ t.name }}</b></a>
       {% if t.quelle == 'manual' %}<span class="tag">manuell</span>
-      {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet">nicht mehr im Angebot</span>{% endif %}
+      {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }}">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span>
+      {% elif t.neu %}<span class="tag new" title="Vom Abgleich am {{ t.neu_seit|datum }} neu auf foxtrail.ch gefunden">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
       {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch oeffnen">↗</a>{% endif %}</td>
     <td class="wide muted">{{ t.route }}</td>
     <td class="nowrap muted">{{ t.region_label }}</td>

@@ -3,7 +3,8 @@
 Abgleich der lokalen Trail-Liste mit foxtrail.ch.
 
 Regeln (siehe README):
-  * neuer Trail auf der Website            -> anlegen (offen, aktiv)
+  * neuer Trail auf der Website            -> anlegen (offen, aktiv, neu_seit = heute,
+                                              in der Liste "Neu ab MM/JJ")
   * bekannter Trail weiterhin gelistet     -> Metadaten aktualisieren, eigene
                                               Eintraege (gemacht/Datum/Mitspieler/
                                               Bemerkung) bleiben unangetastet
@@ -68,11 +69,11 @@ def _apply(conn, scraped, ts, res):
         if old is None:
             conn.execute(
                 "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, "
-                "dauer, preis, url, im_angebot, first_seen, last_seen) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,1,?,?)",
+                "dauer, preis, url, im_angebot, first_seen, last_seen, neu_seit) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,1,?,?,?)",
                 (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"),
                  t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
-                 t.get("url", ""), ts, ts))
+                 t.get("url", ""), ts, ts, ts[:10]))
             res["neu"] += 1
             continue
         changed = any((old.get(f) or "") != (t.get(f) or "") for f in META_FIELDS)

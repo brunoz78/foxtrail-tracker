@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS trails (
     im_angebot    INTEGER NOT NULL DEFAULT 1,         -- aktuell auf foxtrail.ch gelistet
     first_seen    TEXT NOT NULL,
     last_seen     TEXT,
+    neu_seit      TEXT,                              -- Datum, an dem der Abgleich den Trail neu
+                                                     -- angelegt hat (NULL: Seed oder manuell)
     gemacht       INTEGER NOT NULL DEFAULT 0,
     gemacht_datum TEXT,
     mitspieler    INTEGER,
@@ -95,6 +97,14 @@ def init_db(conn):
 
 def _migrate(conn):
     """Kleine, idempotente Migrationen fuer bestehende Datenbanken."""
+    spalten = {r[1] for r in conn.execute("PRAGMA table_info(trails)")}
+    if "neu_seit" not in spalten:
+        # 2026-09: "Neu ab MM/JJ" fuer Trails, die ein Abgleich neu angelegt hat. Rueckwirkend
+        # laesst sich das am first_seen erkennen: der Seed schreibt fuer alle Trails denselben
+        # Zeitstempel (den fruehesten), alles Spaetere kam ueber einen Abgleich.
+        conn.execute("ALTER TABLE trails ADD COLUMN neu_seit TEXT")
+        conn.execute("UPDATE trails SET neu_seit = substr(first_seen, 1, 10) WHERE quelle = 'foxtrail' "
+                     "AND first_seen > (SELECT MIN(first_seen) FROM trails WHERE quelle = 'foxtrail')")
     # 2026-09: Mini/Maxi als eigener Typ (vorher alles 'foxtrail'). Nur Website-Trails -
     # bei manuell erfassten entscheidet der Benutzer selbst. LIKE ist in SQLite fuer
     # ASCII case-insensitive, deckt also "Maxi"/"MAXI" ab (vgl. trails.typ_aus_name).

@@ -97,6 +97,11 @@ def create_app(test_config=None):
         """'1.5-2.5 Stunden' -> '1.5–2.5 h'"""
         return trails.dauer_kurz(v)
 
+    @app.template_filter("mmjj")
+    def _mmjj(v):
+        """2026-09-14 -> 09/26"""
+        return f"{v[5:7]}/{v[2:4]}" if v and len(v) >= 10 else ""
+
     @app.template_filter("datum")
     def _datum(v):
         """2025-06-01 -> 01.06.2025"""

@@ -8,7 +8,8 @@
     {{ typ_badge(t) }}{% if t.dauer %} · {{ t.dauer|dauer }}{% endif %}{% if t.preis %} · CHF {{ t.preis|chf }}{% endif %}{% if t.bewertung %} · ★ {{ t.bewertung }}{% endif %}
     {% if t.url %}· <a href="{{ t.url }}" target="_blank" rel="noopener">foxtrail.ch ↗</a>{% endif %}<br>
     {% if t.quelle == 'manual' %}<span class="tag">manuell erfasst</span>
-    {% elif not t.im_angebot %}<span class="tag warn">aktuell nicht mehr im Angebot</span> (zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }})
+    {% elif not t.im_angebot %}<span class="tag warn">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span> (zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }})
+    {% elif t.neu_seit %}<span class="tag new">Neu ab {{ t.neu_seit|mmjj }}</span> (vom Abgleich am {{ t.neu_seit|datum }} neu gefunden)
     {% endif %}
   </p>
 

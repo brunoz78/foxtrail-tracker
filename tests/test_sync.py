@@ -46,6 +46,44 @@ def test_typ_ableitung_und_migration():
         "x/a": "maxi", "x/b": "mini", "x/c": "foxtrail", "manual-1": "foxtrail"}
 
 
+def test_neu_seit():
+    c = conn_mem()
+    heute = db.now()[:10]
+    # Seed setzt neu_seit nicht, der Abgleich schon
+    trails.seed_from_file(c, os.path.join(os.path.dirname(__file__), "..", "data", "trails_seed.json"))
+    assert c.execute("SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL").fetchone()[0] == 0
+    seed_slugs = [r[0] for r in c.execute("SELECT slug FROM trails")]
+    sync.apply(c, [mk(s) for s in seed_slugs] + [mk("jura/ganz-neu")], "test")
+    t = trails.get(c, c.execute("SELECT id FROM trails WHERE slug = 'jura/ganz-neu'").fetchone()[0])
+    assert t["neu_seit"] == heute and t["neu"]
+    assert not trails.get(c, 1)["neu"]
+    assert trails.ist_neu("2026-01-01", heute=__import__("datetime").date(2026, 9, 17))
+    assert not trails.ist_neu("2024-01-01", heute=__import__("datetime").date(2026, 9, 17))
+    assert not trails.ist_neu(None) and not trails.ist_neu("kaputt")
+
+
+def test_migration_neu_seit():
+    # Datenbank ohne die Spalte (Stand vor 2026-09): Seed-Trails teilen sich den fruehesten
+    # Zeitstempel, ein spaeter per Abgleich angelegter Trail bekommt neu_seit rueckwirkend.
+    c = db.connect(":memory:")
+    alt = db.SCHEMA.replace("    neu_seit      TEXT,", "").replace(
+        "                                                     -- angelegt hat (NULL: Seed oder manuell)\n", "")
+    alt = "\n".join(z for z in alt.splitlines() if "Datum, an dem der Abgleich" not in z
+                   and "angelegt hat (NULL: Seed oder manuell)" not in z)
+    c.executescript(alt)
+    assert "neu_seit" not in {r[1] for r in c.execute("PRAGMA table_info(trails)")}
+    c.executemany("INSERT INTO trails (slug, quelle, ort, name, first_seen) VALUES (?,?,?,?,?)",
+                  [("a/1", "foxtrail", "O", "Eins", "2026-09-17 10:00:00"),
+                   ("a/2", "foxtrail", "O", "Zwei", "2026-09-17 10:00:00"),
+                   ("a/3", "foxtrail", "O", "Drei", "2026-10-05 04:30:00"),
+                   ("manual-1", "manual", "O", "Alt", "2026-11-01 08:00:00")])
+    db.init_db(c)
+    assert {r[0]: r[1] for r in c.execute("SELECT slug, neu_seit FROM trails")} == {
+        "a/1": None, "a/2": None, "a/3": "2026-10-05", "manual-1": None}
+    db.init_db(c)                                       # zweiter Lauf aendert nichts
+    assert c.execute("SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL").fetchone()[0] == 1
+
+
 def test_dauer_parsen_und_kuerzen():
     assert trails.parse_dauer("1.5-2.5 Stunden") == (1.5, 2.5)
     assert trails.parse_dauer("2 Stunden") == (2.0, 2.0)

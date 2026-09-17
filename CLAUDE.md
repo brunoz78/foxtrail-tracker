@@ -37,9 +37,12 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
-  - neu auf der Website → anlegen (offen)
+  - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt „Neu ab MM/JJ“
+    für `trails.NEU_TAGE` = 365 Tage, Detailseite immer). Seed und manuelle Trails haben
+    `neu_seit` NULL, sonst wären nach der Erstinstallation alle Trails „neu“.
   - weiterhin gelistet → Metadaten aktualisieren, eigene Einträge unangetastet
-  - nicht mehr gelistet + gemacht → bleibt in der Hauptliste, „nicht mehr im Angebot“
+  - nicht mehr gelistet + gemacht → bleibt in der Hauptliste, „nicht mehr im Angebot
+    seit MM/JJ“ (Monat aus `last_seen`, keine eigene Spalte)
   - nicht mehr gelistet + offen → **Archiv**
   - archiviert und als gemacht markiert → zurück in die Hauptliste
   - taucht wieder auf → reaktiviert

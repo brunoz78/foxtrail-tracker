@@ -33,6 +33,7 @@ h2 { font-size: 17px; margin: 24px 0 8px; }
 .small { font-size: 12px; }
 .tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--line); color: var(--muted); margin-left: 4px; vertical-align: middle; }
 .tag.warn { background: var(--warn-bg); color: var(--warn-text); }
+.tag.new { background: var(--green); color: #fff; }
 .ext { text-decoration: none; margin-left: 4px; font-size: 12px; }
 
 .filter { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 4px 0 12px; }

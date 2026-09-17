@@ -34,9 +34,9 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 
 | Situation | Ergebnis |
 |---|---|
-| Trail neu auf foxtrail.ch | wird angelegt (offen) |
+| Trail neu auf foxtrail.ch | wird angelegt (offen), in der Liste ein Jahr lang „Neu ab MM/JJ“ |
 | Trail weiterhin gelistet | Metadaten (Preis, Dauer, Bewertung, Route) aktualisiert – eigene Einträge bleiben |
-| Trail nicht mehr gelistet, **bereits gemacht** | bleibt in der Hauptliste, markiert „nicht mehr im Angebot“ |
+| Trail nicht mehr gelistet, **bereits gemacht** | bleibt in der Hauptliste, markiert „nicht mehr im Angebot seit MM/JJ“ |
 | Trail nicht mehr gelistet, **noch offen** | erscheint im **Archiv** |
 | Archivierter Trail wird als gemacht markiert | wandert zurück in die Hauptliste |
 | Archivierter Trail taucht wieder auf | wird reaktiviert |
