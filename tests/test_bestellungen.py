@@ -126,6 +126,45 @@ def test_parse_html():
     assert bestellungen.parse("") == []
 
 
+MUSTER_JSON = {
+    "user": {"first_name": "Max"},
+    "orders": [
+        {"id": 418324, "date_created": "2026-09-17T08:09:51.268Z", "status": "completed",
+         "booking": {"teams": [
+             {"code": "AAAAAA", "trail": {"id": 28, "name": "Columban"},
+              "participants_booked": [{"quantity": 2, "segment": "adult"}, {"quantity": 0, "segment": "child"}],
+              "start_time_actual": "2026-09-17T12:02:06.000Z", "confirmed_adult_tickets": 2,
+              "confirmed_child_tickets": 0, "slot": {"date_time": "2026-09-17T12:00:00.000Z"}}]},
+         "invoice": "https://api.foxtrail.ch/invoice/print/418324"},
+        {"id": 388553, "date_created": "2026-05-24T16:45:04.885Z", "status": "completed",
+         "booking": {"teams": [
+             {"code": "BBBBBB", "trail": {"name": "Hera"}, "confirmed_adult_tickets": 2, "confirmed_child_tickets": 1,
+              "slot": {"date_time": "2026-05-25T09:45:00.000Z"}},
+             {"code": "CCCCCC", "trail": {"name": "Hera"}, "confirmed_adult_tickets": 0, "confirmed_child_tickets": 0,
+              "participants_booked": [{"quantity": 3, "segment": "adult"}],
+              "slot": {"date_time": "2026-05-25T09:45:00.000Z"}}]}},
+        {"id": 300000, "date_created": "2026-02-01T10:00:00.000Z", "status": "cancelled",
+         "booking": {"teams": [{"trail": {"name": "Granit"}, "confirmed_adult_tickets": 2,
+                                "slot": {"date_time": "2026-02-02T10:00:00.000Z"}}]}},
+        {"id": 1, "date_created": "2026-01-01T10:00:00.000Z", "status": "completed",
+         "booking": {"teams": []}, "ordered_vouchers": [{"id": 5}]},
+    ],
+}
+
+
+def test_parse_json():
+    import json
+    e = bestellungen.parse(json.dumps(MUSTER_JSON))
+    assert [(x["name"], x["datum"], x["personen"], x["teams"], x["status"]) for x in e] == [
+        ("Columban", "2026-09-17", 2, 1, "Abgeschlossen"),
+        ("Hera", "2026-05-25", 6, 2, "Abgeschlossen"),
+        ("Granit", "2026-02-02", 2, 1, "Storniert"),
+    ]
+    assert e[0]["bestellung"] == "418324" and e[0]["bestellt_am"] == "2026-09-17"
+    assert bestellungen.parse("{kein json") == []            # faellt auf Text zurueck: nichts drin
+    assert bestellungen.parse(json.dumps({"orders": []})) == []
+
+
 def test_zuordnen_und_anwenden():
     c = conn_mem()
     sync.apply(c, [mk("ostschweiz/columban", ort="St. Gallen", name="Columban"),

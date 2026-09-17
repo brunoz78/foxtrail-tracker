@@ -142,13 +142,15 @@ die mit „Manuell ergänzte Trails“ beginnt, werden als manuelle Trails angel
 ### Eigene Bestellungen von foxtrail.ch übernehmen
 
 Auf foxtrail.ch unter **Account → Deine Bestellungen** stehen alle gebuchten
-Trails mit Startzeit und Personenzahl. Die Seite als „Webseite, vollständig“
-speichern (oder den Seitentext in eine Textdatei kopieren), in den Container
-bringen und importieren:
+Trails mit Startzeit und Personenzahl. Am einfachsten: im selben Browser,
+angemeldet, die Adresse `https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account`
+öffnen und mit Ctrl+S als `konto.json` speichern. Alternativ die Bestellseite als
+„Webseite, vollständig“ speichern oder den Seitentext in eine Textdatei kopieren.
+Die Datei in den Container bringen und importieren:
 
 ```bash
-foxtrailctl import-bestellungen bestellungen.html              # Probelauf, zeigt nur an
-foxtrailctl import-bestellungen bestellungen.html --schreiben  # trägt ein
+foxtrailctl import-bestellungen konto.json              # Probelauf, zeigt nur an
+foxtrailctl import-bestellungen konto.json --schreiben  # trägt ein
 ```
 
 Zuordnung über den genauen Trail-Namen („Trail Columban“ → Columban, nicht

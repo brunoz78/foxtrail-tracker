@@ -77,8 +77,10 @@ foxtrail/users.py      Benutzer, Hashing, UserError
 foxtrail/scraper.py    parse_page(html) rein + offline testbar, fetch_all() mit Netz
 foxtrail/sync.py       apply(conn, scraped, ausloeser) – die Regeln oben
 foxtrail/trails.py     Lesen/Schreiben, manuelle Trails, seed_from_file (insert-only)
-foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse (HTML/Text),
-                       zuordnen (Plan), anwenden - Zuordnung nur ueber exakten Namen
+foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse (JSON von
+                       /wp-json/foxtrail/v1/proxy/account, HTML oder Seitentext), zuordnen
+                       (Plan), anwenden - Zuordnung nur ueber exakten Namen. Die JSON-Adresse
+                       braucht das Session-Cookie des Browsers; der Tracker ruft sie nie selbst ab.
 foxtrail/templates/    base, login, index, archiv, trail_form, trail_new, profil,
                        benutzer, sync, fehler, _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
 data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Erstbefüllung

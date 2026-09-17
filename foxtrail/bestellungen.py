@@ -2,8 +2,16 @@
 """
 Import der eigenen Bestellungen von foxtrail.ch ("Account -> Deine Bestellungen").
 
-Die Seite ist eine Vue-App; gespeichert als "Webseite, vollstaendig" oder als
-kopierter Text sieht sie je Bestellung so aus:
+Drei Eingabeformen, parse() erkennt sie selbst:
+
+1. JSON der Kontodaten - die Seite holt sie von
+   https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account (angemeldet im Browser
+   aufrufen und speichern). Je Bestellung: status ('completed' | ...), booking.teams[]
+   mit trail.name, slot.date_time (gebuchter Start, Ortszeit mit "Z"-Suffix),
+   start_time_actual, confirmed_adult_tickets / confirmed_child_tickets bzw.
+   participants_booked[]. Das ist die verlaesslichste Quelle.
+2. Die Seite als "Webseite, vollstaendig" gespeichert (HTML).
+3. Der kopierte Seitentext. HTML und Text sehen je Bestellung so aus:
 
     Bestellung vom 17.09.2026 (#418324)
     Status: Abgeschlossen
@@ -27,6 +35,7 @@ bereits gemachten Trails, nie bei noch nicht gespielten (Startzeit in der Zukunf
 """
 
 import datetime
+import json
 import re
 
 from bs4 import BeautifulSoup
@@ -53,8 +62,45 @@ def _iso(t, m, j):
     return f"{j}-{m}-{t}"
 
 
+_STATUS_LABEL = {"completed": "Abgeschlossen", "cancelled": "Storniert", "canceled": "Storniert",
+                 "refunded": "Rueckerstattet", "pending": "Offen", "processing": "In Bearbeitung"}
+
+
+def _parse_json(daten):
+    """Kontodaten-JSON (siehe Modul-Doku) -> dieselbe Eintragsliste wie beim Text."""
+    orders = daten.get("orders", []) if isinstance(daten, dict) else daten
+    out = []
+    for o in orders or []:
+        status = str(o.get("status") or "")
+        status = _STATUS_LABEL.get(status.lower(), status)
+        je_trail = {}
+        for team in ((o.get("booking") or {}).get("teams") or []):
+            name = re.sub(r"\s+", " ", str((team.get("trail") or {}).get("name") or "")).strip()
+            if not name:
+                continue
+            start = (team.get("slot") or {}).get("date_time") or team.get("start_time_actual") or ""
+            datum = start[:10] if re.match(r"\d{4}-\d{2}-\d{2}", start) else None
+            personen = (team.get("confirmed_adult_tickets") or 0) + (team.get("confirmed_child_tickets") or 0)
+            if not personen:
+                personen = sum(int(p.get("quantity") or 0) for p in (team.get("participants_booked") or []))
+            e = je_trail.setdefault((name, datum), {"name": name, "datum": datum, "personen": 0, "teams": 0})
+            e["personen"] += personen
+            e["teams"] += 1
+        for e in je_trail.values():
+            e.update({"bestellung": str(o.get("id") or ""), "bestellt_am": str(o.get("date_created") or "")[:10],
+                      "status": status})
+            out.append(e)
+    return out
+
+
 def parse(inhalt):
     """Liste von Eintraegen: {bestellung, bestellt_am, status, name, datum, personen, teams}."""
+    kopf = inhalt.lstrip()[:1]
+    if kopf in ("{", "["):
+        try:
+            return _parse_json(json.loads(inhalt))
+        except ValueError:
+            pass                                   # kein JSON -> als Text versuchen
     text = _text(inhalt)
     hits = list(_ORDER_RE.finditer(text))
     out = []
