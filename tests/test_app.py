@@ -166,8 +166,10 @@ def test_liste_sortieren_filtern(app):
     html = c.get("/?f=neu").get_data(as_text=True)
     assert "Keine Trails gefunden" in html
     with db.session(app.config["DB_PATH"]) as conn:
-        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae"), mk("wallis/simplon", ort="Brig", name="Simplon"),
-                          mk("ostschweiz/baccara-mini", ort="Rapperswil", name="Baccara Mini", typ="mini"),
+        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae"),
+                          mk("wallis/simplon", ort="Brig", name="Simplon", schwierigkeit="schwierig"),
+                          mk("ostschweiz/baccara-mini", ort="Rapperswil", name="Baccara Mini", typ="mini",
+                             schwierigkeit="einfach"),
                           mk("jura/frisch", ort="Delsberg", name="Frisch")], "test")
     html = c.get("/?f=neu").get_data(as_text=True)
     assert "Frisch" in html and "Aquae" not in html and "Neu ab " in html
