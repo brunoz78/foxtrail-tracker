@@ -165,7 +165,7 @@ def cmd_import_excel(a):
                     trails.update_done(conn, t["id"], form, a.benutzer)
                     done += 1
             elif manual_mode:
-                typ = "go" if "GO" in str(g(row, "Typ") or "") else "foxtrail"
+                typ = trails.typ_aus_name(name, go="GO" in str(g(row, "Typ") or ""))
                 form.update({"ort": ort, "name": name, "typ": typ,
                              "route": str(g(row, "Route / Beschreibung") or ""),
                              "dauer": str(g(row, "Dauer") or "")})

@@ -134,5 +134,34 @@ def test_sync_seite(app, monkeypatch):
     assert "fehlgeschlagen: kaputt" in r.get_data(as_text=True)
 
 
+def test_liste_sortieren_filtern(app):
+    c = app.test_client()
+    login(c)
+    with db.session(app.config["DB_PATH"]) as conn:
+        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae", preis=32.0),
+                          mk("wallis/simplon", ort="Brig", name="Simplon", preis=36.0),
+                          mk("ostschweiz/baccara-mini", ort="Rapperswil", name="Baccara Mini",
+                             typ="mini", preis=19.0, dauer="1-2 Stunden")], "test")
+
+    def reihenfolge(url):
+        html = c.get(url).get_data(as_text=True)
+        return sorted(["Aquae", "Simplon", "Baccara Mini"], key=html.index)
+
+    assert reihenfolge("/") == ["Aquae", "Simplon", "Baccara Mini"]
+    assert reihenfolge("/?sort=preis&dir=desc") == ["Simplon", "Aquae", "Baccara Mini"]
+    assert reihenfolge("/?sort=kaputt&dir=egal") == ["Aquae", "Simplon", "Baccara Mini"]
+    html = c.get("/?typ=mini&typ=go").get_data(as_text=True)
+    assert "Baccara Mini" in html and "Aquae" not in html and "typ-mini" in html
+    html = c.get("/?region=aargau&region=wallis").get_data(as_text=True)
+    assert "Aquae" in html and "Simplon" in html and "Baccara Mini" not in html
+    html = c.get("/?dauer=1-2+Stunden").get_data(as_text=True)
+    assert "Baccara Mini" in html and "Simplon" not in html and "1–2 h" in html
+    html = c.get("/?sort=region").get_data(as_text=True)
+    assert 'class="grp"' in html and "Ostschweiz" in html
+    # Sortierung bleibt beim Suchen erhalten (hidden fields), Links tragen den Zustand mit
+    html = c.get("/?sort=preis&dir=desc&q=a").get_data(as_text=True)
+    assert 'name="sort" value="preis"' in html and "sort=preis" in html
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

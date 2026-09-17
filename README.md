@@ -14,8 +14,12 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 
 ## Funktionen
 
-* Liste aller aktuell angebotenen Trails (Foxtrail und Foxtrail GO) mit Filter
-  (alle / offen / gemacht), Typ-Filter und Volltextsuche
+* Liste aller aktuell angebotenen Trails mit Filter (alle / offen / gemacht) und
+  Volltextsuche; jede Spalte sortierbar (Ort, Trail, Region, Typ, Bewertung, Dauer,
+  Preis, Datum), Mehrfach-Filter für Region, Typ und Dauer direkt im Spaltenkopf
+* Typ als Badge wie auf foxtrail.ch: **Foxtrail**, **MINI**, **MAXI**, **GO** – abgeleitet
+  aus dem Trail-Namen bzw. dem GO-Badge (das MINI/MAXI-Badge ist auf der Website nur
+  ins Bild gezeichnet); sortiert nach Region erscheinen Gruppen-Zeilen
 * Pro Trail: **gemacht**, **Datum**, **Anzahl Mitspieler**, **Bemerkung**
   (ein Eintrag je Trail, gemeinsam für alle Benutzer)
 * Manuell erfasste Trails für früher gemachte Trails, die nicht mehr angeboten werden

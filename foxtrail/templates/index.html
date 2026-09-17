@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import typ_badge, sortlink, hfilter with context %}
 {% block content %}
 <div class="head">
   <h1>Alle Trails</h1>
@@ -9,30 +10,45 @@
   </div>
 </div>
 
-<form class="filter" method="get">
+{# Ein GET-Formular fuer Suche UND die Haken-Filter in den Spaltenkoepfen #}
+<form method="get" id="liste">
+<div class="filter">
   <div class="seg">
-    <a href="{{ url_for('index', f='alle', q=q, typ=typ) }}" class="{{ 'on' if f == 'alle' }}">Alle</a>
-    <a href="{{ url_for('index', f='offen', q=q, typ=typ) }}" class="{{ 'on' if f == 'offen' }}">Offen</a>
-    <a href="{{ url_for('index', f='gemacht', q=q, typ=typ) }}" class="{{ 'on' if f == 'gemacht' }}">Gemacht</a>
+    <a href="{{ index_url(f='alle') }}" class="{{ 'on' if f == 'alle' }}">Alle</a>
+    <a href="{{ index_url(f='offen') }}" class="{{ 'on' if f == 'offen' }}">Offen</a>
+    <a href="{{ index_url(f='gemacht') }}" class="{{ 'on' if f == 'gemacht' }}">Gemacht</a>
   </div>
-  <input type="hidden" name="f" value="{{ f }}">
-  <select name="typ" onchange="this.form.submit()">
-    <option value="" {{ 'selected' if not typ }}>Alle Typen</option>
-    <option value="foxtrail" {{ 'selected' if typ == 'foxtrail' }}>Foxtrail</option>
-    <option value="go" {{ 'selected' if typ == 'go' }}>Foxtrail GO</option>
-  </select>
+  {% if f != 'alle' %}<input type="hidden" name="f" value="{{ f }}">{% endif %}
+  {% if sort != 'ort' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+  {% if richtung != 'asc' %}<input type="hidden" name="dir" value="{{ richtung }}">{% endif %}
   <input name="q" value="{{ q }}" placeholder="Suche Ort, Name, Route, Bemerkung">
   <button type="submit">Suchen</button>
-  {% if q or typ %}<a class="btn-link" href="{{ url_for('index', f=f) }}">Zuruecksetzen</a>{% endif %}
-</form>
+  {% if q or sel.typ or sel.region or sel.dauer %}
+  <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[]) }}">Filter zuruecksetzen</a>
+  {% endif %}
+  <span class="muted small">{{ rows|length }} Trails</span>
+</div>
 
 <div class="tablewrap"><table class="trails">
   <thead><tr>
-    <th class="c">✓</th><th>Ort</th><th>Trail</th><th class="wide">Route</th><th>Typ</th>
-    <th class="r">★</th><th>Dauer</th><th class="r">CHF</th><th>Datum</th><th class="r">Pers.</th><th>Bemerkung</th>
+    <th class="c">✓</th>
+    <th>{{ sortlink('ort', 'Ort') }}</th>
+    <th>{{ sortlink('name', 'Trail') }}</th>
+    <th class="wide">Route</th>
+    <th>{{ sortlink('region', 'Region') }}{{ hfilter('region', opts.region) }}</th>
+    <th>{{ sortlink('typ', 'Typ') }}{{ hfilter('typ', opts.typ) }}</th>
+    <th class="r">{{ sortlink('bewertung', '★', 'desc') }}</th>
+    <th>{{ sortlink('dauer', 'Dauer') }}{{ hfilter('dauer', opts.dauer) }}</th>
+    <th class="r">{{ sortlink('preis', 'CHF') }}</th>
+    <th>{{ sortlink('datum', 'Datum', 'desc') }}</th>
+    <th class="r">Pers.</th>
+    <th>Bemerkung</th>
   </tr></thead>
   <tbody>
   {% for t in rows %}
+  {% if sort == 'region' and (loop.first or t.region != loop.previtem.region) %}
+  <tr class="grp"><td colspan="12">{{ t.region_label or 'Ohne Region' }}</td></tr>
+  {% endif %}
   <tr class="{{ 'done' if t.gemacht }} {{ 'gone' if (not t.im_angebot and t.quelle == 'foxtrail') }}">
     <td class="c"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}" class="check" title="Bearbeiten">{{ '✔' if t.gemacht else '○' }}</a></td>
     <td>{{ t.ort }}</td>
@@ -41,17 +57,46 @@
       {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet">nicht mehr im Angebot</span>{% endif %}
       {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch oeffnen">↗</a>{% endif %}</td>
     <td class="wide muted">{{ t.route }}</td>
-    <td>{{ t.typ_label }}</td>
+    <td class="nowrap muted">{{ t.region_label }}</td>
+    <td>{{ typ_badge(t) }}</td>
     <td class="r">{{ t.bewertung if t.bewertung else '–' }}</td>
-    <td>{{ t.dauer }}</td>
+    <td class="nowrap">{{ t.dauer|dauer }}</td>
     <td class="r">{{ t.preis|chf }}</td>
-    <td>{{ t.gemacht_datum|datum }}</td>
+    <td class="nowrap">{{ t.gemacht_datum|datum }}</td>
     <td class="r">{{ t.mitspieler or '' }}</td>
     <td class="muted">{{ t.bemerkung }}</td>
   </tr>
   {% else %}
-  <tr><td colspan="11" class="empty">Keine Trails gefunden.</td></tr>
+  <tr><td colspan="12" class="empty">Keine Trails gefunden.</td></tr>
   {% endfor %}
   </tbody>
 </table></div>
+</form>
+
+<script>
+// Filter-Menues: Klick daneben schliesst sie; hat sich die Auswahl geaendert, wird
+// direkt neu geladen (der "Anwenden"-Knopf bleibt als Weg ohne JavaScript).
+(function () {
+  var form = document.getElementById('liste');
+  document.addEventListener('click', function (e) {
+    form.querySelectorAll('details.hf[open]').forEach(function (d) {
+      if (!d.contains(e.target)) { d.removeAttribute('open'); }
+    });
+  });
+  form.querySelectorAll('details.hf').forEach(function (d) {
+    var start = null;
+    var state = function () {
+      return Array.prototype.map.call(d.querySelectorAll('input:checked'), function (i) { return i.value; }).join('|');
+    };
+    d.addEventListener('toggle', function () {
+      if (d.open) {
+        start = state();
+        // Menue am rechten Rand nach links aufklappen, damit es im Fenster bleibt
+        var m = d.querySelector('.hf-menu');
+        m.classList.toggle('right', m.getBoundingClientRect().right > window.innerWidth - 8);
+      } else if (start !== null && state() !== start) { form.submit(); }
+    });
+  });
+})();
+</script>
 {% endblock %}

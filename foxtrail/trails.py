@@ -8,17 +8,70 @@ import uuid
 from . import config
 from .db import ARCHIV_COND, now
 
-TYP_LABEL = {"foxtrail": "Foxtrail", "go": "Foxtrail GO"}
+# Typ wird aus dem Namen abgeleitet: foxtrail.ch zeigt MINI/MAXI nur als Badge im
+# Titelbild (kein HTML-Element), im Trail-Namen steht es aber immer ("Baccara Mini",
+# "Apollon Maxi"). GO erkennt der Scraper am Badge "Digitale Schnitzeljagd".
+TYPEN = ("foxtrail", "mini", "maxi", "go")
+TYP_LABEL = {"foxtrail": "Foxtrail", "mini": "Mini", "maxi": "Maxi", "go": "GO"}
+_TYP_ORDER = {t: i for i, t in enumerate(TYPEN)}
+_MAXI_RE = re.compile(r"\bmaxi\b", re.I)
+_MINI_RE = re.compile(r"\bmini\b", re.I)
+
+# Anzeigenamen der Regionen (Slug aus der Kategorie-Klasse auf foxtrail.ch)
+REGION_LABEL = {
+    "aargau": "Aargau", "basel-und-umgebung": "Basel und Umgebung",
+    "bern-und-umgebung": "Bern und Umgebung", "graubuenden": "Graubünden", "jura": "Jura",
+    "liechtenstein": "Liechtenstein", "luzern-und-umgebung": "Luzern und Umgebung",
+    "ostschweiz": "Ostschweiz", "tessin": "Tessin", "wallis": "Wallis",
+    "westschweiz": "Westschweiz", "zuerich-und-umgebung": "Zürich und Umgebung",
+}
+
+_DAUER_RE = re.compile(r"(\d+(?:[.,]\d+)?)(?:\s*[-–]\s*(\d+(?:[.,]\d+)?))?")
 
 
 class TrailError(Exception):
     pass
 
 
+def typ_aus_name(name, go=False):
+    """'Baccara Mini' -> 'mini', 'Apollon Maxi' -> 'maxi', GO-Badge -> 'go', sonst 'foxtrail'."""
+    if go:
+        return "go"
+    if _MAXI_RE.search(name or ""):
+        return "maxi"
+    if _MINI_RE.search(name or ""):
+        return "mini"
+    return "foxtrail"
+
+
+def region_label(slug):
+    if not slug:
+        return ""
+    return REGION_LABEL.get(slug) or slug.replace("-", " ").title()
+
+
+def parse_dauer(s):
+    """'1.5-2.5 Stunden' -> (1.5, 2.5); '2 Stunden' -> (2.0, 2.0); unbekannt -> (None, None)."""
+    m = _DAUER_RE.search(s or "")
+    if not m:
+        return (None, None)
+    von = float(m.group(1).replace(",", "."))
+    bis = float(m.group(2).replace(",", ".")) if m.group(2) else von
+    return (von, bis)
+
+
+def dauer_kurz(s):
+    """Anzeige: '1.5-2.5 Stunden' -> '1.5–2.5 h'."""
+    s = re.sub(r"\s*Stunden?\b", " h", (s or "").strip())
+    return re.sub(r"(\d)\s*-\s*(\d)", r"\1–\2", s)
+
+
 def _row(r):
     d = dict(r)
     d["archiviert"] = bool(d["quelle"] == "foxtrail" and not d["im_angebot"] and not d["gemacht"])
     d["typ_label"] = TYP_LABEL.get(d["typ"], d["typ"])
+    d["region_label"] = region_label(d["region"])
+    d["dauer_von"], d["dauer_bis"] = parse_dauer(d["dauer"])
     return d
 
 
@@ -27,22 +80,67 @@ def get(conn, trail_id):
     return _row(r) if r else None
 
 
-def list_active(conn, filter_="alle", q="", typ=""):
-    """Hauptliste: alles ausser Archiv. filter_: alle | offen | gemacht."""
+# ---- Sortierung (in Python, die Liste hat ~100 Zeilen) ------------------------- #
+SORTS = {
+    "ort": lambda t: (t["ort"].lower(), t["name"].lower()),
+    "name": lambda t: (t["name"].lower(), t["ort"].lower()),
+    "region": lambda t: (t["region_label"].lower(), t["ort"].lower(), t["name"].lower()),
+    "typ": lambda t: (_TYP_ORDER.get(t["typ"], 99), t["ort"].lower(), t["name"].lower()),
+    "bewertung": lambda t: t["bewertung"],
+    "dauer": lambda t: (t["dauer_von"], t["dauer_bis"]) if t["dauer_von"] is not None else None,
+    "preis": lambda t: t["preis"],
+    "datum": lambda t: t["gemacht_datum"],
+}
+
+
+def sortiert(rows, sort="ort", richtung="asc"):
+    """Leere Werte (keine Bewertung, kein Datum, ...) stehen immer am Ende."""
+    key = SORTS.get(sort) or SORTS["ort"]
+    mit = [t for t in rows if key(t) is not None]
+    ohne = [t for t in rows if key(t) is None]
+    mit.sort(key=key, reverse=(richtung == "desc"))
+    return mit + ohne
+
+
+def _liste(v):
+    if v is None or v == "":
+        return []
+    return [v] if isinstance(v, str) else [x for x in v if x]
+
+
+def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), sort="ort", richtung="asc"):
+    """Hauptliste: alles ausser Archiv. filter_: alle | offen | gemacht.
+    typ/region/dauer: Mehrfachauswahl (Liste oder einzelner Wert), leer = alle."""
     sql = f"SELECT * FROM trails WHERE NOT {ARCHIV_COND}"
     args = []
     if filter_ == "offen":
         sql += " AND gemacht = 0"
     elif filter_ == "gemacht":
         sql += " AND gemacht = 1"
-    if typ in ("foxtrail", "go"):
-        sql += " AND typ = ?"
-        args.append(typ)
+    for spalte, werte in (("typ", [t for t in _liste(typ) if t in TYPEN]),
+                          ("region", _liste(region)), ("dauer", _liste(dauer))):
+        if werte:
+            sql += f" AND {spalte} IN ({','.join('?' * len(werte))})"
+            args += werte
     if q:
         sql += " AND (ort LIKE ? OR name LIKE ? OR route LIKE ? OR bemerkung LIKE ?)"
         args += [f"%{q}%"] * 4
     sql += " ORDER BY ort COLLATE NOCASE, name COLLATE NOCASE"
-    return [_row(r) for r in conn.execute(sql, args)]
+    return sortiert([_row(r) for r in conn.execute(sql, args)], sort, richtung)
+
+
+def filter_options(conn):
+    """Werte fuer die Filter in den Spaltenkoepfen: [(wert, anzeige), ...]."""
+    regs = [r[0] for r in conn.execute(
+        f"SELECT DISTINCT region FROM trails WHERE NOT {ARCHIV_COND} AND region != ''")]
+    regs.sort(key=lambda s: region_label(s).lower())
+    dauern = [r[0] for r in conn.execute(
+        f"SELECT DISTINCT dauer FROM trails WHERE NOT {ARCHIV_COND} AND dauer != ''")]
+    dauern.sort(key=lambda s: (parse_dauer(s)[0] is None, parse_dauer(s)[0] or 0,
+                               parse_dauer(s)[1] or 0, s))
+    return {"region": [(s, region_label(s)) for s in regs],
+            "typ": [(t, TYP_LABEL[t]) for t in TYPEN],
+            "dauer": [(s, dauer_kurz(s)) for s in dauern]}
 
 
 def list_archiv(conn):
@@ -100,13 +198,17 @@ def update_done(conn, trail_id, form, username):
     return get(conn, trail_id)
 
 
+def _typ_aus_form(form, name):
+    return form.get("typ") if form.get("typ") in TYPEN else typ_aus_name(name)
+
+
 def add_manual(conn, form, username):
     """Manuell erfasster Trail (z. B. frueher gemacht, heute nicht mehr im Angebot)."""
     ort = (form.get("ort") or "").strip()[:100]
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
         raise TrailError("Ort und Name sind Pflichtfelder.")
-    typ = form.get("typ") if form.get("typ") in ("foxtrail", "go") else "foxtrail"
+    typ = _typ_aus_form(form, name)
     gemacht, datum, mit, bemerkung = _clean_done(form, username)
     slug = "manual-" + uuid.uuid4().hex[:12]
     ts = now()
@@ -127,9 +229,8 @@ def update_manual(conn, trail_id, form):
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
         raise TrailError("Ort und Name sind Pflichtfelder.")
-    typ = form.get("typ") if form.get("typ") in ("foxtrail", "go") else "foxtrail"
     conn.execute("UPDATE trails SET ort=?, name=?, route=?, typ=?, dauer=? WHERE id=?",
-                 (ort, name, (form.get("route") or "").strip()[:300], typ,
+                 (ort, name, (form.get("route") or "").strip()[:300], _typ_aus_form(form, name),
                   (form.get("dauer") or "").strip()[:50], trail_id))
 
 
@@ -157,7 +258,9 @@ def seed_from_file(conn, path=None):
         conn.execute(
             "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, dauer, "
             "preis, url, im_angebot, first_seen, last_seen) VALUES (?,?,?,?,?,?,?,?,?,?,?,1,?,?)",
-            (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"),
+            (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""),
+             typ_aus_name(t["name"], go=(t.get("typ") == "go")) if t.get("typ") in (None, "foxtrail", "go")
+             else t["typ"],
              t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
              t.get("url", ""), ts, ts))
         n += 1

@@ -27,6 +27,65 @@ def slugs(rows):
     return sorted(r["slug"] for r in rows)
 
 
+def test_typ_ableitung_und_migration():
+    assert trails.typ_aus_name("Zeus Mini") == "mini"
+    assert trails.typ_aus_name("Apollon MAXI") == "maxi"
+    assert trails.typ_aus_name("Dominik") == "foxtrail"          # "mini" nur als ganzes Wort
+    assert trails.typ_aus_name("Appenzell – Foxtrail GO", go=True) == "go"
+    # Bestehende DB mit altem Typ-Schema: init_db klassifiziert Website-Trails nach,
+    # manuell erfasste bleiben so, wie der Benutzer sie angelegt hat.
+    c = conn_mem()
+    c.executemany("INSERT INTO trails (slug, quelle, ort, name, typ, first_seen, im_angebot) "
+                  "VALUES (?,?,?,?,?,'2026-01-01',?)",
+                  [("x/a", "foxtrail", "O", "Apollon Maxi", "foxtrail", 1),
+                   ("x/b", "foxtrail", "O", "Baccara Mini", "foxtrail", 1),
+                   ("x/c", "foxtrail", "O", "Dominik", "foxtrail", 1),
+                   ("manual-1", "manual", "O", "Alt Mini", "foxtrail", 0)])
+    db.init_db(c)
+    assert {r["slug"]: r["typ"] for r in c.execute("SELECT slug, typ FROM trails")} == {
+        "x/a": "maxi", "x/b": "mini", "x/c": "foxtrail", "manual-1": "foxtrail"}
+
+
+def test_dauer_parsen_und_kuerzen():
+    assert trails.parse_dauer("1.5-2.5 Stunden") == (1.5, 2.5)
+    assert trails.parse_dauer("2 Stunden") == (2.0, 2.0)
+    assert trails.parse_dauer("") == (None, None)
+    assert trails.dauer_kurz("1.5-2.5 Stunden") == "1.5–2.5 h"
+    assert trails.dauer_kurz("1 Stunde") == "1 h"
+    assert trails.dauer_kurz("") == ""
+
+
+def test_sortieren_und_filtern():
+    c = conn_mem()
+    sync.apply(c, [mk("aargau/aquae", ort="Baden", name="Aquae", preis=32.0, bewertung=4.3,
+                      dauer="2.5-3.5 Stunden"),
+                   mk("wallis/simplon", ort="Brig", name="Simplon", preis=36.0, bewertung=4.6,
+                      dauer="3-4 Stunden"),
+                   mk("ostschweiz/baccara-mini", ort="Rapperswil", name="Baccara Mini", typ="mini",
+                      preis=19.0, bewertung=None, dauer="1-2 Stunden")], "test")
+
+    def names(**kw):
+        return [t["name"] for t in trails.list_active(c, **kw)]
+
+    assert names() == ["Aquae", "Simplon", "Baccara Mini"]                  # Standard: Ort
+    assert names(sort="preis") == ["Baccara Mini", "Aquae", "Simplon"]
+    assert names(sort="preis", richtung="desc") == ["Simplon", "Aquae", "Baccara Mini"]
+    assert names(sort="bewertung", richtung="desc") == ["Simplon", "Aquae", "Baccara Mini"]  # ohne Wert am Ende
+    assert names(sort="bewertung") == ["Aquae", "Simplon", "Baccara Mini"]
+    assert names(sort="dauer") == ["Baccara Mini", "Aquae", "Simplon"]
+    assert names(sort="typ") == ["Aquae", "Simplon", "Baccara Mini"]
+    assert names(sort="region") == ["Aquae", "Baccara Mini", "Simplon"]      # Aargau, Ostschweiz, Wallis
+    assert names(typ=["mini"]) == ["Baccara Mini"]
+    assert names(typ="mini") == ["Baccara Mini"]
+    assert names(region=["aargau", "wallis"]) == ["Aquae", "Simplon"]
+    assert names(dauer=["1-2 Stunden"]) == ["Baccara Mini"]
+    assert names(typ=["unsinn"]) == ["Aquae", "Simplon", "Baccara Mini"]     # unbekannt = ignoriert
+    o = trails.filter_options(c)
+    assert o["region"] == [("aargau", "Aargau"), ("ostschweiz", "Ostschweiz"), ("wallis", "Wallis")]
+    assert [d for d, _ in o["dauer"]] == ["1-2 Stunden", "2.5-3.5 Stunden", "3-4 Stunden"]
+    assert o["dauer"][0][1] == "1–2 h"
+
+
 def test_neu_und_update():
     c = conn_mem()
     r = sync.apply(c, [mk("aargau/aquae"), mk("wallis/simplon")], "test")

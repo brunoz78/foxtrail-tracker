@@ -12,8 +12,8 @@
       <label>Route <input name="route" value="{{ form.route or '' }}" maxlength="300"></label>
       <div class="row">
         <label>Typ <select name="typ">
-          <option value="foxtrail" {{ 'selected' if form.typ != 'go' }}>Foxtrail</option>
-          <option value="go" {{ 'selected' if form.typ == 'go' }}>Foxtrail GO</option></select></label>
+          {% for v, label in typen.items() %}<option value="{{ v }}" {{ 'selected' if (form.typ or 'foxtrail') == v }}>{{ label }}</option>{% endfor %}
+        </select></label>
         <label>Dauer <input name="dauer" value="{{ form.dauer or '' }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
       </div>
     </fieldset>

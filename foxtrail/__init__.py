@@ -92,6 +92,11 @@ def create_app(test_config=None):
             return ""
         return f"{v:.2f}".rstrip("0").rstrip(".") if float(v) != int(v) else f"{int(v)}"
 
+    @app.template_filter("dauer")
+    def _dauer(v):
+        """'1.5-2.5 Stunden' -> '1.5–2.5 h'"""
+        return trails.dauer_kurz(v)
+
     @app.template_filter("datum")
     def _datum(v):
         """2025-06-01 -> 01.06.2025"""
@@ -101,7 +106,8 @@ def create_app(test_config=None):
 
     @app.context_processor
     def _inject():
-        return {"me": current_user(), "stats": trails.stats(get_conn()) if current_user() else None}
+        return {"me": current_user(), "stats": trails.stats(get_conn()) if current_user() else None,
+                "typen": trails.TYP_LABEL}
 
     @app.errorhandler(403)
     def _forbidden(_):
@@ -146,9 +152,28 @@ def create_app(test_config=None):
         if f not in ("alle", "offen", "gemacht"):
             f = "alle"
         q = (request.args.get("q") or "").strip()[:80]
-        typ = request.args.get("typ", "")
-        rows = trails.list_active(get_conn(), f, q, typ)
-        return render_template("index.html", rows=rows, f=f, q=q, typ=typ)
+        # Mehrfach-Filter aus den Spaltenkoepfen (?typ=mini&typ=go ...)
+        sel = {"typ": [t for t in request.args.getlist("typ") if t in trails.TYPEN],
+               "region": [r[:60] for r in request.args.getlist("region") if r][:30],
+               "dauer": [d[:50] for d in request.args.getlist("dauer") if d][:30]}
+        sort = request.args.get("sort", "ort")
+        if sort not in trails.SORTS:
+            sort = "ort"
+        richtung = "desc" if request.args.get("dir") == "desc" else "asc"
+        conn = get_conn()
+        rows = trails.list_active(conn, f, q, sort=sort, richtung=richtung, **sel)
+
+        def index_url(**over):
+            """URL der Liste mit dem aktuellen Zustand, einzelne Werte ueberschreibbar.
+            Defaults (alle, ort aufsteigend) und leere Werte tauchen nicht in der URL auf."""
+            params = {"f": f if f != "alle" else None, "q": q or None,
+                      "sort": sort if sort != "ort" else None,
+                      "dir": richtung if richtung != "asc" else None, **sel}
+            params.update(over)
+            return url_for("index", **{k: v for k, v in params.items() if v not in (None, "", [])})
+
+        return render_template("index.html", rows=rows, f=f, q=q, sel=sel, sort=sort,
+                               richtung=richtung, opts=trails.filter_options(conn), index_url=index_url)
 
     @app.route("/archiv")
     @login_required

@@ -14,18 +14,23 @@ def test_parse_fixture():
     items, has_next = scraper.parse_page(html)
     assert has_next
     assert [t["slug"] for t in items] == ["wallis/allalin-maxi", "westschweiz/alti",
-                                          "ostschweiz/appenzell-foxtrail-go"]
+                                          "ostschweiz/appenzell-foxtrail-go",
+                                          "zuerich-und-umgebung/baccara-mini"]
     a = items[0]
-    assert a["ort"] == "Saas-Fee" and a["name"] == "Allalin Maxi" and a["typ"] == "foxtrail"
+    assert a["ort"] == "Saas-Fee" and a["name"] == "Allalin Maxi" and a["typ"] == "maxi"
     assert a["route"] == "Saas-Grund - Saas-Fee - Felskinn"
     assert a["bewertung"] == 4.6 and a["dauer"] == "3.5-4.5 Stunden" and a["preis"] == 36.0
     assert a["region"] == "wallis"
     assert a["url"] == "https://foxtrail.ch/produkte/trails/wallis/allalin-maxi/"
     b = items[1]
     assert b["bewertung"] is None and b["preis"] == 32.0 and b["ort"] == "Lausanne"
+    assert b["typ"] == "foxtrail"
     g = items[2]
     assert g["typ"] == "go" and g["ort"] == "Appenzell" and g["name"] == "Appenzell – Foxtrail GO" and g["route"] == ""
     assert g["preis"] == 19.0 and g["region"] == "ostschweiz"
+    m = items[3]
+    assert m["typ"] == "mini" and m["ort"] == "Rapperswil" and m["dauer"] == "1-2 Stunden"
+    assert m["preis"] == 36.0 and m["region"] == "zuerich-und-umgebung"
 
 
 def test_parse_last_page():

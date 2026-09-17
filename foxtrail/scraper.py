@@ -15,7 +15,9 @@ Die Seite ist ein WooCommerce-Shop (Theme "Shoptimizer"). Je Trail ein
 Paginierung: a.next.page-numbers existiert, solange eine weitere Seite folgt.
 
 fetch_all() liefert eine Liste von dicts mit den Feldern
-  slug, ort, name, route, typ ('foxtrail'|'go'), region, bewertung, dauer, preis, url
+  slug, ort, name, route, typ ('foxtrail'|'mini'|'maxi'|'go'), region, bewertung, dauer, preis, url
+Typ: GO am Badge, Mini/Maxi am Namen (trails.typ_aus_name) - das MINI/MAXI-Badge auf
+der Website ist nur ins Titelbild gezeichnet, im HTML gibt es kein Element dafuer.
 parse_page() ist rein (kein Netz) und damit offline testbar.
 """
 
@@ -26,6 +28,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from . import config
+from .trails import typ_aus_name
 
 _SLUG_RE = re.compile(r"/produkte/trails/([^/]+/[^/]+)/?$")
 _RATING_RE = re.compile(r"([\d.]+)")
@@ -57,14 +60,15 @@ def parse_page(html):
         badge = [_text(a) for a in li.select(".product-tag-badge a")]
         title = _text(li.select_one(".woocommerce-loop-product__title"))
         route = _text(li.select_one("h3.woocommerce-loop-product__custom_title"))
-        if badge and badge[0] == GO_BADGE:
-            typ, ort, name = "go", title.split(" – ")[0].strip(), title
+        is_go = bool(badge and badge[0] == GO_BADGE)
+        if is_go:
+            ort, name = title.split(" – ")[0].strip(), title
             if route == title:          # bei GO-Trails steht dort nur der Titel nochmals
                 route = ""
         else:
-            typ = "foxtrail"
             ort = badge[0] if badge else ""
             name = title or (badge[1] if len(badge) > 1 else slug)
+        typ = typ_aus_name(name, go=is_go)
         rating = None
         sr = li.select_one(".star-rating")
         if sr:

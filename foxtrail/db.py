@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS trails (
     ort           TEXT NOT NULL,
     name          TEXT NOT NULL,
     route         TEXT NOT NULL DEFAULT '',
-    typ           TEXT NOT NULL DEFAULT 'foxtrail',   -- 'foxtrail' | 'go'
+    typ           TEXT NOT NULL DEFAULT 'foxtrail',   -- 'foxtrail' | 'mini' | 'maxi' | 'go'
     region        TEXT NOT NULL DEFAULT '',
     bewertung     REAL,
     dauer         TEXT NOT NULL DEFAULT '',
@@ -89,7 +89,19 @@ def connect(path=None):
 
 def init_db(conn):
     conn.executescript(SCHEMA)
+    _migrate(conn)
     conn.commit()
+
+
+def _migrate(conn):
+    """Kleine, idempotente Migrationen fuer bestehende Datenbanken."""
+    # 2026-09: Mini/Maxi als eigener Typ (vorher alles 'foxtrail'). Nur Website-Trails -
+    # bei manuell erfassten entscheidet der Benutzer selbst. LIKE ist in SQLite fuer
+    # ASCII case-insensitive, deckt also "Maxi"/"MAXI" ab (vgl. trails.typ_aus_name).
+    conn.execute("UPDATE trails SET typ = 'maxi' WHERE quelle = 'foxtrail' AND typ = 'foxtrail' "
+                 "AND name LIKE '% Maxi'")
+    conn.execute("UPDATE trails SET typ = 'mini' WHERE quelle = 'foxtrail' AND typ = 'foxtrail' "
+                 "AND name LIKE '% Mini'")
 
 
 @contextmanager

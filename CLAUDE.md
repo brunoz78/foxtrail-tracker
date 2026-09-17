@@ -24,6 +24,16 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Eine gemeinsame Liste** für alle Benutzer, **ein Eintrag pro Trail** (kein
   Mehrfach-Tracking). `erfasst_von` hält fest, wer zuletzt gespeichert hat.
 - **Mitspieler** = einfaches Zahlenfeld, keine Namen.
+- **Typ** ist `foxtrail | mini | maxi | go` und wird aus dem Namen abgeleitet
+  (`trails.typ_aus_name`: Wort „Mini“/„Maxi“ im Namen, GO vom Badge „Digitale
+  Schnitzeljagd“). foxtrail.ch zeigt MINI/MAXI nur als Badge im Titelbild, im HTML gibt
+  es kein Element dafür. `db._migrate` klassifiziert Altbestand nach (nur `quelle='foxtrail'`).
+- **Sortieren und Filtern** serverseitig über GET-Parameter (`sort`, `dir`, mehrfach
+  `typ`, `region`, `dauer`), Sortierung in Python (`trails.SORTS`, leere Werte immer am
+  Ende). `dauer` bleibt Text in der DB und wird zur Laufzeit geparst (`trails.parse_dauer`),
+  keine zusätzlichen Spalten. Anzeige „1.5–2.5 h“ über den Jinja-Filter `dauer`.
+  Die Haken-Filter sitzen in den Spaltenköpfen (`_macros.html`, `<details>`, geht ohne JS;
+  ein paar Zeilen Vanilla-JS wenden die Auswahl beim Schliessen des Menüs an).
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
@@ -54,7 +64,7 @@ foxtrail/scraper.py    parse_page(html) rein + offline testbar, fetch_all() mit 
 foxtrail/sync.py       apply(conn, scraped, ausloeser) – die Regeln oben
 foxtrail/trails.py     Lesen/Schreiben, manuelle Trails, seed_from_file (insert-only)
 foxtrail/templates/    base, login, index, archiv, trail_form, trail_new, profil,
-                       benutzer, sync, fehler
+                       benutzer, sync, fehler, _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
 data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Erstbefüllung
 scripts/manage.py      CLI: init-db, seed, sync, create-user, set-password, list-users,
                        stats, export-json, import-excel
@@ -108,5 +118,5 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
 ## Offene Ideen (nicht begonnen)
 
 - Excel-Export der Liste (Gegenstück zu `import-excel`)
-- Karte oder Gruppierung nach Region (`trails.region` ist bereits gefüllt)
+- Karte nach Region (Filter, Sortierung und Gruppen-Zeilen nach Region gibt es seit 2026-09)
 - Statistik-Seite (Trails pro Jahr, Mitspieler gesamt)
