@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="head">
+  <h1>Alle Trails</h1>
+  <div class="kpis">
+    <span><b>{{ stats.gemacht }}</b> gemacht</span>
+    <span><b>{{ stats.offen }}</b> offen</span>
+    <span><b>{{ stats.im_angebot }}</b> aktuell auf foxtrail.ch</span>
+  </div>
+</div>
+
+<form class="filter" method="get">
+  <div class="seg">
+    <a href="{{ url_for('index', f='alle', q=q, typ=typ) }}" class="{{ 'on' if f == 'alle' }}">Alle</a>
+    <a href="{{ url_for('index', f='offen', q=q, typ=typ) }}" class="{{ 'on' if f == 'offen' }}">Offen</a>
+    <a href="{{ url_for('index', f='gemacht', q=q, typ=typ) }}" class="{{ 'on' if f == 'gemacht' }}">Gemacht</a>
+  </div>
+  <input type="hidden" name="f" value="{{ f }}">
+  <select name="typ" onchange="this.form.submit()">
+    <option value="" {{ 'selected' if not typ }}>Alle Typen</option>
+    <option value="foxtrail" {{ 'selected' if typ == 'foxtrail' }}>Foxtrail</option>
+    <option value="go" {{ 'selected' if typ == 'go' }}>Foxtrail GO</option>
+  </select>
+  <input name="q" value="{{ q }}" placeholder="Suche Ort, Name, Route, Bemerkung">
+  <button type="submit">Suchen</button>
+  {% if q or typ %}<a class="btn-link" href="{{ url_for('index', f=f) }}">Zuruecksetzen</a>{% endif %}
+</form>
+
+<div class="tablewrap"><table class="trails">
+  <thead><tr>
+    <th class="c">✓</th><th>Ort</th><th>Trail</th><th class="wide">Route</th><th>Typ</th>
+    <th class="r">★</th><th>Dauer</th><th class="r">CHF</th><th>Datum</th><th class="r">Pers.</th><th>Bemerkung</th>
+  </tr></thead>
+  <tbody>
+  {% for t in rows %}
+  <tr class="{{ 'done' if t.gemacht }} {{ 'gone' if (not t.im_angebot and t.quelle == 'foxtrail') }}">
+    <td class="c"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}" class="check" title="Bearbeiten">{{ '✔' if t.gemacht else '○' }}</a></td>
+    <td>{{ t.ort }}</td>
+    <td><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}"><b>{{ t.name }}</b></a>
+      {% if t.quelle == 'manual' %}<span class="tag">manuell</span>
+      {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet">nicht mehr im Angebot</span>{% endif %}
+      {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch oeffnen">↗</a>{% endif %}</td>
+    <td class="wide muted">{{ t.route }}</td>
+    <td>{{ t.typ_label }}</td>
+    <td class="r">{{ t.bewertung if t.bewertung else '–' }}</td>
+    <td>{{ t.dauer }}</td>
+    <td class="r">{{ t.preis|chf }}</td>
+    <td>{{ t.gemacht_datum|datum }}</td>
+    <td class="r">{{ t.mitspieler or '' }}</td>
+    <td class="muted">{{ t.bemerkung }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="11" class="empty">Keine Trails gefunden.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

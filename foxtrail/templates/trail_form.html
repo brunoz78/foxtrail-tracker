@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ t.name }} – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>{{ t.ort }} · {{ t.name }}</h1>
+  <p class="muted">{{ t.route }}<br>
+    {{ t.typ_label }}{% if t.dauer %} · {{ t.dauer }}{% endif %}{% if t.preis %} · CHF {{ t.preis|chf }}{% endif %}{% if t.bewertung %} · ★ {{ t.bewertung }}{% endif %}
+    {% if t.url %}· <a href="{{ t.url }}" target="_blank" rel="noopener">foxtrail.ch ↗</a>{% endif %}<br>
+    {% if t.quelle == 'manual' %}<span class="tag">manuell erfasst</span>
+    {% elif not t.im_angebot %}<span class="tag warn">aktuell nicht mehr im Angebot</span> (zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }})
+    {% endif %}
+  </p>
+
+  <form method="post">
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if t.quelle == 'manual' %}
+    <fieldset><legend>Trail-Daten</legend>
+      <label>Ort <input name="ort" value="{{ t.ort }}" required maxlength="100"></label>
+      <label>Name <input name="name" value="{{ t.name }}" required maxlength="100"></label>
+      <label>Route <input name="route" value="{{ t.route }}" maxlength="300"></label>
+      <div class="row">
+        <label>Typ <select name="typ">
+          <option value="foxtrail" {{ 'selected' if t.typ == 'foxtrail' }}>Foxtrail</option>
+          <option value="go" {{ 'selected' if t.typ == 'go' }}>Foxtrail GO</option></select></label>
+        <label>Dauer <input name="dauer" value="{{ t.dauer }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
+      </div>
+    </fieldset>
+    {% endif %}
+    <fieldset><legend>Unsere Eintraege</legend>
+      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if t.gemacht }}> Trail gemacht</label>
+      <div class="row">
+        <label>Datum <input type="date" name="gemacht_datum" value="{{ t.gemacht_datum or '' }}"></label>
+        <label>Anzahl Mitspieler <input type="number" name="mitspieler" min="1" max="999" value="{{ t.mitspieler or '' }}"></label>
+      </div>
+      <label>Bemerkung <textarea name="bemerkung" rows="3" maxlength="2000">{{ t.bemerkung }}</textarea></label>
+      {% if t.erfasst_von %}<p class="muted small">Zuletzt erfasst von {{ t.erfasst_von }} am {{ t.erfasst_am }}</p>{% endif %}
+    </fieldset>
+    <div class="actions">
+      <button type="submit">Speichern</button>
+      <a class="btn-link" href="{{ next }}">Abbrechen</a>
+    </div>
+  </form>
+  {% if t.quelle == 'manual' %}
+  <form method="post" action="{{ url_for('trail_delete', tid=t.id) }}" class="danger"
+        onsubmit="return confirm('Diesen manuell erfassten Trail wirklich loeschen?')">
+    <button type="submit" class="secondary">Manuellen Trail loeschen</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

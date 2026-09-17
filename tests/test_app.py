@@ -1,0 +1,138 @@
+# -*- coding: utf-8 -*-
+"""End-to-End ueber den Flask-Testclient (temporaere SQLite-Datei)."""
+
+import os
+import sys
+
+import pytest
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import foxtrail  # noqa: E402
+from foxtrail import db, sync, trails, users  # noqa: E402
+from tests.test_sync import mk  # noqa: E402
+
+
+@pytest.fixture
+def app(tmp_path):
+    foxtrail._ATTEMPTS.clear()
+    path = str(tmp_path / "t.db")
+    app = foxtrail.create_app({"DB_PATH": path, "TESTING": True, "SECRET_KEY": "test"})
+    with db.session(path) as conn:
+        users.add(conn, "admin", "geheim123", is_admin=True)
+        users.add(conn, "gast", "geheim123")
+        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae"),
+                          mk("wallis/simplon", ort="Brig", name="Simplon")], "test")
+    return app
+
+
+def login(c, name="admin", pw="geheim123"):
+    return c.post("/login", data={"username": name, "password": pw}, follow_redirects=True)
+
+
+def test_login_erforderlich(app):
+    c = app.test_client()
+    r = c.get("/")
+    assert r.status_code == 302 and "/login" in r.headers["Location"]
+    r = login(c, pw="falsch")
+    assert "falsch" in r.get_data(as_text=True)
+    r = login(c)
+    assert r.status_code == 200 and "Aquae" in r.get_data(as_text=True)
+
+
+def test_sperre_nach_fehlversuchen(app):
+    c = app.test_client()
+    for _ in range(5):
+        login(c, pw="x")
+    r = login(c)                                   # richtiges Passwort, aber gesperrt
+    assert "Zu viele Fehlversuche" in r.get_data(as_text=True)
+    assert c.get("/").status_code == 302
+
+
+def test_bearbeiten_und_archiv(app):
+    c = app.test_client()
+    login(c, "gast")
+    r = c.post("/trail/1", data={"gemacht": "1", "gemacht_datum": "2025-08-10", "mitspieler": "5",
+                                 "bemerkung": "Regen", "next": "/"}, follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert "Gespeichert" in html and "10.08.2025" in html and "Regen" in html
+    # Simplon verschwindet von der Website -> Archiv; Aquae verschwindet -> bleibt (gemacht)
+    with db.session(app.config["DB_PATH"]) as conn:
+        sync.apply(conn, [mk("a/neu")], "test")
+    html = c.get("/").get_data(as_text=True)
+    assert "Aquae" in html and "nicht mehr im Angebot" in html and "Simplon" not in html
+    html = c.get("/archiv").get_data(as_text=True)
+    assert "Simplon" in html
+    # aus dem Archiv als gemacht markieren -> zurueck in die Liste
+    c.post("/trail/2", data={"gemacht": "1", "next": "/archiv"})
+    assert "Simplon" in c.get("/?f=gemacht").get_data(as_text=True)
+    assert "Simplon" not in c.get("/archiv").get_data(as_text=True)
+
+
+def test_validierung(app):
+    c = app.test_client()
+    login(c)
+    r = c.post("/trail/1", data={"gemacht": "1", "mitspieler": "abc", "next": "/"})
+    assert "ganze Zahl" in r.get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 1)["gemacht"] == 0
+
+
+def test_manueller_trail(app):
+    c = app.test_client()
+    login(c, "gast")
+    r = c.post("/trail/neu", data={"ort": "Altdorf", "name": "Tell", "gemacht": "1",
+                                   "gemacht_datum": "2018-07-01", "mitspieler": "2"}, follow_redirects=True)
+    assert "manuell erfasst" in r.get_data(as_text=True)
+    html = c.get("/").get_data(as_text=True)
+    assert "Tell" in html and "manuell" in html
+    r = c.post("/trail/3/loeschen", follow_redirects=True)
+    assert "geloescht" in r.get_data(as_text=True)
+    assert c.post("/trail/1/loeschen", follow_redirects=True).status_code == 200
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 1) is not None       # foxtrail-Trail nicht loeschbar
+
+
+def test_admin_rechte(app):
+    c = app.test_client()
+    login(c, "gast")
+    assert c.get("/admin/benutzer").status_code == 403
+    assert c.get("/admin/sync").status_code == 403
+    login(c)
+    assert c.get("/admin/benutzer").status_code == 200
+    r = c.post("/admin/benutzer/anlegen", data={"username": "neu", "password": "geheim123"},
+               follow_redirects=True)
+    assert "angelegt" in r.get_data(as_text=True)
+    r = c.post("/admin/benutzer/admin", data={"action": "admin", "is_admin": ""}, follow_redirects=True)
+    assert "mindestens ein aktiver Administrator" in r.get_data(as_text=True)
+    r = c.post("/admin/benutzer/neu", data={"action": "loeschen"}, follow_redirects=True)
+    assert "geloescht" in r.get_data(as_text=True)
+
+
+def test_passwort_aendern(app):
+    c = app.test_client()
+    login(c, "gast")
+    r = c.post("/profil", data={"old": "geheim123", "new": "neuesPw123", "new2": "neuesPw123"},
+               follow_redirects=True)
+    assert "geaendert" in r.get_data(as_text=True)
+    c.get("/logout")
+    assert "Aquae" in login(c, "gast", "neuesPw123").get_data(as_text=True)
+
+
+def test_sync_seite(app, monkeypatch):
+    c = app.test_client()
+    login(c)
+    from foxtrail import scraper
+    monkeypatch.setattr(scraper, "fetch_all", lambda: [mk("aargau/aquae", ort="Baden", name="Aquae"),
+                                                       mk("wallis/simplon", ort="Brig", name="Simplon"),
+                                                       mk("jura/neu", ort="Delsberg", name="Neu")])
+    r = c.post("/admin/sync", follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert "Abgleich ok" in html and "1 neu" in html and "web:admin" in html
+    monkeypatch.setattr(scraper, "fetch_all", lambda: (_ for _ in ()).throw(scraper.ScrapeError("kaputt")))
+    r = c.post("/admin/sync", follow_redirects=True)
+    assert "fehlgeschlagen: kaputt" in r.get_data(as_text=True)
+
+
+def test_healthz(app):
+    assert app.test_client().get("/healthz").data == b"ok"

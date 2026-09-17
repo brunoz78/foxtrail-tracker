@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Archiv – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="head"><h1>Archiv</h1></div>
+<p class="muted">Trails, die auf foxtrail.ch nicht mehr angeboten werden und die ihr noch nicht gemacht habt.
+Wird ein Trail hier als „gemacht“ markiert, wandert er automatisch zurueck in die Hauptliste.
+Taucht er auf foxtrail.ch wieder auf, wird er beim naechsten Abgleich reaktiviert.</p>
+<div class="tablewrap"><table class="trails">
+  <thead><tr><th>Ort</th><th>Trail</th><th class="wide">Route</th><th>Typ</th><th>Dauer</th><th class="r">CHF</th><th>Zuletzt gesehen</th><th></th></tr></thead>
+  <tbody>
+  {% for t in rows %}
+  <tr class="gone">
+    <td>{{ t.ort }}</td>
+    <td><b>{{ t.name }}</b> {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener">↗</a>{% endif %}</td>
+    <td class="wide muted">{{ t.route }}</td>
+    <td>{{ t.typ_label }}</td>
+    <td>{{ t.dauer }}</td>
+    <td class="r">{{ t.preis|chf }}</td>
+    <td>{{ (t.last_seen or '')[:10]|datum }}</td>
+    <td><a class="btn small" href="{{ url_for('trail_edit', tid=t.id, next=url_for('archiv')) }}">Doch gemacht?</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="8" class="empty">Das Archiv ist leer.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

@@ -1,0 +1,17 @@
+[Unit]
+Description=Foxtrail-Tracker: Abgleich mit foxtrail.ch
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=foxtrail
+Group=foxtrail
+WorkingDirectory=/opt/foxtrail-tracker
+EnvironmentFile=/etc/foxtrail-tracker.env
+ExecStart=/opt/foxtrail-tracker/.venv/bin/python scripts/manage.py sync --ausloeser timer
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/foxtrail-tracker

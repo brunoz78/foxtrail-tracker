@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Profil – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Passwort aendern</h1>
+  <p class="muted">Angemeldet als <b>{{ me.username }}</b>{% if me.is_admin %} (Administrator){% endif %}.</p>
+  <form method="post">
+    <label>Altes Passwort <input type="password" name="old" autocomplete="current-password" required></label>
+    <label>Neues Passwort <input type="password" name="new" autocomplete="new-password" required minlength="8"></label>
+    <label>Neues Passwort wiederholen <input type="password" name="new2" autocomplete="new-password" required minlength="8"></label>
+    <div class="actions"><button type="submit">Speichern</button></div>
+  </form>
+</div>
+{% endblock %}

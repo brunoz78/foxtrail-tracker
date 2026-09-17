@@ -1,0 +1,24 @@
+[Unit]
+Description=Foxtrail-Tracker (gunicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=foxtrail
+Group=foxtrail
+WorkingDirectory=/opt/foxtrail-tracker
+EnvironmentFile=/etc/foxtrail-tracker.env
+ExecStart=/opt/foxtrail-tracker/.venv/bin/gunicorn --bind ${BIND} --workers 2 --timeout 120 wsgi:app
+Restart=on-failure
+RestartSec=5
+
+# Haertung
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/foxtrail-tracker
+
+[Install]
+WantedBy=multi-user.target

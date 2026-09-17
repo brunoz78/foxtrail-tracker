@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Foxtrail-Tracker{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%232e5b3e'/%3E%3C/svg%3E">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="{{ url_for('index') }}">🦊 Foxtrail-Tracker</a>
+  {% if me %}
+  <nav>
+    <a href="{{ url_for('index') }}" class="{{ 'on' if request.endpoint == 'index' }}">Trails
+      {% if stats %}<span class="pill">{{ stats.gemacht }}/{{ stats.total }}</span>{% endif %}</a>
+    <a href="{{ url_for('archiv') }}" class="{{ 'on' if request.endpoint == 'archiv' }}">Archiv
+      {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</a>
+    <a href="{{ url_for('trail_new') }}" class="{{ 'on' if request.endpoint == 'trail_new' }}">+ Manuell</a>
+    {% if me.is_admin %}
+    <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if request.endpoint == 'sync_admin' }}">Abgleich</a>
+    <a href="{{ url_for('user_admin') }}" class="{{ 'on' if request.endpoint == 'user_admin' }}">Benutzer</a>
+    {% endif %}
+    <a href="{{ url_for('profil') }}" class="{{ 'on' if request.endpoint == 'profil' }}">{{ me.username }}</a>
+    <a href="{{ url_for('logout') }}">Abmelden</a>
+  </nav>
+  {% endif %}
+</header>
+<main>
+  {% with msgs = get_flashed_messages() %}
+    {% for m in msgs %}<div class="flash">{{ m }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer>
+  Trail-Daten stammen von <a href="https://foxtrail.ch" rel="noopener">foxtrail.ch</a>.
+  Dieses Projekt ist privat und nicht mit der Foxtrail AG verbunden.
+</footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Anmelden – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Anmelden</h1>
+  {% if kein_benutzer %}
+  <p>Es ist noch kein Benutzer vorhanden. Lege den ersten Administrator auf der Konsole an:</p>
+  <pre>python3 scripts/manage.py create-user admin --admin</pre>
+  {% else %}
+  <form method="post">
+    <label>Benutzername <input name="username" autocomplete="username" autofocus required></label>
+    <label>Passwort <input name="password" type="password" autocomplete="current-password" required></label>
+    <button type="submit">Anmelden</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Foxtrail-Tracker: woechentlicher Abgleich mit foxtrail.ch
+
+[Timer]
+# Jeden Montag 04:30, bei verpasstem Termin (Container war aus) nachholen
+OnCalendar=Mon *-*-* 04:30:00
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Trail manuell erfassen – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Trail manuell erfassen</h1>
+  <p class="muted">Fuer Trails, die es auf foxtrail.ch nicht mehr gibt, die ihr aber gemacht habt.
+  Manuell erfasste Trails werden vom Abgleich nie veraendert.</p>
+  <form method="post">
+    <fieldset><legend>Trail-Daten</legend>
+      <label>Ort <input name="ort" value="{{ form.ort or '' }}" required maxlength="100" autofocus></label>
+      <label>Name <input name="name" value="{{ form.name or '' }}" required maxlength="100"></label>
+      <label>Route <input name="route" value="{{ form.route or '' }}" maxlength="300"></label>
+      <div class="row">
+        <label>Typ <select name="typ">
+          <option value="foxtrail" {{ 'selected' if form.typ != 'go' }}>Foxtrail</option>
+          <option value="go" {{ 'selected' if form.typ == 'go' }}>Foxtrail GO</option></select></label>
+        <label>Dauer <input name="dauer" value="{{ form.dauer or '' }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
+      </div>
+    </fieldset>
+    <fieldset><legend>Unsere Eintraege</legend>
+      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if form.gemacht or not form }}> Trail gemacht</label>
+      <div class="row">
+        <label>Datum <input type="date" name="gemacht_datum" value="{{ form.gemacht_datum or '' }}"></label>
+        <label>Anzahl Mitspieler <input type="number" name="mitspieler" min="1" max="999" value="{{ form.mitspieler or '' }}"></label>
+      </div>
+      <label>Bemerkung <textarea name="bemerkung" rows="3" maxlength="2000">{{ form.bemerkung or '' }}</textarea></label>
+    </fieldset>
+    <div class="actions">
+      <button type="submit">Anlegen</button>
+      <a class="btn-link" href="{{ url_for('index') }}">Abbrechen</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

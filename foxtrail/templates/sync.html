@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Abgleich – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="head"><h1>Abgleich mit foxtrail.ch</h1></div>
+<div class="card">
+  <p>Quelle: <a href="{{ list_url }}" target="_blank" rel="noopener">{{ list_url }}</a></p>
+  <p class="muted">Regeln: neue Trails werden angelegt, bestehende aktualisiert (eure Eintraege bleiben).
+  Nicht mehr gelistete Trails werden nie geloescht: bereits gemachte bleiben in der Liste
+  („nicht mehr im Angebot“), noch offene wandern ins Archiv. Der automatische Abgleich laeuft
+  ueber den systemd-Timer <code>foxtrail-sync.timer</code>.</p>
+  <form method="post" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Laeuft…'">
+    <button type="submit">Jetzt abgleichen</button>
+  </form>
+</div>
+
+<h2>Letzte Laeufe</h2>
+<div class="tablewrap"><table class="trails">
+  <thead><tr><th>Zeit</th><th>Ausloeser</th><th>Status</th><th class="r">Gefunden</th><th class="r">Neu</th>
+    <th class="r">Aktualisiert</th><th class="r">Reaktiviert</th><th class="r">Archiv</th><th class="r">Gemacht, weg</th><th>Meldung</th></tr></thead>
+  <tbody>
+  {% for r in runs %}
+  <tr class="{{ '' if r.ok else 'gone' }}">
+    <td>{{ r.ts }}</td><td>{{ r.ausloeser }}</td><td>{{ 'ok' if r.ok else 'Fehler' }}</td>
+    <td class="r">{{ r.gefunden }}</td><td class="r">{{ r.neu }}</td><td class="r">{{ r.aktualisiert }}</td>
+    <td class="r">{{ r.reaktiviert }}</td><td class="r">{{ r.archiviert }}</td><td class="r">{{ r.nicht_mehr_im_angebot }}</td>
+    <td class="muted">{{ r.meldung }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="10" class="empty">Noch kein Abgleich gelaufen.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}
