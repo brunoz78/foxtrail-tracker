@@ -12,7 +12,8 @@ from foxtrail import db, sync, trails  # noqa: E402
 def mk(slug, **kw):
     d = {"slug": slug, "ort": "Ort", "name": slug.split("/")[-1].title(), "route": "A - B",
          "typ": "foxtrail", "region": slug.split("/")[0], "bewertung": 4.5,
-         "dauer": "2-3 Stunden", "preis": 32.0, "url": f"https://foxtrail.ch/produkte/trails/{slug}/"}
+         "dauer": "2-3 Stunden", "preis": 32.0, "url": f"https://foxtrail.ch/produkte/trails/{slug}/",
+         "schwierigkeit": "mittel"}
     d.update(kw)
     return d
 
@@ -66,12 +67,12 @@ def test_migration_neu_seit():
     # Datenbank ohne die Spalte (Stand vor 2026-09): Seed-Trails teilen sich den fruehesten
     # Zeitstempel, ein spaeter per Abgleich angelegter Trail bekommt neu_seit rueckwirkend.
     c = db.connect(":memory:")
-    alt = db.SCHEMA.replace("    neu_seit      TEXT,", "").replace(
-        "                                                     -- angelegt hat (NULL: Seed oder manuell)\n", "")
-    alt = "\n".join(z for z in alt.splitlines() if "Datum, an dem der Abgleich" not in z
-                   and "angelegt hat (NULL: Seed oder manuell)" not in z)
+    alt = "\n".join(z for z in db.SCHEMA.splitlines()
+                   if not any(k in z for k in ("neu_seit", "angelegt hat (NULL: Seed oder manuell)",
+                                               "schwierigkeit")))
     c.executescript(alt)
-    assert "neu_seit" not in {r[1] for r in c.execute("PRAGMA table_info(trails)")}
+    spalten = {r[1] for r in c.execute("PRAGMA table_info(trails)")}
+    assert "neu_seit" not in spalten and "schwierigkeit" not in spalten
     c.executemany("INSERT INTO trails (slug, quelle, ort, name, first_seen) VALUES (?,?,?,?,?)",
                   [("a/1", "foxtrail", "O", "Eins", "2026-09-17 10:00:00"),
                    ("a/2", "foxtrail", "O", "Zwei", "2026-09-17 10:00:00"),
@@ -82,6 +83,24 @@ def test_migration_neu_seit():
         "a/1": None, "a/2": None, "a/3": "2026-10-05", "manual-1": None}
     db.init_db(c)                                       # zweiter Lauf aendert nichts
     assert c.execute("SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL").fetchone()[0] == 1
+    assert "schwierigkeit" in {r[1] for r in c.execute("PRAGMA table_info(trails)")}
+
+
+def test_schwierigkeit_sync():
+    c = conn_mem()
+    sync.apply(c, [mk("a/x", schwierigkeit="schwierig"), mk("a/go", typ="go", schwierigkeit=None)], "test")
+    assert trails.get(c, 1)["schwierigkeit"] == "schwierig" and trails.get(c, 1)["grad_label"] == "Schwierig"
+    assert trails.get(c, 2)["schwierigkeit"] is None and trails.get(c, 2)["grad_label"] == ""
+    # None beim Abgleich = nicht ermittelt: Wert bleibt, keine "Aktualisierung"
+    r = sync.apply(c, [mk("a/x", schwierigkeit=None), mk("a/go", typ="go", schwierigkeit=None)], "test")
+    assert r["aktualisiert"] == 0 and trails.get(c, 1)["schwierigkeit"] == "schwierig"
+    r = sync.apply(c, [mk("a/x", schwierigkeit="einfach"), mk("a/go", typ="go", schwierigkeit=None)], "test")
+    assert r["aktualisiert"] == 1 and trails.get(c, 1)["schwierigkeit"] == "einfach"
+    # manuell: nur gueltige Werte
+    tid = trails.add_manual(c, {"ort": "O", "name": "M", "schwierigkeit": "mittel"}, "u")
+    assert trails.get(c, tid)["schwierigkeit"] == "mittel"
+    trails.update_manual(c, tid, {"ort": "O", "name": "M", "schwierigkeit": "unsinn"})
+    assert trails.get(c, tid)["schwierigkeit"] is None
 
 
 def test_dauer_parsen_und_kuerzen():
@@ -96,11 +115,11 @@ def test_dauer_parsen_und_kuerzen():
 def test_sortieren_und_filtern():
     c = conn_mem()
     sync.apply(c, [mk("aargau/aquae", ort="Baden", name="Aquae", preis=32.0, bewertung=4.3,
-                      dauer="2.5-3.5 Stunden"),
+                      dauer="2.5-3.5 Stunden", schwierigkeit="mittel"),
                    mk("wallis/simplon", ort="Brig", name="Simplon", preis=36.0, bewertung=4.6,
-                      dauer="3-4 Stunden"),
+                      dauer="3-4 Stunden", schwierigkeit="schwierig"),
                    mk("ostschweiz/baccara-mini", ort="Rapperswil", name="Baccara Mini", typ="mini",
-                      preis=19.0, bewertung=None, dauer="1-2 Stunden")], "test")
+                      preis=19.0, bewertung=None, dauer="1-2 Stunden", schwierigkeit="einfach")], "test")
 
     def names(**kw):
         return [t["name"] for t in trails.list_active(c, **kw)]
@@ -118,6 +137,9 @@ def test_sortieren_und_filtern():
     assert names(region=["aargau", "wallis"]) == ["Aquae", "Simplon"]
     assert names(dauer=["1-2 Stunden"]) == ["Baccara Mini"]
     assert names(typ=["unsinn"]) == ["Aquae", "Simplon", "Baccara Mini"]     # unbekannt = ignoriert
+    assert names(sort="schwierigkeit") == ["Baccara Mini", "Aquae", "Simplon"]
+    assert names(sort="schwierigkeit", richtung="desc") == ["Simplon", "Aquae", "Baccara Mini"]
+    assert names(grad=["mittel", "schwierig"]) == ["Aquae", "Simplon"]
     o = trails.filter_options(c)
     assert o["region"] == [("aargau", "Aargau"), ("ostschweiz", "Ostschweiz"), ("wallis", "Wallis")]
     assert [d for d, _ in o["dauer"]] == ["1-2 Stunden", "2.5-3.5 Stunden", "3-4 Stunden"]

@@ -22,7 +22,8 @@ halbe Liste ins Archiv schiebt.
 
 from .db import now
 
-META_FIELDS = ("ort", "name", "route", "typ", "region", "bewertung", "dauer", "preis", "url")
+META_FIELDS = ("ort", "name", "route", "typ", "region", "bewertung", "dauer", "preis", "url",
+               "schwierigkeit")
 MIN_RATIO = 0.5
 
 
@@ -69,23 +70,28 @@ def _apply(conn, scraped, ts, res):
         if old is None:
             conn.execute(
                 "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, "
-                "dauer, preis, url, im_angebot, first_seen, last_seen, neu_seit) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,1,?,?,?)",
+                "dauer, preis, url, schwierigkeit, im_angebot, first_seen, last_seen, neu_seit) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?,?)",
                 (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"),
                  t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
-                 t.get("url", ""), ts, ts, ts[:10]))
+                 t.get("url", ""), t.get("schwierigkeit"), ts, ts, ts[:10]))
             res["neu"] += 1
             continue
-        changed = any((old.get(f) or "") != (t.get(f) or "") for f in META_FIELDS)
+        # Schwierigkeit None = "diesmal nicht ermittelt" (z. B. Filter-Abruf gescheitert):
+        # bekannter Wert bleibt, zaehlt nicht als Aenderung.
+        changed = any((old.get(f) or "") != (t.get(f) or "") for f in META_FIELDS
+                      if not (f == "schwierigkeit" and t.get(f) is None))
         if not old["im_angebot"]:
             res["reaktiviert"] += 1
         elif changed:
             res["aktualisiert"] += 1
         conn.execute(
             "UPDATE trails SET ort=?, name=?, route=?, typ=?, region=?, bewertung=?, dauer=?, "
-            "preis=?, url=?, im_angebot=1, last_seen=? WHERE id=?",
+            "preis=?, url=?, schwierigkeit=COALESCE(?, schwierigkeit), im_angebot=1, last_seen=? "
+            "WHERE id=?",
             (t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"), t.get("region", ""),
-             t.get("bewertung"), t.get("dauer", ""), t.get("preis"), t.get("url", ""), ts, old["id"]))
+             t.get("bewertung"), t.get("dauer", ""), t.get("preis"), t.get("url", ""),
+             t.get("schwierigkeit"), ts, old["id"]))
 
     for slug, old in existing.items():
         if slug in slugs or not old["im_angebot"]:

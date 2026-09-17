@@ -141,9 +141,10 @@ def test_liste_sortieren_filtern(app):
     login(c)
     with db.session(app.config["DB_PATH"]) as conn:
         sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae", preis=32.0),
-                          mk("wallis/simplon", ort="Brig", name="Simplon", preis=36.0),
+                          mk("wallis/simplon", ort="Brig", name="Simplon", preis=36.0,
+                             schwierigkeit="schwierig"),
                           mk("ostschweiz/baccara-mini", ort="Rapperswil", name="Baccara Mini",
-                             typ="mini", preis=19.0, dauer="1-2 Stunden")], "test")
+                             typ="mini", preis=19.0, dauer="1-2 Stunden", schwierigkeit="einfach")], "test")
 
     def reihenfolge(url):
         html = c.get(url).get_data(as_text=True)
@@ -160,6 +161,9 @@ def test_liste_sortieren_filtern(app):
     assert "Baccara Mini" in html and "Simplon" not in html and "1–2 h" in html
     html = c.get("/?sort=region").get_data(as_text=True)
     assert 'class="grp"' in html and "Ostschweiz" in html
+    html = c.get("/?grad=schwierig").get_data(as_text=True)
+    assert "Simplon" in html and "Aquae" not in html and "grad-schwierig" in html
+    assert reihenfolge("/?sort=schwierigkeit") == ["Baccara Mini", "Aquae", "Simplon"]
     # Sortierung bleibt beim Suchen erhalten (hidden fields), Links tragen den Zustand mit
     html = c.get("/?sort=preis&dir=desc&q=a").get_data(as_text=True)
     assert 'name="sort" value="preis"' in html and "sort=preis" in html

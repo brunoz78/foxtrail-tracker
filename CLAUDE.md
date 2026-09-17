@@ -34,6 +34,12 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   keine zusätzlichen Spalten. Anzeige „1.5–2.5 h“ über den Jinja-Filter `dauer`.
   Die Haken-Filter sitzen in den Spaltenköpfen (`_macros.html`, `<details>`, geht ohne JS;
   ein paar Zeilen Vanilla-JS wenden die Auswahl beim Schliessen des Menüs an).
+- **Schwierigkeit** (`schwierigkeit`: `einfach | mittel | schwierig | NULL`) steht nicht in den
+  Karten der Übersicht. Statt 97 Detailseiten liest der Scraper die Übersicht dreimal
+  gefiltert (`?filters=difficulty[<id>]`, IDs aus dem Filter-Widget auf Seite 1, ~8 Seiten).
+  Steht ein Trail in zwei Stufen (Varianten), zählt die höhere. `None` vom Scraper heisst
+  „nicht ermittelt“: der Abgleich überschreibt einen bekannten Wert nie mit NULL (COALESCE).
+  GO-Trails haben keine Stufe. Mit Bruno am 2026-09-17 besprochen.
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
@@ -106,7 +112,8 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
   weiterlaufen.
 - Der Scraper darf foxtrail.ch nicht öfter als nötig abrufen (Standard: wöchentlich,
   1 s Pause zwischen Seiten, sprechender User-Agent). Keine weiteren Seiten als die
-  Kategorie-Übersicht abgrasen, ohne dass das besprochen wurde.
+  Kategorie-Übersicht und deren Schwierigkeits-Filteransichten abgrasen, ohne dass das
+  besprochen wurde (insbesondere keine Detailseiten).
 - Umlaute in Python-Strings, die im Browser landen, sind in Ordnung; in
   Log-/CLI-Ausgaben bisher ae/oe/ue – Stil beibehalten.
 - Commit-Messages auf Deutsch, Betreffzeile < 70 Zeichen, Begründung im Body.

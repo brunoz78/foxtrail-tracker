@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS trails (
     last_seen     TEXT,
     neu_seit      TEXT,                              -- Datum, an dem der Abgleich den Trail neu
                                                      -- angelegt hat (NULL: Seed oder manuell)
+    schwierigkeit TEXT,                              -- 'einfach' | 'mittel' | 'schwierig', NULL = unbekannt/GO
     gemacht       INTEGER NOT NULL DEFAULT 0,
     gemacht_datum TEXT,
     mitspieler    INTEGER,
@@ -105,6 +106,9 @@ def _migrate(conn):
         conn.execute("ALTER TABLE trails ADD COLUMN neu_seit TEXT")
         conn.execute("UPDATE trails SET neu_seit = substr(first_seen, 1, 10) WHERE quelle = 'foxtrail' "
                      "AND first_seen > (SELECT MIN(first_seen) FROM trails WHERE quelle = 'foxtrail')")
+    if "schwierigkeit" not in spalten:
+        # 2026-09: Schwierigkeitsgrad; wird vom naechsten Abgleich gefuellt (foxtrailctl sync).
+        conn.execute("ALTER TABLE trails ADD COLUMN schwierigkeit TEXT")
     # 2026-09: Mini/Maxi als eigener Typ (vorher alles 'foxtrail'). Nur Website-Trails -
     # bei manuell erfassten entscheidet der Benutzer selbst. LIKE ist in SQLite fuer
     # ASCII case-insensitive, deckt also "Maxi"/"MAXI" ab (vgl. trails.typ_aus_name).

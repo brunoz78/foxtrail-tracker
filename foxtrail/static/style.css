@@ -117,4 +117,10 @@ tr.grp td { background: var(--green-light); color: var(--green); font-weight: bo
 .typ-maxi { background: var(--green); color: #fff; }
 .typ-go { background: #3b4a56; color: #fff; }
 .typ-go svg { vertical-align: -1px; margin-right: 3px; }
+
+/* ---- Schwierigkeitsgrad: farbiger Punkt vor dem Text ---------------------- */
+.grad::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.grad-einfach::before { background: #3a9d4f; }
+.grad-mittel::before { background: #e0a400; }
+.grad-schwierig::before { background: #c8443c; }
 @media (prefers-color-scheme: dark) { .typ-go { background: #55687a; } .typ-maxi { background: #3f7d55; } }

@@ -5,7 +5,7 @@
 <div class="card narrow">
   <h1>{{ t.ort }} · {{ t.name }}</h1>
   <p class="muted">{{ t.route }}<br>
-    {{ typ_badge(t) }}{% if t.dauer %} · {{ t.dauer|dauer }}{% endif %}{% if t.preis %} · CHF {{ t.preis|chf }}{% endif %}{% if t.bewertung %} · ★ {{ t.bewertung }}{% endif %}
+    {{ typ_badge(t) }}{% if t.schwierigkeit %} · <span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}{% if t.dauer %} · {{ t.dauer|dauer }}{% endif %}{% if t.preis %} · CHF {{ t.preis|chf }}{% endif %}{% if t.bewertung %} · ★ {{ t.bewertung }}{% endif %}
     {% if t.url %}· <a href="{{ t.url }}" target="_blank" rel="noopener">foxtrail.ch ↗</a>{% endif %}<br>
     {% if t.quelle == 'manual' %}<span class="tag">manuell erfasst</span>
     {% elif not t.im_angebot %}<span class="tag warn">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span> (zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }})
@@ -23,6 +23,10 @@
       <div class="row">
         <label>Typ <select name="typ">
           {% for v, label in typen.items() %}<option value="{{ v }}" {{ 'selected' if t.typ == v }}>{{ label }}</option>{% endfor %}
+        </select></label>
+        <label>Schwierigkeit <select name="schwierigkeit">
+          <option value="">–</option>
+          {% for v, label in grade.items() %}<option value="{{ v }}" {{ 'selected' if t.schwierigkeit == v }}>{{ label }}</option>{% endfor %}
         </select></label>
         <label>Dauer <input name="dauer" value="{{ t.dauer }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
       </div>

@@ -14,6 +14,10 @@
         <label>Typ <select name="typ">
           {% for v, label in typen.items() %}<option value="{{ v }}" {{ 'selected' if (form.typ or 'foxtrail') == v }}>{{ label }}</option>{% endfor %}
         </select></label>
+        <label>Schwierigkeit <select name="schwierigkeit">
+          <option value="">–</option>
+          {% for v, label in grade.items() %}<option value="{{ v }}" {{ 'selected' if form.schwierigkeit == v }}>{{ label }}</option>{% endfor %}
+        </select></label>
         <label>Dauer <input name="dauer" value="{{ form.dauer or '' }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
       </div>
     </fieldset>

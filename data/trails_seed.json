@@ -12,7 +12,8 @@
    "bewertung": 4.6,
    "dauer": "3.5-4.5 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/wallis/allalin-maxi/"
+   "url": "https://foxtrail.ch/produkte/trails/wallis/allalin-maxi/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "wallis/allalin",
@@ -24,7 +25,8 @@
    "bewertung": 4.2,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/wallis/allalin/"
+   "url": "https://foxtrail.ch/produkte/trails/wallis/allalin/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "wallis/allalin-winter",
@@ -36,7 +38,8 @@
    "bewertung": 4.5,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/wallis/allalin-winter/"
+   "url": "https://foxtrail.ch/produkte/trails/wallis/allalin-winter/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "westschweiz/alti",
@@ -48,7 +51,8 @@
    "bewertung": null,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/alti/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/alti/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "graubuenden/anda",
@@ -60,7 +64,8 @@
    "bewertung": 4.3,
    "dauer": "2-3 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/graubuenden/anda/"
+   "url": "https://foxtrail.ch/produkte/trails/graubuenden/anda/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "luzern-und-umgebung/apollon",
@@ -72,7 +77,8 @@
    "bewertung": null,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/apollon/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/apollon/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "luzern-und-umgebung/apollon-maxi",
@@ -84,7 +90,8 @@
    "bewertung": 4.4,
    "dauer": "3-4 Stunden",
    "preis": 42.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/apollon-maxi/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/apollon-maxi/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/appenzell-foxtrail-go",
@@ -96,7 +103,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/appenzell-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/appenzell-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "aargau/aquae",
@@ -108,7 +116,8 @@
    "bewertung": 4.3,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/aquae/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/aquae/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/atlas",
@@ -120,7 +129,8 @@
    "bewertung": null,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/atlas/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/atlas/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "ostschweiz/baccara",
@@ -132,7 +142,8 @@
    "bewertung": 4.3,
    "dauer": "3-4 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/baccara/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/baccara/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/baccara-mini",
@@ -144,7 +155,8 @@
    "bewertung": null,
    "dauer": "1-2 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/baccara-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/baccara-mini/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "basel-und-umgebung/basel-foxtrail-go",
@@ -156,7 +168,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/basel-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/basel-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "tessin/bellinzona-foxtrail-go",
@@ -168,7 +181,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/tessin/bellinzona-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/tessin/bellinzona-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "bern-und-umgebung/biel-foxtrail-go",
@@ -180,7 +194,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/biel-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/biel-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "bern-und-umgebung/castello",
@@ -192,7 +207,8 @@
    "bewertung": 4.3,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/castello/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/castello/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "graubuenden/foxtrail-go-chur",
@@ -204,7 +220,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/graubuenden/foxtrail-go-chur/"
+   "url": "https://foxtrail.ch/produkte/trails/graubuenden/foxtrail-go-chur/",
+   "schwierigkeit": null
   },
   {
    "slug": "westschweiz/citi",
@@ -216,7 +233,8 @@
    "bewertung": null,
    "dauer": "1-2 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/citi/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/citi/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "bern-und-umgebung/cityfox",
@@ -228,7 +246,8 @@
    "bewertung": 4.2,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/cityfox/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/cityfox/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "bern-und-umgebung/cityfox-mini",
@@ -240,7 +259,8 @@
    "bewertung": 4.2,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/cityfox-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/cityfox-mini/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "ostschweiz/clarona",
@@ -252,7 +272,8 @@
    "bewertung": 4.5,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/clarona/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/clarona/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/columban",
@@ -264,7 +285,8 @@
    "bewertung": 4.5,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/columban/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/columban/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/columban-mini",
@@ -276,7 +298,8 @@
    "bewertung": 4.2,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/columban-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/columban-mini/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/conexus",
@@ -288,7 +311,8 @@
    "bewertung": 4.1,
    "dauer": "1.5-2.5 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/conexus/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/conexus/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "graubuenden/cuolm",
@@ -300,7 +324,8 @@
    "bewertung": 4.6,
    "dauer": "1.5-2.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/graubuenden/cuolm/"
+   "url": "https://foxtrail.ch/produkte/trails/graubuenden/cuolm/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "graubuenden/cuolm-striunau",
@@ -312,7 +337,8 @@
    "bewertung": 4.8,
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/graubuenden/cuolm-striunau/"
+   "url": "https://foxtrail.ch/produkte/trails/graubuenden/cuolm-striunau/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "basel-und-umgebung/cyan",
@@ -324,7 +350,8 @@
    "bewertung": 4.3,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/cyan/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/cyan/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "basel-und-umgebung/cyan-mini",
@@ -336,7 +363,8 @@
    "bewertung": 4.2,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/cyan-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/cyan-mini/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "wallis/desoria",
@@ -348,7 +376,8 @@
    "bewertung": 4.6,
    "dauer": "2-3 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/wallis/desoria/"
+   "url": "https://foxtrail.ch/produkte/trails/wallis/desoria/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "bern-und-umgebung/dolomit",
@@ -360,7 +389,8 @@
    "bewertung": null,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/dolomit/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/dolomit/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "zuerich-und-umgebung/elixira",
@@ -372,7 +402,8 @@
    "bewertung": 4.5,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/elixira/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/elixira/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "bern-und-umgebung/emma",
@@ -384,7 +415,8 @@
    "bewertung": 4.4,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/emma/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/emma/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "luzern-und-umgebung/flora",
@@ -396,7 +428,8 @@
    "bewertung": 4.7,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/flora/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/flora/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "luzern-und-umgebung/flueelen-foxtrail-go",
@@ -408,7 +441,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/flueelen-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/flueelen-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "westschweiz/fribourg-foxtrail-go",
@@ -420,7 +454,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/fribourg-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/fribourg-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "ostschweiz/funi",
@@ -432,7 +467,8 @@
    "bewertung": 4.6,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/funi/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/funi/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "liechtenstein/furisto",
@@ -444,7 +480,8 @@
    "bewertung": null,
    "dauer": "2-3 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/liechtenstein/furisto/"
+   "url": "https://foxtrail.ch/produkte/trails/liechtenstein/furisto/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "zuerich-und-umgebung/gaia",
@@ -456,7 +493,8 @@
    "bewertung": 4.5,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/gaia/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/gaia/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "tessin/galileo",
@@ -468,7 +506,8 @@
    "bewertung": 4.1,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/tessin/galileo/"
+   "url": "https://foxtrail.ch/produkte/trails/tessin/galileo/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/gallus-stadt",
@@ -480,7 +519,8 @@
    "bewertung": 4.2,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/gallus-stadt/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/gallus-stadt/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "westschweiz/genf-uno-wto-foxtrail-go",
@@ -492,7 +532,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/genf-uno-wto-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/genf-uno-wto-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "westschweiz/genf-foxtrail-go",
@@ -504,7 +545,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/genf-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/genf-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "bern-und-umgebung/granit",
@@ -516,7 +558,8 @@
    "bewertung": 4.3,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/granit/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/granit/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "luzern-und-umgebung/helios",
@@ -528,7 +571,8 @@
    "bewertung": 4.5,
    "dauer": "3-4 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/helios/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/helios/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "luzern-und-umgebung/helios-mini",
@@ -540,7 +584,8 @@
    "bewertung": null,
    "dauer": "1-2 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/helios-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/helios-mini/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "zuerich-und-umgebung/hera",
@@ -552,7 +597,8 @@
    "bewertung": 4.4,
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/hera/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/hera/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "zuerich-und-umgebung/ikarus",
@@ -564,7 +610,8 @@
    "bewertung": 4.7,
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/ikarus/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/ikarus/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "bern-und-umgebung/interlaken-foxtrail-go",
@@ -576,7 +623,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/interlaken-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/interlaken-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "aargau/jurapark",
@@ -588,7 +636,8 @@
    "bewertung": 4.5,
    "dauer": "2-3 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/jurapark/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/jurapark/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "graubuenden/klosters-foxtrail-go",
@@ -600,7 +649,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/graubuenden/klosters-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/graubuenden/klosters-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "luzern-und-umgebung/kronos",
@@ -612,7 +662,8 @@
    "bewertung": 4.1,
    "dauer": "3-4 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/kronos/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/kronos/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "westschweiz/lausanne-foxtrail-go",
@@ -624,7 +675,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/lausanne-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/lausanne-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "luzern-und-umgebung/leonis",
@@ -636,7 +688,8 @@
    "bewertung": 4.5,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/leonis/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/leonis/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "basel-und-umgebung/liestal-foxtrail-go",
@@ -648,7 +701,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/liestal-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/liestal-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "tessin/locarno-foxtrail-go",
@@ -660,7 +714,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/tessin/locarno-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/tessin/locarno-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "tessin/lugano-foxtrail-go",
@@ -672,7 +727,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/tessin/lugano-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/tessin/lugano-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "westschweiz/montreux-foxtrail-go",
@@ -684,7 +740,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/montreux-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/montreux-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "zuerich-und-umgebung/neptun",
@@ -696,7 +753,8 @@
    "bewertung": 4.2,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/neptun/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/neptun/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "westschweiz/neuchatel-foxtrail-go",
@@ -708,7 +766,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/neuchatel-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/neuchatel-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "zuerich-und-umgebung/odysseus",
@@ -720,7 +779,8 @@
    "bewertung": 4.5,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/odysseus/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/odysseus/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "zuerich-und-umgebung/picasso",
@@ -732,7 +792,8 @@
    "bewertung": 4.4,
    "dauer": "2-3 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/picasso/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/picasso/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "jura/porrentruy-foxtrail-go",
@@ -744,7 +805,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/jura/porrentruy-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/jura/porrentruy-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "zuerich-und-umgebung/prometheus",
@@ -756,7 +818,8 @@
    "bewertung": 4.2,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/prometheus/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/prometheus/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "zuerich-und-umgebung/prometheus-mini",
@@ -768,7 +831,8 @@
    "bewertung": 4.2,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/prometheus-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/prometheus-mini/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "basel-und-umgebung/purple",
@@ -780,7 +844,8 @@
    "bewertung": null,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/purple/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/purple/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "bern-und-umgebung/quarz",
@@ -792,7 +857,8 @@
    "bewertung": null,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "bern-und-umgebung/quarz-mini",
@@ -804,7 +870,8 @@
    "bewertung": null,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz-mini/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/rosalie",
@@ -816,7 +883,8 @@
    "bewertung": 4.3,
    "dauer": "3-4 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/rosalie/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/rosalie/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "ostschweiz/rosalie-mini",
@@ -828,7 +896,8 @@
    "bewertung": null,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/rosalie-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/ostschweiz/rosalie-mini/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "zuerich-und-umgebung/schaffhausen-foxtrail-go",
@@ -840,7 +909,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/schaffhausen-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/schaffhausen-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "bern-und-umgebung/schatz",
@@ -852,7 +922,8 @@
    "bewertung": 4.5,
    "dauer": "3-4 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/schatz/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/schatz/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "bern-und-umgebung/schatz-maxi",
@@ -864,7 +935,8 @@
    "bewertung": 4.7,
    "dauer": "4-5 Stunden",
    "preis": 42.0,
-   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/schatz-maxi/"
+   "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/schatz-maxi/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "aargau/schloss-hallwyl",
@@ -876,7 +948,8 @@
    "bewertung": 4.7,
    "dauer": "3-4 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-hallwyl/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-hallwyl/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "aargau/schloss-hallwyl-mini",
@@ -888,7 +961,8 @@
    "bewertung": null,
    "dauer": "1-2 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-hallwyl-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-hallwyl-mini/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "aargau/schloss-lenzburg",
@@ -900,7 +974,8 @@
    "bewertung": null,
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-lenzburg/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-lenzburg/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "aargau/schloss-wildegg",
@@ -912,7 +987,8 @@
    "bewertung": 4.9,
    "dauer": "2-3 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-wildegg/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-wildegg/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "wallis/simplon",
@@ -924,7 +1000,8 @@
    "bewertung": 4.7,
    "dauer": "3-4 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/wallis/simplon/"
+   "url": "https://foxtrail.ch/produkte/trails/wallis/simplon/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "wallis/sion-foxtrail-go",
@@ -936,7 +1013,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/wallis/sion-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/wallis/sion-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "basel-und-umgebung/soletta",
@@ -948,7 +1026,8 @@
    "bewertung": 4.4,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soletta/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soletta/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "basel-und-umgebung/soletta-mini",
@@ -960,7 +1039,8 @@
    "bewertung": 4.3,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soletta-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soletta-mini/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "basel-und-umgebung/soleure",
@@ -972,7 +1052,8 @@
    "bewertung": 4.4,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soleure/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soleure/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "basel-und-umgebung/soleure-mini",
@@ -984,7 +1065,8 @@
    "bewertung": null,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soleure-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soleure-mini/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "zuerich-und-umgebung/spartakus-mini",
@@ -996,7 +1078,8 @@
    "bewertung": 4.2,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/spartakus-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/spartakus-mini/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "aargau/klosterhalbinsel-wettingen",
@@ -1008,7 +1091,8 @@
    "bewertung": 4.3,
    "dauer": "3-4 Stunden",
    "preis": 36.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/klosterhalbinsel-wettingen/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/klosterhalbinsel-wettingen/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "graubuenden/striunau",
@@ -1020,7 +1104,8 @@
    "bewertung": 4.4,
    "dauer": "1.5-2.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/graubuenden/striunau/"
+   "url": "https://foxtrail.ch/produkte/trails/graubuenden/striunau/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "aargau/veritas",
@@ -1032,7 +1117,8 @@
    "bewertung": 4.1,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/veritas/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/veritas/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "aargau/victoria",
@@ -1044,7 +1130,8 @@
    "bewertung": null,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/victoria/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/victoria/",
+   "schwierigkeit": "schwierig"
   },
   {
    "slug": "zuerich-und-umgebung/winterthur-foxtrail-go",
@@ -1056,7 +1143,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/winterthur-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/winterthur-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "basel-und-umgebung/yellow",
@@ -1068,7 +1156,8 @@
    "bewertung": 4.2,
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/yellow/"
+   "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/yellow/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "westschweiz/yverdon-les-bains-foxtrail-go",
@@ -1080,7 +1169,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/westschweiz/yverdon-les-bains-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/westschweiz/yverdon-les-bains-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "luzern-und-umgebung/zeus",
@@ -1092,7 +1182,8 @@
    "bewertung": 4.3,
    "dauer": "3-4 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "luzern-und-umgebung/zeus-rollstuhlgaengig",
@@ -1104,7 +1195,8 @@
    "bewertung": 4.3,
    "dauer": "2-3 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus-rollstuhlgaengig/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus-rollstuhlgaengig/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "luzern-und-umgebung/zeus-mini",
@@ -1116,7 +1208,8 @@
    "bewertung": null,
    "dauer": "1-2 Stunden",
    "preis": 32.0,
-   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus-mini/"
+   "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus-mini/",
+   "schwierigkeit": "einfach"
   },
   {
    "slug": "aargau/zofingen-foxtrail-go",
@@ -1128,7 +1221,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/aargau/zofingen-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/aargau/zofingen-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "zuerich-und-umgebung/zug-foxtrail-go",
@@ -1140,7 +1234,8 @@
    "bewertung": null,
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zug-foxtrail-go/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zug-foxtrail-go/",
+   "schwierigkeit": null
   },
   {
    "slug": "zuerich-und-umgebung/zuerich-hb",
@@ -1152,7 +1247,8 @@
    "bewertung": 4.3,
    "dauer": "1-2 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zuerich-hb/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zuerich-hb/",
+   "schwierigkeit": "mittel"
   },
   {
    "slug": "zuerich-und-umgebung/zuerich-hb-rollstuhlgaengig",
@@ -1164,7 +1260,8 @@
    "bewertung": 4.2,
    "dauer": "1.5-2.5 Stunden",
    "preis": 29.0,
-   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zuerich-hb-rollstuhlgaengig/"
+   "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zuerich-hb-rollstuhlgaengig/",
+   "schwierigkeit": "mittel"
   }
  ]
 }

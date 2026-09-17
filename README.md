@@ -17,6 +17,8 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 * Liste aller aktuell angebotenen Trails mit Filter (alle / offen / gemacht) und
   Volltextsuche; jede Spalte sortierbar (Ort, Trail, Region, Typ, Bewertung, Dauer,
   Preis, Datum), Mehrfach-Filter für Region, Typ und Dauer direkt im Spaltenkopf
+* Schwierigkeitsgrad (Einfach / Mittel / Schwierig) laut foxtrail.ch als Spalte,
+  sortier- und filterbar; GO-Trails haben keinen
 * Typ als Badge wie auf foxtrail.ch: **Foxtrail**, **MINI**, **MAXI**, **GO** – abgeleitet
   aus dem Trail-Namen bzw. dem GO-Badge (das MINI/MAXI-Badge ist auf der Website nur
   ins Bild gezeichnet); sortiert nach Region erscheinen Gruppen-Zeilen
@@ -184,8 +186,10 @@ nie im Archiv landen, egal was der Abgleich tut.
 
 ## Hinweis zum Scraper
 
-Der Abgleich ruft die öffentliche Trail-Übersicht ab (ca. 9 Seiten, eine Sekunde
-Pause dazwischen, standardmässig einmal pro Woche) und nennt sich im User-Agent.
+Der Abgleich ruft die öffentliche Trail-Übersicht ab (ca. 9 Seiten) und zusätzlich
+die nach Schwierigkeit gefilterte Übersicht je Stufe (ca. 8 Seiten) – insgesamt rund
+17 Seitenabrufe, eine Sekunde Pause dazwischen, standardmässig einmal pro Woche. Er
+nennt sich im User-Agent.
 Bitte die Frequenz nicht unnötig erhöhen. Ändert Foxtrail den Aufbau der Seite,
 bricht der Abgleich kontrolliert ab („Keine Trails gefunden“) – dann muss
 `foxtrail/scraper.py` angepasst werden; `tests/fixture_page.html` zeigt die

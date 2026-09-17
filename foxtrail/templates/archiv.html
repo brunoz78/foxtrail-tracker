@@ -7,7 +7,7 @@
 Wird ein Trail hier als „gemacht“ markiert, wandert er automatisch zurueck in die Hauptliste.
 Taucht er auf foxtrail.ch wieder auf, wird er beim naechsten Abgleich reaktiviert.</p>
 <div class="tablewrap"><table class="trails">
-  <thead><tr><th>Ort</th><th>Trail</th><th class="wide">Route</th><th>Region</th><th>Typ</th><th>Dauer</th><th class="r">CHF</th><th>Zuletzt gesehen</th><th></th></tr></thead>
+  <thead><tr><th>Ort</th><th>Trail</th><th class="wide">Route</th><th>Region</th><th>Typ</th><th>Grad</th><th>Dauer</th><th class="r">CHF</th><th>Zuletzt gesehen</th><th></th></tr></thead>
   <tbody>
   {% for t in rows %}
   <tr class="gone">
@@ -16,13 +16,14 @@ Taucht er auf foxtrail.ch wieder auf, wird er beim naechsten Abgleich reaktivier
     <td class="wide muted">{{ t.route }}</td>
     <td class="nowrap muted">{{ t.region_label }}</td>
     <td>{{ typ_badge(t) }}</td>
+    <td class="nowrap">{% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% else %}<span class="muted">–</span>{% endif %}</td>
     <td class="nowrap">{{ t.dauer|dauer }}</td>
     <td class="r">{{ t.preis|chf }}</td>
     <td class="nowrap">{{ (t.last_seen or '')[:10]|datum }}</td>
     <td><a class="btn small" href="{{ url_for('trail_edit', tid=t.id, next=url_for('archiv')) }}">Doch gemacht?</a></td>
   </tr>
   {% else %}
-  <tr><td colspan="9" class="empty">Das Archiv ist leer.</td></tr>
+  <tr><td colspan="10" class="empty">Das Archiv ist leer.</td></tr>
   {% endfor %}
   </tbody>
 </table></div>

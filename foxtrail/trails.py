@@ -18,6 +18,12 @@ _TYP_ORDER = {t: i for i, t in enumerate(TYPEN)}
 _MAXI_RE = re.compile(r"\bmaxi\b", re.I)
 _MINI_RE = re.compile(r"\bmini\b", re.I)
 
+# Schwierigkeitsgrad laut foxtrail.ch (Filter "Schwierigkeit" der Uebersicht); GO-Trails
+# haben keinen. NULL in der DB = unbekannt.
+GRADE = ("einfach", "mittel", "schwierig")
+GRAD_LABEL = {"einfach": "Einfach", "mittel": "Mittel", "schwierig": "Schwierig"}
+_GRAD_ORDER = {g: i for i, g in enumerate(GRADE)}
+
 # Anzeigenamen der Regionen (Slug aus der Kategorie-Klasse auf foxtrail.ch)
 REGION_LABEL = {
     "aargau": "Aargau", "basel-und-umgebung": "Basel und Umgebung",
@@ -77,6 +83,7 @@ def _row(r):
     d["region_label"] = region_label(d["region"])
     d["dauer_von"], d["dauer_bis"] = parse_dauer(d["dauer"])
     d["neu"] = ist_neu(d.get("neu_seit"))
+    d["grad_label"] = GRAD_LABEL.get(d.get("schwierigkeit") or "", "")
     return d
 
 
@@ -102,6 +109,8 @@ SORTS = {
     "name": lambda t: (t["name"].lower(), t["ort"].lower()),
     "region": lambda t: (t["region_label"].lower(), t["ort"].lower(), t["name"].lower()),
     "typ": lambda t: (_TYP_ORDER.get(t["typ"], 99), t["ort"].lower(), t["name"].lower()),
+    "schwierigkeit": lambda t: ((_GRAD_ORDER[t["schwierigkeit"]], t["ort"].lower(), t["name"].lower())
+                                if t.get("schwierigkeit") in _GRAD_ORDER else None),
     "bewertung": lambda t: t["bewertung"],
     "dauer": lambda t: (t["dauer_von"], t["dauer_bis"]) if t["dauer_von"] is not None else None,
     "preis": lambda t: t["preis"],
@@ -124,9 +133,10 @@ def _liste(v):
     return [v] if isinstance(v, str) else [x for x in v if x]
 
 
-def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), sort="ort", richtung="asc"):
+def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), grad=(), sort="ort",
+                richtung="asc"):
     """Hauptliste: alles ausser Archiv. filter_: alle | offen | gemacht.
-    typ/region/dauer: Mehrfachauswahl (Liste oder einzelner Wert), leer = alle."""
+    typ/region/dauer/grad: Mehrfachauswahl (Liste oder einzelner Wert), leer = alle."""
     sql = f"SELECT * FROM trails WHERE NOT {ARCHIV_COND}"
     args = []
     if filter_ == "offen":
@@ -134,7 +144,8 @@ def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), sort="o
     elif filter_ == "gemacht":
         sql += " AND gemacht = 1"
     for spalte, werte in (("typ", [t for t in _liste(typ) if t in TYPEN]),
-                          ("region", _liste(region)), ("dauer", _liste(dauer))):
+                          ("region", _liste(region)), ("dauer", _liste(dauer)),
+                          ("schwierigkeit", [g for g in _liste(grad) if g in GRADE])):
         if werte:
             sql += f" AND {spalte} IN ({','.join('?' * len(werte))})"
             args += werte
@@ -156,7 +167,8 @@ def filter_options(conn):
                                parse_dauer(s)[1] or 0, s))
     return {"region": [(s, region_label(s)) for s in regs],
             "typ": [(t, TYP_LABEL[t]) for t in TYPEN],
-            "dauer": [(s, dauer_kurz(s)) for s in dauern]}
+            "dauer": [(s, dauer_kurz(s)) for s in dauern],
+            "grad": [(g, GRAD_LABEL[g]) for g in GRADE]}
 
 
 def list_archiv(conn):
@@ -218,6 +230,10 @@ def _typ_aus_form(form, name):
     return form.get("typ") if form.get("typ") in TYPEN else typ_aus_name(name)
 
 
+def _grad_aus_form(form):
+    return form.get("schwierigkeit") if form.get("schwierigkeit") in GRADE else None
+
+
 def add_manual(conn, form, username):
     """Manuell erfasster Trail (z. B. frueher gemacht, heute nicht mehr im Angebot)."""
     ort = (form.get("ort") or "").strip()[:100]
@@ -229,11 +245,12 @@ def add_manual(conn, form, username):
     slug = "manual-" + uuid.uuid4().hex[:12]
     ts = now()
     conn.execute(
-        "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, dauer, im_angebot, "
-        "first_seen, gemacht, gemacht_datum, mitspieler, bemerkung, erfasst_von, erfasst_am) "
-        "VALUES (?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?)",
+        "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, dauer, schwierigkeit, "
+        "im_angebot, first_seen, gemacht, gemacht_datum, mitspieler, bemerkung, erfasst_von, erfasst_am) "
+        "VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?)",
         (slug, "manual", ort, name, (form.get("route") or "").strip()[:300], typ, "",
-         (form.get("dauer") or "").strip()[:50], ts, gemacht, datum, mit, bemerkung, username, ts))
+         (form.get("dauer") or "").strip()[:50], _grad_aus_form(form), ts, gemacht, datum, mit,
+         bemerkung, username, ts))
     return conn.execute("SELECT id FROM trails WHERE slug = ?", (slug,)).fetchone()[0]
 
 
@@ -245,9 +262,9 @@ def update_manual(conn, trail_id, form):
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
         raise TrailError("Ort und Name sind Pflichtfelder.")
-    conn.execute("UPDATE trails SET ort=?, name=?, route=?, typ=?, dauer=? WHERE id=?",
+    conn.execute("UPDATE trails SET ort=?, name=?, route=?, typ=?, dauer=?, schwierigkeit=? WHERE id=?",
                  (ort, name, (form.get("route") or "").strip()[:300], _typ_aus_form(form, name),
-                  (form.get("dauer") or "").strip()[:50], trail_id))
+                  (form.get("dauer") or "").strip()[:50], _grad_aus_form(form), trail_id))
 
 
 def delete_manual(conn, trail_id):
@@ -273,11 +290,12 @@ def seed_from_file(conn, path=None):
             continue
         conn.execute(
             "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, dauer, "
-            "preis, url, im_angebot, first_seen, last_seen) VALUES (?,?,?,?,?,?,?,?,?,?,?,1,?,?)",
+            "preis, url, schwierigkeit, im_angebot, first_seen, last_seen) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?)",
             (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""),
              typ_aus_name(t["name"], go=(t.get("typ") == "go")) if t.get("typ") in (None, "foxtrail", "go")
              else t["typ"],
              t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
-             t.get("url", ""), ts, ts))
+             t.get("url", ""), t.get("schwierigkeit") if t.get("schwierigkeit") in GRADE else None, ts, ts))
         n += 1
     return n

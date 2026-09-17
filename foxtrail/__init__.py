@@ -112,7 +112,7 @@ def create_app(test_config=None):
     @app.context_processor
     def _inject():
         return {"me": current_user(), "stats": trails.stats(get_conn()) if current_user() else None,
-                "typen": trails.TYP_LABEL}
+                "typen": trails.TYP_LABEL, "grade": trails.GRAD_LABEL}
 
     @app.errorhandler(403)
     def _forbidden(_):
@@ -160,7 +160,8 @@ def create_app(test_config=None):
         # Mehrfach-Filter aus den Spaltenkoepfen (?typ=mini&typ=go ...)
         sel = {"typ": [t for t in request.args.getlist("typ") if t in trails.TYPEN],
                "region": [r[:60] for r in request.args.getlist("region") if r][:30],
-               "dauer": [d[:50] for d in request.args.getlist("dauer") if d][:30]}
+               "dauer": [d[:50] for d in request.args.getlist("dauer") if d][:30],
+               "grad": [g for g in request.args.getlist("grad") if g in trails.GRADE]}
         sort = request.args.get("sort", "ort")
         if sort not in trails.SORTS:
             sort = "ort"

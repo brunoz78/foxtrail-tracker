@@ -14,8 +14,15 @@ Die Seite ist ein WooCommerce-Shop (Theme "Shoptimizer"). Je Trail ein
   .trail-price                                -> "CHF 32.00"
 Paginierung: a.next.page-numbers existiert, solange eine weitere Seite folgt.
 
+Schwierigkeit steht nicht in den Karten, aber die Uebersicht laesst sich per URL nach
+dem Filter-Widget "Schwierigkeit" (BeRocket, Taxonomie pa_difficulty) einschraenken:
+  ?filters=difficulty[<term-id>]  -> nur Trails dieser Stufe, ebenfalls paginiert
+Die Term-IDs stehen im Widget auf Seite 1. Drei gefilterte Durchlaeufe (~8 Seiten)
+liefern die Stufe fuer alle Foxtrail-Trails; GO-Trails haben keine (None).
+
 fetch_all() liefert eine Liste von dicts mit den Feldern
-  slug, ort, name, route, typ ('foxtrail'|'mini'|'maxi'|'go'), region, bewertung, dauer, preis, url
+  slug, ort, name, route, typ ('foxtrail'|'mini'|'maxi'|'go'), region, bewertung, dauer, preis, url,
+  schwierigkeit ('einfach'|'mittel'|'schwierig'|None)
 Typ: GO am Badge, Mini/Maxi am Namen (trails.typ_aus_name) - das MINI/MAXI-Badge auf
 der Website ist nur ins Titelbild gezeichnet, im HTML gibt es kein Element dafuer.
 parse_page() ist rein (kein Netz) und damit offline testbar.
@@ -28,7 +35,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from . import config
-from .trails import typ_aus_name
+from .trails import GRADE, typ_aus_name
 
 _SLUG_RE = re.compile(r"/produkte/trails/([^/]+/[^/]+)/?$")
 _RATING_RE = re.compile(r"([\d.]+)")
@@ -96,6 +103,51 @@ def parse_page(html):
     return out, has_next
 
 
+def next_page_url(html):
+    """href des "naechste Seite"-Links oder None (behaelt Filter-Parameter in der URL)."""
+    a = BeautifulSoup(html, "html.parser").select_one("a.next.page-numbers")
+    return a.get("href") if a and a.get("href") else None
+
+
+def parse_difficulty_filter(html):
+    """Term-IDs des Schwierigkeits-Filters von Seite 1 -> {'einfach': '1304', ...}."""
+    soup = BeautifulSoup(html, "html.parser")
+    widget = soup.select_one('.bapf_sfilter[data-taxonomy="pa_difficulty"]')
+    out = {}
+    if widget:
+        for inp in widget.select("input[value]"):
+            key = (inp.get("data-name") or "").strip().lower()
+            if key in GRADE and inp["value"].strip():
+                out[key] = inp["value"].strip()
+    return out
+
+
+def fetch_difficulty(base, first_html, session, delay):
+    """{slug: stufe} ueber die gefilterten Uebersichten. Steht ein Trail in mehreren Stufen
+    (Varianten), zaehlt die hoehere. Bei Netzfehlern wird abgebrochen und das bisher
+    Gesammelte zurueckgegeben - der Abgleich ueberschreibt bekannte Stufen nie mit None."""
+    grade = {}
+    for level in GRADE:                       # aufsteigend, spaetere (hoehere) Stufe gewinnt
+        tid = parse_difficulty_filter(first_html).get(level)
+        if not tid:
+            continue
+        url = f"{base}/?filters=difficulty%5B{tid}%5D"
+        for _ in range(50):
+            if delay:
+                time.sleep(delay)
+            try:
+                html = fetch_page(url, session)
+            except requests.RequestException:
+                return grade
+            items, _ = parse_page(html)
+            for t in items:
+                grade[t["slug"]] = level
+            url = next_page_url(html)
+            if not items or not url:
+                break
+    return grade
+
+
 def fetch_page(url, session=None):
     s = session or requests.Session()
     r = s.get(url, headers={"User-Agent": config.USER_AGENT, "Accept-Language": "de-CH,de;q=0.9"},
@@ -110,6 +162,7 @@ def fetch_all(base_url=None, max_pages=50, delay=None):
     delay = config.SCRAPER_DELAY if delay is None else delay
     sess = requests.Session()
     trails, seen = [], set()
+    first_html = ""
     for page in range(1, max_pages + 1):
         url = f"{base}/" if page == 1 else f"{base}/page/{page}/"
         try:
@@ -121,6 +174,8 @@ def fetch_all(base_url=None, max_pages=50, delay=None):
         except requests.RequestException as ex:
             raise ScrapeError(f"Abruf von {url} fehlgeschlagen: {ex}") from ex
         items, has_next = parse_page(html)
+        if page == 1:
+            first_html = html
         for t in items:
             if t["slug"] not in seen:
                 seen.add(t["slug"])
@@ -131,4 +186,7 @@ def fetch_all(base_url=None, max_pages=50, delay=None):
             time.sleep(delay)
     if not trails:
         raise ScrapeError("Keine Trails gefunden - hat sich die Seitenstruktur geaendert?")
+    grade = fetch_difficulty(base, first_html, sess, delay)
+    for t in trails:
+        t["schwierigkeit"] = grade.get(t["slug"])
     return trails
