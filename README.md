@@ -45,6 +45,28 @@ verändert nichts.
 
 ## Installation im Proxmox-LXC
 
+### Per Script (empfohlen)
+
+Ein Aufruf auf der **Proxmox-Host-Shell** legt einen Debian-13-Container an,
+installiert die App nach `/opt/foxtrail-tracker`, befüllt die Trail-Liste,
+legt einen Administrator mit zufälligem Passwort an und richtet den
+wöchentlichen Abgleich ein:
+
+```bash
+COMMUNITY_SCRIPTS_URL=https://raw.githubusercontent.com/brunoz78/ProxmoxVED/main bash -c "$(curl -fsSL https://raw.githubusercontent.com/brunoz78/ProxmoxVED/main/ct/foxtrail-tracker.sh)"
+```
+
+Benutzername und Passwort werden am Ende angezeigt und liegen im Container in
+`~/foxtrail-tracker.creds`. Eigene Zugangsdaten vorab: `var_admin_user=…`
+und `var_admin_pass=…` vor den Aufruf setzen. Spätere Updates laufen mit
+`update` im Container; installiert wird immer das neueste GitHub-Release.
+
+Das Script nutzt das Framework von [community-scripts](https://community-scripts.org),
+liegt aber in einem eigenen Fork und ist **nicht** Teil der offiziellen
+Sammlung. Aufbau und Hintergründe: [`proxmox/README.md`](proxmox/README.md).
+
+### Von Hand im Container
+
 Getestet mit Debian 12/13 (unprivilegierter Container, 512 MB RAM reichen).
 
 ```bash

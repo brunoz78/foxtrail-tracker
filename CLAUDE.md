@@ -60,6 +60,9 @@ scripts/manage.py      CLI: init-db, seed, sync, create-user, set-password, list
                        stats, export-json, import-excel
 deploy/                install.sh (Debian-LXC), foxtrail.service, foxtrail-sync.service,
                        foxtrail-sync.timer, foxtrailctl, env-Beispiel
+proxmox/               community-scripts: ct/, install/, json/ + README.md (Quelle;
+                       Fork brunoz78/ProxmoxVED ist nur die Auslieferung)
+docs/logo.svg          Logo fuer die JSON-Metadaten
 tests/                 pytest: test_scraper (Fixture-HTML), test_sync, test_app (Testclient)
 ```
 
@@ -75,6 +78,8 @@ python3 wsgi.py                           # Debug-Server auf http://127.0.0.1:80
 
 Im LXC: `bash deploy/install.sh` (idempotent), danach `foxtrailctl <befehl>`.
 Aktualisieren im LXC: `git pull && bash deploy/install.sh`.
+Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
+`update` im Container.
 
 ## Arbeitsregeln
 
@@ -92,6 +97,13 @@ Aktualisieren im LXC: `git pull && bash deploy/install.sh`.
   Log-/CLI-Ausgaben bisher ae/oe/ue – Stil beibehalten.
 - Commit-Messages auf Deutsch, Betreffzeile < 70 Zeichen, Begründung im Body.
 - Keine Secrets, Datenbanken (`data/*.db`) oder `.env` committen (`.gitignore` beachten).
+- `proxmox/` ist die Quelle der Proxmox-Scripts. Nach Aenderungen die drei Dateien
+  in den Fork brunoz78/ProxmoxVED (`ct/`, `install/`, `json/`) kopieren und pushen.
+  Das Script installiert immer das neueste GitHub-Release: App-Aenderungen wirken im
+  LXC erst nach einem neuen Tag + Release (`gh release create vX.Y.Z --generate-notes`).
+  Dort laeuft alles als root ohne Dienstbenutzer (community-scripts-Konvention);
+  Kommentare und Ausgaben in `proxmox/` bleiben englisch. Das Repo muss dafuer
+  oeffentlich sein.
 
 ## Offene Ideen (nicht begonnen)
 

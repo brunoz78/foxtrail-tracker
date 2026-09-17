@@ -7,7 +7,9 @@ set -euo pipefail
 APP_DIR=/opt/foxtrail-tracker
 ENV_FILE=/etc/foxtrail-tracker.env
 set -a; . "$ENV_FILE"; set +a
-if [[ $EUID -eq 0 ]]; then
+# Als root: auf den Dienstbenutzer wechseln, falls es ihn gibt (deploy/install.sh).
+# Im community-scripts-LXC laeuft alles als root, dann direkt ausfuehren.
+if [[ $EUID -eq 0 ]] && id -u foxtrail >/dev/null 2>&1; then
   exec sudo -u foxtrail --preserve-env=FOXTRAIL_DB,FOXTRAIL_PASSWORD,FOXTRAIL_LIST_URL,SCRAPER_DELAY \
        "$APP_DIR/.venv/bin/python" "$APP_DIR/scripts/manage.py" "$@"
 else
