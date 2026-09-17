@@ -73,9 +73,11 @@ def test_neu_seit():
     t = trails.get(c, c.execute("SELECT id FROM trails WHERE slug = 'jura/ganz-neu'").fetchone()[0])
     assert t["neu_seit"] == heute and t["neu"]
     assert not trails.get(c, 1)["neu"]                  # Allalin Maxi: im Seed ohne neu_seit
-    assert trails.ist_neu("2026-01-01", heute=__import__("datetime").date(2026, 9, 17))
-    assert not trails.ist_neu("2024-01-01", heute=__import__("datetime").date(2026, 9, 17))
-    assert not trails.ist_neu(None) and not trails.ist_neu("kaputt")
+    # Filter "neu": alle mit neu_seit, neueste zuerst; aeltere bleiben drin (keine Frist)
+    neu = trails.list_active(c, "neu", sort="neu", richtung="desc")
+    assert [x["slug"] for x in neu][:2] == ["jura/ganz-neu", "wallis/simplon"]
+    assert len(neu) == 9 and neu[-1]["slug"] == "aargau/veritas"      # oben auf 2020 gesetzt
+    assert trails.stats(c)["neu"] == 9
 
 
 def test_migration_neu_seit():

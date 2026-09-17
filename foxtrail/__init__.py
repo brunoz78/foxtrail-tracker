@@ -154,7 +154,7 @@ def create_app(test_config=None):
     @login_required
     def index():
         f = request.args.get("f", "alle")
-        if f not in ("alle", "offen", "gemacht"):
+        if f not in ("alle", "offen", "gemacht", "neu"):
             f = "alle"
         q = (request.args.get("q") or "").strip()[:80]
         # Mehrfach-Filter aus den Spaltenkoepfen (?typ=mini&typ=go ...)
@@ -166,6 +166,8 @@ def create_app(test_config=None):
         if sort not in trails.SORTS:
             sort = "ort"
         richtung = "desc" if request.args.get("dir") == "desc" else "asc"
+        if f == "neu" and "sort" not in request.args:
+            sort, richtung = "neu", "desc"           # neueste zuerst
         conn = get_conn()
         rows = trails.list_active(conn, f, q, sort=sort, richtung=richtung, **sel)
 

@@ -17,6 +17,7 @@
     <a href="{{ index_url(f='alle') }}" class="{{ 'on' if f == 'alle' }}">Alle</a>
     <a href="{{ index_url(f='offen') }}" class="{{ 'on' if f == 'offen' }}">Offen</a>
     <a href="{{ index_url(f='gemacht') }}" class="{{ 'on' if f == 'gemacht' }}">Gemacht</a>
+    <a href="{{ index_url(f='neu', sort='neu', dir='desc') }}" class="{{ 'on' if f == 'neu' }}" title="Seit dem Start der Liste neu auf foxtrail.ch">Neu{% if stats.neu %} <span class="cnt">{{ stats.neu }}</span>{% endif %}</a>
   </div>
   {% if f != 'alle' %}<input type="hidden" name="f" value="{{ f }}">{% endif %}
   {% if sort != 'ort' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
@@ -33,7 +34,7 @@
   <thead><tr>
     <th class="c">✓</th>
     <th>{{ sortlink('ort', 'Ort') }}</th>
-    <th>{{ sortlink('name', 'Trail') }}</th>
+    <th>{{ sortlink('name', 'Trail') }}{% if f == 'neu' %} · {{ sortlink('neu', 'Neu ab', 'desc') }}{% endif %}</th>
     <th class="wide">Route</th>
     <th>{{ sortlink('region', 'Region') }}{{ hfilter('region', opts.region) }}</th>
     <th>{{ sortlink('typ', 'Typ') }}{{ hfilter('typ', opts.typ) }}</th>

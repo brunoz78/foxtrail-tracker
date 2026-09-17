@@ -43,8 +43,9 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
-  - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt „Neu ab MM/JJ“
-    für `trails.NEU_TAGE` = 365 Tage, Detailseite immer). Manuelle Trails haben `neu_seit`
+  - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt dauerhaft
+    „Neu ab MM/JJ“, Filter `f=neu` listet alle mit `neu_seit`, Standard-Sortierung dort
+    neueste zuerst – bewusst keine Frist, Bruno will alle Zugänge sehen). Manuelle Trails haben `neu_seit`
     NULL. Der Seed auch, ausser bei Trails, die laut foxtrail.ch/thema/neuigkeiten/ kürzlich
     eröffnet wurden (Datum des Blog-Beitrags, von Hand gepflegt, kein Scraping – die
     Seite ist ein Blog ohne Trail-Links, das NEW-Badge ist wie MINI/MAXI nur im Bild).

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Lesen/Schreiben der Trail-Liste (Hauptliste, Archiv, eigene Eintraege, manuelle Trails)."""
 
-import datetime
 import json
 import re
 import uuid
@@ -34,9 +33,6 @@ REGION_LABEL = {
 }
 
 _DAUER_RE = re.compile(r"(\d+(?:[.,]\d+)?)(?:\s*[-–]\s*(\d+(?:[.,]\d+)?))?")
-
-# So lange traegt ein vom Abgleich neu angelegter Trail in der Liste "Neu ab MM/JJ".
-NEU_TAGE = 365
 
 
 class TrailError(Exception):
@@ -82,20 +78,9 @@ def _row(r):
     d["typ_label"] = TYP_LABEL.get(d["typ"], d["typ"])
     d["region_label"] = region_label(d["region"])
     d["dauer_von"], d["dauer_bis"] = parse_dauer(d["dauer"])
-    d["neu"] = ist_neu(d.get("neu_seit"))
+    d["neu"] = bool(d.get("neu_seit"))      # "Neu ab MM/JJ": bleibt, solange neu_seit gesetzt ist
     d["grad_label"] = GRAD_LABEL.get(d.get("schwierigkeit") or "", "")
     return d
-
-
-def ist_neu(neu_seit, heute=None):
-    if not neu_seit:
-        return False
-    heute = heute or datetime.date.today()
-    try:
-        seit = datetime.date.fromisoformat(neu_seit[:10])
-    except ValueError:
-        return False
-    return (heute - seit).days <= NEU_TAGE
 
 
 def get(conn, trail_id):
@@ -115,6 +100,7 @@ SORTS = {
     "dauer": lambda t: (t["dauer_von"], t["dauer_bis"]) if t["dauer_von"] is not None else None,
     "preis": lambda t: t["preis"],
     "datum": lambda t: t["gemacht_datum"],
+    "neu": lambda t: t.get("neu_seit"),
 }
 
 
@@ -135,7 +121,7 @@ def _liste(v):
 
 def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), grad=(), sort="ort",
                 richtung="asc"):
-    """Hauptliste: alles ausser Archiv. filter_: alle | offen | gemacht.
+    """Hauptliste: alles ausser Archiv. filter_: alle | offen | gemacht | neu.
     typ/region/dauer/grad: Mehrfachauswahl (Liste oder einzelner Wert), leer = alle."""
     sql = f"SELECT * FROM trails WHERE NOT {ARCHIV_COND}"
     args = []
@@ -143,6 +129,8 @@ def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), grad=()
         sql += " AND gemacht = 0"
     elif filter_ == "gemacht":
         sql += " AND gemacht = 1"
+    elif filter_ == "neu":
+        sql += " AND neu_seit IS NOT NULL"
     for spalte, werte in (("typ", [t for t in _liste(typ) if t in TYPEN]),
                           ("region", _liste(region)), ("dauer", _liste(dauer)),
                           ("schwierigkeit", [g for g in _liste(grad) if g in GRADE])):
@@ -184,6 +172,8 @@ def stats(conn):
         f"SELECT COUNT(*) FROM trails WHERE gemacht = 0 AND NOT {ARCHIV_COND}").fetchone()[0]
     s["archiv"] = conn.execute(f"SELECT COUNT(*) FROM trails WHERE {ARCHIV_COND}").fetchone()[0]
     s["im_angebot"] = conn.execute("SELECT COUNT(*) FROM trails WHERE im_angebot = 1").fetchone()[0]
+    s["neu"] = conn.execute(
+        f"SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL AND NOT {ARCHIV_COND}").fetchone()[0]
     s["mitspieler"] = conn.execute(
         "SELECT COALESCE(SUM(mitspieler),0) FROM trails WHERE gemacht = 1").fetchone()[0]
     return s

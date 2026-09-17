@@ -161,6 +161,16 @@ def test_liste_sortieren_filtern(app):
     assert "Baccara Mini" in html and "Simplon" not in html and "1–2 h" in html
     html = c.get("/?sort=region").get_data(as_text=True)
     assert 'class="grp"' in html and "Ostschweiz" in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET neu_seit = NULL")   # Fixture legt alles per Abgleich an
+    html = c.get("/?f=neu").get_data(as_text=True)
+    assert "Keine Trails gefunden" in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae"), mk("wallis/simplon", ort="Brig", name="Simplon"),
+                          mk("ostschweiz/baccara-mini", ort="Rapperswil", name="Baccara Mini", typ="mini"),
+                          mk("jura/frisch", ort="Delsberg", name="Frisch")], "test")
+    html = c.get("/?f=neu").get_data(as_text=True)
+    assert "Frisch" in html and "Aquae" not in html and "Neu ab " in html
     html = c.get("/?grad=schwierig").get_data(as_text=True)
     assert "Simplon" in html and "Aquae" not in html and "grad-schwierig" in html
     assert reihenfolge("/?sort=schwierigkeit") == ["Baccara Mini", "Aquae", "Simplon"]
