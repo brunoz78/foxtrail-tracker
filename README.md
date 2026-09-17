@@ -72,7 +72,7 @@ Getestet mit Debian 12/13 (unprivilegierter Container, 512 MB RAM reichen).
 ```bash
 # im Container, als root
 apt-get install -y git
-git clone https://github.com/<dein-name>/foxtrail-tracker.git /root/foxtrail-tracker
+git clone https://github.com/brunoz78/foxtrail-tracker.git /root/foxtrail-tracker
 cd /root/foxtrail-tracker
 bash deploy/install.sh
 foxtrailctl create-user admin --admin      # Passwort wird abgefragt

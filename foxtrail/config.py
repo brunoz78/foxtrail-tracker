@@ -44,7 +44,7 @@ def force_https():
 LIST_URL = os.environ.get("FOXTRAIL_LIST_URL", "https://foxtrail.ch/kategorie/trails/")
 USER_AGENT = os.environ.get(
     "SCRAPER_USER_AGENT",
-    "foxtrail-tracker/1.0 (+https://github.com/; private Trail-Liste, 1 Abruf/Woche)")
+    "foxtrail-tracker/1.0 (+https://github.com/brunoz78/foxtrail-tracker; private Trail-Liste, 1 Abruf/Woche)")
 SCRAPER_DELAY = float(os.environ.get("SCRAPER_DELAY", "1.0"))
 LOGIN_MAX_FAILS = int(os.environ.get("LOGIN_MAX_FAILS", "5"))
 LOGIN_LOCK_SECONDS = int(os.environ.get("LOGIN_LOCK_SECONDS", "300"))
