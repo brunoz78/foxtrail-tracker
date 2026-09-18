@@ -195,6 +195,11 @@ def create_app(test_config=None):
         return render_template("index.html", rows=rows, f=f, q=q, sel=sel, sort=sort, ansicht=ansicht,
                                richtung=richtung, opts=trails.filter_options(conn), index_url=index_url)
 
+    @app.route("/statistik")
+    @login_required
+    def statistik():
+        return render_template("statistik.html", st=trails.statistik(get_conn()))
+
     @app.route("/archiv")
     @login_required
     def archiv():

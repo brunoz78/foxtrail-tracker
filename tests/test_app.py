@@ -321,5 +321,26 @@ def test_kachelansicht_und_titelbild(app, monkeypatch, tmp_path):
     assert c.get("/titelbild/99").status_code == 404
 
 
+def test_statistik(app):
+    c = app.test_client()
+    login(c, "gast")
+    assert "Noch kein Trail" in c.get("/statistik").get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET gemacht = 1, gemacht_datum = '2023-05-01', mitspieler = 4, "
+                     "start_zeit = '2023-05-01 10:00', ziel_zeit = '2023-05-01 12:30' WHERE id = 1")
+        conn.execute("UPDATE trails SET gemacht = 1, gemacht_datum = '2025-06-01', mitspieler = 2, "
+                     "start_zeit = '2025-06-01 10:00', ziel_zeit = '2025-06-01 13:10' WHERE id = 2")
+        st = trails.statistik(conn)
+    assert st["gemacht"] == 2 and st["mitspieler"] == 6 and st["mitspieler_schnitt"] == 3.0
+    assert st["jahre"] == [(2023, 1), (2024, 0), (2025, 1)]              # Luecke als 0
+    assert st["spielzeit_summe"] == "5:40 h" and st["spielzeit_schnitt"] == "2:50 h"
+    assert st["schnellster"]["name"] == "Aquae" and st["laengster"]["name"] == "Simplon"
+    assert ("aargau", "Aargau", 1, 1) in st["regionen"]
+    html = c.get("/statistik").get_data(as_text=True)
+    assert "5:40 h" in html and "Schnellster" in html and "Aargau" in html and "2024" in html
+    c.get("/logout")
+    assert c.get("/statistik").status_code == 302
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

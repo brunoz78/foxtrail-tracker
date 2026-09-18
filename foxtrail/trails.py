@@ -342,3 +342,52 @@ def seed_from_file(conn, path=None):
              t.get("url", ""), grad, neu_seit, bild, ts, ts))
         n += 1
     return n
+
+
+# ---- Statistik ---------------------------------------------------------------- #
+def _anteile(alle, feld, reihenfolge, label):
+    """[(wert, anzeige, gemacht, gesamt)] je Auspraegung von `feld`, leere Werte ausgelassen."""
+    zaehler = {}
+    for t in alle:
+        v = t.get(feld) or ""
+        if v:
+            z = zaehler.setdefault(v, [0, 0])
+            z[0] += 1 if t["gemacht"] else 0
+            z[1] += 1
+    werte = [v for v in reihenfolge if v in zaehler] if reihenfolge else \
+        sorted(zaehler, key=lambda v: (-zaehler[v][0], label(v).lower()))
+    return [(v, label(v), zaehler[v][0], zaehler[v][1]) for v in werte]
+
+
+def statistik(conn):
+    """Kennzahlen fuer die Seite /statistik. Grundlage: Hauptliste (ohne Archiv) - gemachte
+    Trails stehen immer dort, auch wenn sie nicht mehr angeboten werden."""
+    alle = [_row(r) for r in conn.execute(f"SELECT * FROM trails WHERE NOT {ARCHIV_COND}")]
+    gemacht = [t for t in alle if t["gemacht"]]
+    datiert = sorted((t for t in gemacht if _DATE_RE.match(t["gemacht_datum"] or "")),
+                     key=lambda t: t["gemacht_datum"])
+    jahre = {}
+    for t in datiert:
+        j = int(t["gemacht_datum"][:4])
+        jahre[j] = jahre.get(j, 0) + 1
+    if jahre:                                   # Luecken als 0 zeigen, damit die Zeitachse stimmt
+        jahre = {j: jahre.get(j, 0) for j in range(min(jahre), max(jahre) + 1)}
+    mit_zeit = sorted((t for t in gemacht if t["spielzeit_min"]), key=lambda t: t["spielzeit_min"])
+    minuten = sum(t["spielzeit_min"] for t in mit_zeit)
+    mit_spielern = [t["mitspieler"] for t in gemacht if t["mitspieler"]]
+    return {
+        "gemacht": len(gemacht), "gesamt": len(alle),
+        "ohne_datum": len(gemacht) - len(datiert),
+        "erster": datiert[0] if datiert else None, "letzter": datiert[-1] if datiert else None,
+        "jahre": sorted(jahre.items()),
+        "mitspieler": sum(mit_spielern),
+        "mitspieler_schnitt": round(sum(mit_spielern) / len(mit_spielern), 1) if mit_spielern else None,
+        "spielzeit_n": len(mit_zeit),
+        "spielzeit_summe": spielzeit_label(minuten),
+        "spielzeit_schnitt": spielzeit_label(round(minuten / len(mit_zeit))) if mit_zeit else "",
+        "schnellster": mit_zeit[0] if mit_zeit else None,
+        "laengster": mit_zeit[-1] if len(mit_zeit) > 1 else None,
+        "regionen": _anteile(alle, "region", None, region_label),
+        "typen": _anteile(alle, "typ", TYPEN, lambda v: TYP_LABEL.get(v, v)),
+        "grade": _anteile(alle, "schwierigkeit", GRADE, lambda v: GRAD_LABEL.get(v, v)),
+    }

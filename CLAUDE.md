@@ -101,8 +101,10 @@ foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse
                        Schlussfoto-Download nach config.foto_dir()). Zuordnung nur ueber
                        exakten Namen. Die JSON-Adresse braucht das Session-Cookie des Browsers;
                        der Tracker ruft sie nie selbst ab - Upload auf der Seite /import.
+foxtrail/trails.py:statistik()  Kennzahlen fuer /statistik (Hauptliste ohne Archiv; Jahre mit
+                       Luecken als 0, Spielzeit nur aus importierten Zeiten)
 foxtrail/fotos.py      Fotos pruefen/verkleinern (Pillow), Vorschaubilder, Titelbild-Cache
-foxtrail/templates/    base, login, index (Liste + Kacheln), archiv, trail_form, trail_new, profil,
+foxtrail/templates/    base, login, index (Liste + Kacheln), statistik, archiv, trail_form, trail_new, profil,
                        benutzer, sync, fehler, import (Upload + Probelauf + Bestaetigen),
                        _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
 data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Erstbefüllung
@@ -166,5 +168,3 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
 
 - Excel-Export der Liste (Gegenstück zu `import-excel`)
 - Karte nach Region (Filter, Sortierung und Gruppen-Zeilen nach Region gibt es seit 2026-09)
-- Statistik-Seite (Trails pro Jahr, Mitspieler gesamt, Spielzeit gesamt und im Schnitt,
-  schnellster und laengster Trail, Verteilung nach Region und Typ) - von Bruno bestaetigt

@@ -14,6 +14,7 @@
   <nav>
     <a href="{{ url_for('index') }}" class="{{ 'on' if request.endpoint == 'index' }}">Trails
       {% if stats %}<span class="pill">{{ stats.gemacht }}/{{ stats.total }}</span>{% endif %}</a>
+    <a href="{{ url_for('statistik') }}" class="{{ 'on' if request.endpoint == 'statistik' }}">Statistik</a>
     <a href="{{ url_for('archiv') }}" class="{{ 'on' if request.endpoint == 'archiv' }}">Archiv
       {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</a>
     <a href="{{ url_for('trail_new') }}" class="{{ 'on' if request.endpoint == 'trail_new' }}">+ Manuell</a>

@@ -176,3 +176,39 @@ a.kachel.done { outline: 2px solid var(--green); outline-offset: -2px; }
 .ktext { padding: 8px 12px 10px; }
 .ktitel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kmeta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-top: 4px; font-size: 13px; color: var(--muted); }
+
+/* ---- Statistik ----------------------------------------------------------- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--card); border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+.t-zahl { font-size: 30px; font-weight: bold; line-height: 1.1; }
+.t-von { font-size: 18px; color: var(--muted); font-weight: normal; }
+.t-text { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 800px) { .stat-grid { grid-template-columns: minmax(0, 1fr); } }
+.stat-grid .card { margin: 0; }
+.stat-grid h2 { margin: 4px 0 12px; }
+.stat-grid h2 + .anteile { margin-bottom: 16px; }
+/* Saeulen: eine Farbe, 4px runde Enden oben, Zahl direkt darueber */
+.saeulen { display: flex; align-items: flex-end; gap: 10px; height: 180px; padding-top: 4px;
+  border-bottom: 1px solid var(--line); }
+.saeule { flex: 1; max-width: 72px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end;
+  align-items: center; text-decoration: none; color: var(--text); position: relative; }
+.s-bar { width: 100%; min-height: 2px; background: var(--green); border-radius: 4px 4px 0 0; }
+.saeule:hover .s-bar { background: var(--green-dark); }
+.s-zahl { font-size: 13px; font-weight: bold; margin-bottom: 3px; }
+.s-jahr { position: absolute; bottom: -20px; font-size: 12px; color: var(--muted); }
+.saeulen + p, .saeulen { margin-bottom: 24px; }
+/* Anteile: Bahn = gesamt, Fuellung = gemacht */
+.anteile { display: grid; gap: 2px; }
+a.anteil { display: grid; grid-template-columns: minmax(120px, 46%) 1fr 56px; gap: 10px; align-items: center;
+  text-decoration: none; color: var(--text); padding: 3px 4px; border-radius: 4px; font-size: 14px; }
+a.anteil:hover { background: var(--green-light); }
+.a-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.a-bahn { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; }
+.a-wert { display: block; height: 100%; background: var(--green); border-radius: 5px; }
+.a-zahl { text-align: right; color: var(--muted); font-size: 13px; white-space: nowrap; }
+.a-zahl b { color: var(--text); }
+dl.rekorde { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0 0 10px; }
+dl.rekorde dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
+dl.rekorde dd { margin: 0; }
+@media (prefers-color-scheme: dark) { .s-bar, .a-wert { background: #4f9a69; } .saeule:hover .s-bar { background: #62b17d; } }
