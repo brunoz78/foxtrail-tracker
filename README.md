@@ -22,8 +22,8 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 
 ![Auf dem Smartphone: Kacheln und Liste als Karten](docs/screenshots/handy.png)
 
-<sub>Screenshots mit erfundenen Beispieldaten; die Bilder sind gezeichnete Platzhalter,
-keine Fotos von foxtrail.ch.</sub>
+<sub>Screenshots mit erfundenen Einträgen; eigene Schlussfotos und Titelbilder von
+foxtrail.ch absichtlich unscharf.</sub>
 
 ## Funktionen
 

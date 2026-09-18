@@ -80,8 +80,9 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Fehler 1 h) im Hintergrund-Thread `api.github.com/.../releases/latest` ab; orangefarbener Punkt
   am Zahnrad + Menüeintrag. Tests fragen nie an (`app.testing`). `dev-update.sh` schreibt
   `DEV_STAND` (Anzeige „Entwicklungsstand main@abc1234“), ein Release-Update entfernt ihn.
-- **Screenshots** im README (`docs/screenshots/`): nur erfundene Demo-Daten und gezeichnete
-  Platzhalterbilder, keine echten Fotos und keine Titelbilder von foxtrail.ch (Rechte).
+- **Screenshots** im README (`docs/screenshots/`): erfundene Einträge, echte Bilder nur unscharf
+  (Gaussian-Blur ~0.65 % der Bildbreite): Schlussfotos von Bruno (Vorlagen in `bsp/`, gitignored)
+  und Titelbilder aus dem lokalen Cache. Von Bruno am 2026-09-18 so freigegeben.
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
   - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt dauerhaft
     „Neu ab MM/JJ“, Filter `f=neu` listet alle mit `neu_seit`, Standard-Sortierung dort
