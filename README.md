@@ -140,6 +140,44 @@ Einstellungen. Zwei optionale Absicherungen in `/etc/foxtrail-tracker.env`, dana
 **Backup:** Die Datei `/var/lib/foxtrail-tracker/foxtrail.db` sichern (oder
 `foxtrailctl export-json backup.json`).
 
+## Installation mit Docker
+
+Für NAS (Synology, QNAP, Unraid), einen Raspberry Pi oder jeden Rechner mit Docker. Das
+Image gibt es für `amd64` und `arm64` unter `ghcr.io/brunoz78/foxtrail-tracker`.
+
+```bash
+mkdir foxtrail && cd foxtrail
+curl -fsSLO https://raw.githubusercontent.com/brunoz78/foxtrail-tracker/main/docker-compose.yml
+docker compose up -d
+docker exec -it foxtrail foxtrailctl create-user admin --admin    # Passwort wird abgefragt
+```
+
+Danach ist die App unter `http://<host>:8080/` erreichbar. Ohne Compose:
+
+```bash
+docker run -d --name foxtrail --restart unless-stopped -p 8080:8080 \
+  -v foxtrail-daten:/data ghcr.io/brunoz78/foxtrail-tracker:latest
+```
+
+* **Daten:** Datenbank, Fotos und der Session-Schlüssel liegen im Volume `/data`
+  (in der Compose-Datei der Ordner `./foxtrail-daten`). Für ein Backup diesen Ordner sichern.
+* **Abgleich:** Ein Hintergrundprozess im Container gleicht wie der systemd-Timer jeden
+  Montag um 04:30 ab (bis zu 30 Min. später) und holt verpasste Termine nach dem Start nach.
+  Die Seite Abgleich zeigt den nächsten Lauf. Abschalten mit `FOXTRAIL_ZEITPLAN=0`.
+* **Administrator beim ersten Start:** statt `docker exec` geht auch
+  `FOXTRAIL_ADMIN_PASSWORD` (legt `admin` an, solange es keinen Administrator gibt; danach
+  die Variable wieder entfernen).
+* **Rechte:** Der Container gibt nach dem Start die root-Rechte ab und läuft als
+  `PUID`/`PGID` (Standard 1000). Bei einem eingebundenen Host-Ordner passend zu dessen
+  Besitzer setzen (`id -u`, `id -g`).
+* **Zeitzone:** `TZ` (Standard `Europe/Zurich`) bestimmt die Uhrzeit des Abgleichs.
+* **Aktualisieren:** `docker compose pull && docker compose up -d`.
+* **Selbst bauen:** Repository klonen, in `docker-compose.yml` `image:` durch `build: .`
+  ersetzen und `docker compose up -d --build`.
+* **CLI:** alle Befehle aus [Verwaltung (CLI)](#verwaltung-cli) mit
+  `docker exec -it foxtrail foxtrailctl <befehl>`.
+* **Reverse-Proxy:** wie unten beschrieben; `FORCE_HTTPS=1` als Umgebungsvariable setzen.
+
 ## Verwaltung (CLI)
 
 ```bash
@@ -206,11 +244,15 @@ Alles über Umgebungsvariablen (siehe `deploy/foxtrail-tracker.env.example`):
 |---|---|---|
 | `SECRET_KEY` | zufällig pro Start | Session-Signatur – in Produktion fest setzen |
 | `FOXTRAIL_DB` | `/var/lib/foxtrail-tracker/foxtrail.db` bzw. `data/foxtrail.local.db` | SQLite-Datei |
-| `BIND` | `0.0.0.0:8080` | Adresse für gunicorn (nur in der systemd-Unit verwendet); `127.0.0.1:8080` nur, wenn der Reverse-Proxy im selben Container läuft |
+| `BIND` | `0.0.0.0:8080` | Adresse für gunicorn (systemd-Unit und Docker); `127.0.0.1:8080` nur, wenn der Reverse-Proxy im selben Container läuft |
 | `FORCE_HTTPS` | `0` | `1` = Session-Cookie nur über HTTPS; dann keine Anmeldung mehr über `http://` |
 | `FOXTRAIL_LIST_URL` | `https://foxtrail.ch/kategorie/trails/` | Quelle des Abgleichs |
 | `SCRAPER_DELAY` | `1.0` | Pause zwischen Seitenabrufen (Sekunden) |
 | `LOGIN_MAX_FAILS` / `LOGIN_LOCK_SECONDS` | `5` / `300` | Sperre nach Fehlversuchen |
+
+Nur im Docker-Image: `PUID`/`PGID` (1000), `TZ` (`Europe/Zurich`), `FOXTRAIL_ZEITPLAN`
+(`1` = wöchentlicher Abgleich im Container), `FOXTRAIL_ADMIN_PASSWORD` (Administrator beim
+ersten Start). `SECRET_KEY` wird dort beim ersten Start erzeugt und in `/data/secret_key` abgelegt.
 
 ## Aufbau
 
@@ -227,6 +269,7 @@ foxtrail/
 data/trails_seed.json   Momentaufnahme der Trail-Liste für die Erstbefüllung
 scripts/manage.py       Verwaltungs-CLI
 deploy/                 install.sh, systemd-Units, foxtrailctl, env-Beispiel
+Dockerfile, docker/     Docker-Image (Startskript, foxtrailctl), docker-compose.yml
 tests/                  pytest
 ```
 

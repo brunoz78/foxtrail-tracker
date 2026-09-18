@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """End-to-End ueber den Flask-Testclient (temporaere SQLite-Datei)."""
 
+import datetime
 import io
 import json
 import os
@@ -431,6 +432,41 @@ def test_sync_seite_zeigt_zeitplan(app, monkeypatch):
     assert "Nächster Lauf" in html and "Montag, 21.09.2026, 04:30" in html and "jeden Montag um 04:30" in html
     monkeypatch.setattr(sync, "timer_status", lambda: None)
     assert "Montag um 04:30" in c.get("/admin/sync").get_data(as_text=True)   # Hinweis ohne systemd
+
+
+def test_zeitplan_docker(tmp_path):
+    from foxtrail import zeitplan
+    dt = datetime.datetime
+    mo = dt(2026, 9, 21, 4, 30)                                   # Montag
+    assert zeitplan.letzter_termin(dt(2026, 9, 23, 12, 0)) == mo
+    assert zeitplan.letzter_termin(dt(2026, 9, 21, 4, 29)) == dt(2026, 9, 14, 4, 30)
+    assert zeitplan.letzter_termin(mo) == mo
+    assert zeitplan.naechster_termin(dt(2026, 9, 21, 4, 31)) == dt(2026, 9, 28, 4, 30)
+    # verpasst: seit dem letzten Montagstermin kein Timer-Lauf
+    assert zeitplan.faellig(None, dt(2026, 9, 23, 12, 0))
+    assert zeitplan.faellig("2026-09-14 04:41:00", dt(2026, 9, 23, 12, 0))
+    assert not zeitplan.faellig("2026-09-21 04:41:00", dt(2026, 9, 23, 12, 0))
+    # Status fuer die Seite Abgleich aus zeitplan.json
+    pfad = str(tmp_path / "zeitplan.json")
+    assert zeitplan.status(pfad) is None
+    zeitplan._schreiben(pfad, dt(2026, 9, 28, 4, 47), dt(2026, 9, 23, 12, 0))
+    st = zeitplan.status(pfad, jetzt=dt(2026, 9, 23, 12, 10))
+    assert st["aktiv"] and st["docker"] and st["naechster"] == "Montag, 28.09.2026, 04:47"
+    assert not zeitplan.status(pfad, jetzt=dt(2026, 9, 23, 14, 0))["aktiv"]      # Herzschlag veraltet
+
+
+def test_sync_seite_docker(app, monkeypatch):
+    from foxtrail import zeitplan
+    c = app.test_client()
+    login(c, "admin")
+    monkeypatch.setattr(sync, "timer_status", lambda: None)
+    zeitplan._schreiben(zeitplan.datei(app.config["DB_PATH"]), datetime.datetime(2026, 9, 28, 4, 47),
+                        datetime.datetime.now())
+    html = c.get("/admin/sync").get_data(as_text=True)
+    assert "eingeschaltet" in html and "Montag, 28.09.2026, 04:47" in html
+    zeitplan._schreiben(zeitplan.datei(app.config["DB_PATH"]), datetime.datetime(2026, 9, 28, 4, 47),
+                        datetime.datetime(2026, 1, 1))
+    assert "läuft nicht" in c.get("/admin/sync").get_data(as_text=True)
 
 
 def test_healthz(app):

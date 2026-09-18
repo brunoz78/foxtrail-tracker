@@ -18,7 +18,11 @@
         {% if letzter_auto %}<dt>Letzter Lauf</dt><dd>{{ letzter_auto.ts[:16]|datum_zeit }} – {{ 'ok' if letzter_auto.ok else 'Fehler' }}</dd>
         {% elif timer.letzter %}<dt>Letzter Lauf</dt><dd>{{ timer.letzter }}</dd>{% endif %}
       </dl>
-      <p class="muted small">Verpasste Termine (Container war aus) holt der Timer nach dem Start nach.</p>
+      <p class="muted small">Verpasste Termine (Container war aus) werden nach dem Start nachgeholt.</p>
+      {% elif timer.docker %}
+      <span class="tag warn">läuft nicht</span>
+      <p class="muted small">Der Zeitplan-Prozess im Docker-Container meldet sich nicht mehr. Container neu starten
+      (<code>docker restart foxtrail</code>) und das Log prüfen (<code>docker logs foxtrail</code>).</p>
       {% else %}
       <span class="tag warn">ausgeschaltet</span>
       <p class="muted small">Einschalten im Container: <code>systemctl enable --now foxtrail-sync.timer</code></p>

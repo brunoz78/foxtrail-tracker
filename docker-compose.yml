@@ -1,0 +1,23 @@
+# Foxtrail-Tracker mit Docker Compose:  docker compose up -d
+# Danach im Browser: http://<Host>:8080/
+services:
+  foxtrail:
+    image: ghcr.io/brunoz78/foxtrail-tracker:latest
+    # Stattdessen selbst aus dem Quellcode bauen:
+    # build: .
+    container_name: foxtrail
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Datenbank, Fotos und Session-Schluessel
+      - ./foxtrail-daten:/data
+    environment:
+      TZ: Europe/Zurich
+      # Besitzer des Ordners ./foxtrail-daten auf dem Host (id -u / id -g)
+      PUID: "1000"
+      PGID: "1000"
+      # Administrator "admin" beim ersten Start anlegen (danach wieder entfernen):
+      # FOXTRAIL_ADMIN_PASSWORD: "bitte-aendern"
+      # Nur setzen, wenn ausschliesslich ueber HTTPS (Reverse-Proxy) zugegriffen wird:
+      # FORCE_HTTPS: "1"

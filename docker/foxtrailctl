@@ -1,0 +1,8 @@
+#!/bin/sh
+# foxtrailctl im Docker-Container:  docker exec -it <container> foxtrailctl create-user admin --admin
+# Laeuft immer als App-Benutzer (PUID/PGID), damit keine Dateien in /data root gehoeren.
+set -eu
+if [ "$(id -u)" = "0" ]; then
+  exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups "$0" "$@"
+fi
+exec python /app/scripts/manage.py "$@"

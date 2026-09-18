@@ -7,3 +7,4 @@ data/*.db-*
 data/fotos/
 *.local.*
 .env
+foxtrail-daten/

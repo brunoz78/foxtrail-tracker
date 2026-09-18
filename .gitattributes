@@ -4,3 +4,5 @@
 *.service text eol=lf
 *.timer text eol=lf
 deploy/foxtrailctl text eol=lf
+docker/* text eol=lf
+Dockerfile text eol=lf

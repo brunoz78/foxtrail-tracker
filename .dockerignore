@@ -1,0 +1,15 @@
+.git
+.github
+.venv
+.pytest_cache
+**/__pycache__
+*.pyc
+data/*.db
+data/*.db-*
+data/fotos
+*.local.*
+.env
+tests
+proxmox
+deploy
+docs

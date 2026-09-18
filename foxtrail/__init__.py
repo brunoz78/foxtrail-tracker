@@ -15,7 +15,7 @@ import time
 from flask import (Flask, abort, flash, g, redirect, render_template, request,
                    send_file, send_from_directory, session, url_for)
 
-from . import bestellungen, config, db, fotos, sync, trails, users
+from . import bestellungen, config, db, fotos, sync, trails, users, zeitplan
 
 _ATTEMPTS = {}   # username -> [fails, lock_until_ts]
 
@@ -442,7 +442,9 @@ def create_app(test_config=None):
         letzter_auto = conn.execute("SELECT ts, ok FROM sync_log WHERE ausloeser = 'timer' "
                                     "ORDER BY id DESC LIMIT 1").fetchone()
         return render_template("sync.html", runs=sync.last_runs(conn), list_url=config.LIST_URL,
-                               timer=sync.timer_status(), letzter_auto=letzter_auto)
+                               timer=sync.timer_status()
+                               or zeitplan.status(zeitplan.datei(app.config["DB_PATH"])),
+                               letzter_auto=letzter_auto)
 
     @app.route("/healthz")
     def healthz():

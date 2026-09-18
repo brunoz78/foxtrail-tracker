@@ -64,6 +64,16 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   manuell (Button im Admin-Bereich).
   Die Seite Abgleich zeigt Zeitplan und nächsten Lauf (`sync.timer_status`: liest
   `systemctl show foxtrail-sync.timer`, ohne Rechte; ohne systemd → Hinweis auf den Standardplan).
+- **Docker** (seit 2026-09-18, Wunsch von Bruno): `Dockerfile`, `docker/entrypoint.sh`,
+  `docker/foxtrailctl`, `docker-compose.yml`. Daten in `/data` (DB, Fotos, `secret_key`,
+  `zeitplan.json`). Start als root, dann `setpriv` auf `PUID`/`PGID` – auch `foxtrailctl` per
+  `docker exec`, sonst gehören WAL-Dateien root. Statt systemd-Timer läuft
+  `manage.py zeitplan` (`foxtrail/zeitplan.py`) im Hintergrund: Montag 04:30 + bis 30 Min.,
+  verpasste Termine nachholen (anhand `sync_log`, `ausloeser='timer'`), Herzschlag in
+  `zeitplan.json` für die Seite Abgleich (`zeitplan.status`, Fallback wenn kein systemd).
+  Workflow `.github/workflows/docker.yml`: bei Push Image bauen und im Container testen
+  (Scraper-URL ins Leere, damit CI foxtrail.ch nicht abruft), bei Release amd64+arm64 nach
+  `ghcr.io/brunoz78/foxtrail-tracker` (Tags X.Y.Z, X.Y, latest).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
   - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt dauerhaft
     „Neu ab MM/JJ“, Filter `f=neu` listet alle mit `neu_seit`, Standard-Sortierung dort
@@ -126,6 +136,7 @@ foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse
 foxtrail/trails.py:statistik()  Kennzahlen fuer /statistik (Hauptliste ohne Archiv; Jahre mit
                        Luecken als 0, Spielzeit nur aus importierten Zeiten)
 foxtrail/fotos.py      Fotos pruefen/verkleinern (Pillow), Vorschaubilder, Titelbild-Cache
+foxtrail/zeitplan.py   woechentlicher Abgleich im Docker-Container (ersetzt den systemd-Timer)
 foxtrail/templates/    base, login, index (Liste + Kacheln), statistik, archiv, trail_form, trail_new, profil,
                        benutzer, sync, fehler, import (Upload + Probelauf + Bestaetigen),
                        _macros (Typ-Badge, Sortier-Link, Spaltenfilter)

@@ -6,6 +6,7 @@ Verwaltungs-CLI fuer den Foxtrail-Tracker.
   manage.py init-db                       Schema anlegen
   manage.py seed [datei.json]             Erstbefuellung aus data/trails_seed.json (nur neue Trails)
   manage.py sync                          Abgleich mit foxtrail.ch (fuer Cron/systemd-Timer)
+  manage.py zeitplan                      woechentlicher Abgleich als Dauerprozess (Docker, ohne systemd)
   manage.py create-user NAME [--admin]    Benutzer anlegen (Passwort wird abgefragt oder aus
                                           $FOXTRAIL_PASSWORD gelesen)
   manage.py set-password NAME             Passwort neu setzen
@@ -28,7 +29,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from foxtrail import bestellungen, config, db, sync, trails, users  # noqa: E402
+from foxtrail import bestellungen, config, db, sync, trails, users, zeitplan  # noqa: E402
 
 
 def _pw(prompt="Passwort: "):
@@ -63,6 +64,10 @@ def cmd_sync(a):
     else:
         print("FEHLER:", res["meldung"], file=sys.stderr)
         sys.exit(1)
+
+
+def cmd_zeitplan(a):
+    zeitplan.laufen(config.db_path())
 
 
 def cmd_create_user(a):
@@ -218,6 +223,7 @@ def main():
     sub.add_parser("init-db").set_defaults(fn=cmd_init_db)
     s = sub.add_parser("seed"); s.add_argument("datei", nargs="?"); s.set_defaults(fn=cmd_seed)
     s = sub.add_parser("sync"); s.add_argument("--ausloeser", default="cli"); s.set_defaults(fn=cmd_sync)
+    sub.add_parser("zeitplan").set_defaults(fn=cmd_zeitplan)
     s = sub.add_parser("create-user"); s.add_argument("name"); s.add_argument("--admin", action="store_true")
     s.set_defaults(fn=cmd_create_user)
     s = sub.add_parser("set-password"); s.add_argument("name"); s.set_defaults(fn=cmd_set_password)
