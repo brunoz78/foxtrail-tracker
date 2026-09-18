@@ -175,7 +175,8 @@ docker run -d --name foxtrail --restart unless-stopped -p 8080:8080 \
 * **Daten:** Datenbank, Fotos und der Session-Schlüssel liegen im Volume `/data`
   (in der Compose-Datei der Ordner `./foxtrail-daten`). Für ein Backup diesen Ordner sichern.
 * **Abgleich:** Ein Hintergrundprozess im Container gleicht wie der systemd-Timer jeden
-  Montag um 04:30 ab (bis zu 30 Min. später) und holt verpasste Termine nach dem Start nach.
+  Montag um 04:30 ab (bis zu 30 Min. später) und holt verpasste Termine nach dem Start nach
+  (nicht bei einer Neuinstallation – dann ist der erste Lauf der nächste Montag).
   Die Seite Abgleich zeigt den nächsten Lauf. Abschalten mit `FOXTRAIL_ZEITPLAN=0`.
 * **Administrator beim ersten Start:** statt `docker exec` geht auch
   `FOXTRAIL_ADMIN_PASSWORD` (legt `admin` an, solange es keinen Administrator gibt; danach
@@ -190,6 +191,43 @@ docker run -d --name foxtrail --restart unless-stopped -p 8080:8080 \
 * **CLI:** alle Befehle aus [Verwaltung (CLI)](#verwaltung-cli) mit
   `docker exec -it foxtrail foxtrailctl <befehl>`.
 * **Reverse-Proxy:** wie unten beschrieben; `FORCE_HTTPS=1` als Umgebungsvariable setzen.
+
+### Mit Portainer
+
+**Stacks → + Add stack**, Name z. B. `foxtrail`, im **Web editor** einfügen und
+**Deploy the stack**:
+
+```yaml
+services:
+  foxtrail:
+    image: ghcr.io/brunoz78/foxtrail-tracker:latest
+    container_name: foxtrail
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - foxtrail-daten:/data
+    environment:
+      TZ: Europe/Zurich
+      # nur für den ersten Start, danach entfernen:
+      FOXTRAIL_ADMIN_PASSWORD: "hier-ein-sicheres-passwort"
+
+volumes:
+  foxtrail-daten:
+```
+
+* Statt `./foxtrail-daten` ein **benanntes Volume**: Relative Pfade landen bei Portainer in
+  dessen eigenem Datenordner. Wo das Volume liegt (fürs Backup), steht unter **Volumes →
+  foxtrail-daten**. Für einen festen Host-Ordner `- /pfad/auf/dem/host:/data` eintragen, den
+  `volumes:`-Block am Ende weglassen und `PUID`/`PGID` auf den Besitzer des Ordners setzen
+  (Synology oft `1026`/`100`).
+* Beim ersten Start wird `admin` mit dem Passwort aus `FOXTRAIL_ADMIN_PASSWORD` angelegt. Danach
+  die Zeile löschen und **Update the stack** – das Passwort bleibt gültig. Alternativ
+  **Containers → foxtrail → Console** (Command `/bin/sh`) und
+  `foxtrailctl create-user admin --admin`.
+* Port belegt? Links eine andere Zahl, z. B. `"8090:8080"`.
+* **Aktualisieren:** Stack öffnen → **Update the stack** mit **Re-pull image and redeploy**.
+  Die Daten im Volume bleiben erhalten.
 
 ## Verwaltung (CLI)
 

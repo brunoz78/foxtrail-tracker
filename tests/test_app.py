@@ -443,8 +443,8 @@ def test_zeitplan_docker(tmp_path):
     assert zeitplan.letzter_termin(dt(2026, 9, 21, 4, 29)) == dt(2026, 9, 14, 4, 30)
     assert zeitplan.letzter_termin(mo) == mo
     assert zeitplan.naechster_termin(dt(2026, 9, 21, 4, 31)) == dt(2026, 9, 28, 4, 30)
-    # verpasst: seit dem letzten Montagstermin kein Timer-Lauf
-    assert zeitplan.faellig(None, dt(2026, 9, 23, 12, 0))
+    # verpasst: seit dem letzten Montagstermin kein Timer-Lauf; Neuinstallation nicht
+    assert not zeitplan.faellig(None, dt(2026, 9, 23, 12, 0))
     assert zeitplan.faellig("2026-09-14 04:41:00", dt(2026, 9, 23, 12, 0))
     assert not zeitplan.faellig("2026-09-21 04:41:00", dt(2026, 9, 23, 12, 0))
     # Status fuer die Seite Abgleich aus zeitplan.json
@@ -452,8 +452,13 @@ def test_zeitplan_docker(tmp_path):
     assert zeitplan.status(pfad) is None
     zeitplan._schreiben(pfad, dt(2026, 9, 28, 4, 47), dt(2026, 9, 23, 12, 0))
     st = zeitplan.status(pfad, jetzt=dt(2026, 9, 23, 12, 10))
-    assert st["aktiv"] and st["docker"] and st["naechster"] == "Montag, 28.09.2026, 04:47"
+    # angezeigt wird der regulaere Termin, die Zufallsverzoegerung als Hinweis (wie systemd)
+    assert st["aktiv"] and st["docker"] and st["naechster"] == "Montag, 28.09.2026, 04:30"
+    assert st["verzoegerung"] == "30 Min."
     assert not zeitplan.status(pfad, jetzt=dt(2026, 9, 23, 14, 0))["aktiv"]      # Herzschlag veraltet
+    zeitplan._schreiben(pfad, dt(2026, 9, 23, 12, 1), dt(2026, 9, 23, 12, 0), nachholen=True)
+    assert zeitplan.status(pfad, jetzt=dt(2026, 9, 23, 12, 0))["naechster"] == \
+        "Mittwoch, 23.09.2026, 12:01 (verpasster Termin wird nachgeholt)"
 
 
 def test_sync_seite_docker(app, monkeypatch):
@@ -464,7 +469,7 @@ def test_sync_seite_docker(app, monkeypatch):
     zeitplan._schreiben(zeitplan.datei(app.config["DB_PATH"]), datetime.datetime(2026, 9, 28, 4, 47),
                         datetime.datetime.now())
     html = c.get("/admin/sync").get_data(as_text=True)
-    assert "eingeschaltet" in html and "Montag, 28.09.2026, 04:47" in html
+    assert "eingeschaltet" in html and "Montag, 28.09.2026, 04:30" in html and "bis zu 30 Min." in html
     zeitplan._schreiben(zeitplan.datei(app.config["DB_PATH"]), datetime.datetime(2026, 9, 28, 4, 47),
                         datetime.datetime(2026, 1, 1))
     assert "läuft nicht" in c.get("/admin/sync").get_data(as_text=True)

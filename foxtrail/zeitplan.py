@@ -6,7 +6,9 @@ Im LXC erledigt das deploy/foxtrail-sync.timer. Im Container gibt es kein system
 startet docker/entrypoint.sh `manage.py zeitplan` als Hintergrundprozess, der sich gleich
 verhaelt wie der Timer:
   * jeden Montag um 04:30 (Ortszeit, TZ), bis zu 30 Min. zufaellig spaeter
-  * ein verpasster Termin (Container war aus) wird kurz nach dem Start nachgeholt
+  * ein verpasster Termin (Container war aus) wird kurz nach dem Start nachgeholt;
+    bei einer Neuinstallation (noch nie automatisch abgeglichen) gibt es nichts nachzuholen,
+    wie beim systemd-Timer mit Persistent=true
 
 Der Prozess schreibt seinen naechsten Termin und einen Herzschlag nach
 <Datenordner>/zeitplan.json; die Seite Abgleich liest daraus den Status (status()).
@@ -50,15 +52,20 @@ def naechster_termin(jetzt):
 
 def faellig(letzter_lauf, jetzt):
     """letzter_lauf = ts des letzten Timer-Laufs aus sync_log ('YYYY-MM-DD HH:MM:SS') oder None.
-    True, wenn seit dem letzten regulaeren Termin noch kein Lauf stattfand."""
-    return not letzter_lauf or letzter_lauf < letzter_termin(jetzt).strftime("%Y-%m-%d %H:%M:%S")
+    True, wenn seit dem letzten regulaeren Termin noch kein Lauf stattfand. None (Neuinstallation)
+    zaehlt nicht als verpasst: der erste Lauf ist der naechste regulaere Termin."""
+    return bool(letzter_lauf) and letzter_lauf < letzter_termin(jetzt).strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _schreiben(pfad, naechster, jetzt):
+def _schreiben(pfad, naechster, jetzt, nachholen=False):
+    """naechster = tatsaechlicher Zeitpunkt (mit Zufallsverzoegerung). Angezeigt wird wie beim
+    systemd-Timer der regulaere Termin (04:30) plus der Hinweis auf die Verzoegerung."""
+    termin = naechster if nachholen else letzter_termin(naechster)
     tmp = pfad + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump({"naechster": naechster.strftime("%Y-%m-%d %H:%M:%S"),
-                   "herzschlag": jetzt.strftime("%Y-%m-%d %H:%M:%S")}, fh)
+                   "termin": termin.strftime("%Y-%m-%d %H:%M:%S"),
+                   "herzschlag": jetzt.strftime("%Y-%m-%d %H:%M:%S"), "nachholen": nachholen}, fh)
     os.replace(tmp, pfad)
 
 
@@ -68,7 +75,7 @@ def status(pfad, jetzt=None):
     try:
         with open(pfad, encoding="utf-8") as fh:
             d = json.load(fh)
-        naechster = datetime.datetime.strptime(d["naechster"], "%Y-%m-%d %H:%M:%S")
+        naechster = datetime.datetime.strptime(d.get("termin") or d["naechster"], "%Y-%m-%d %H:%M:%S")
         herzschlag = datetime.datetime.strptime(d["herzschlag"], "%Y-%m-%d %H:%M:%S")
     except (OSError, ValueError, KeyError, TypeError):
         return None
@@ -76,9 +83,10 @@ def status(pfad, jetzt=None):
     return {
         "aktiv": (jetzt - herzschlag).total_seconds() <= VERALTET,
         "plan": PLAN_TEXT,
-        "naechster": sync.zeitpunkt_text(naechster),
+        "naechster": sync.zeitpunkt_text(naechster)
+                     + (" (verpasster Termin wird nachgeholt)" if d.get("nachholen") else ""),
         "letzter": "",
-        "verzoegerung": "",      # der Zufallsanteil steckt schon in "naechster"
+        "verzoegerung": "" if d.get("nachholen") else f"{MAX_VERZOEGERUNG // 60} Min.",
         "docker": True,
     }
 
@@ -107,7 +115,8 @@ def laufen(db_path):
     """Endlosschleife (manage.py zeitplan)."""
     pfad = datei(db_path)
     jetzt = datetime.datetime.now()
-    if faellig(_letzter_lauf(db_path), jetzt):
+    nachholen = faellig(_letzter_lauf(db_path), jetzt)
+    if nachholen:
         ziel = jetzt + datetime.timedelta(seconds=START_PAUSE)
         _log("Termin verpasst, Abgleich wird nachgeholt")
     else:
@@ -116,7 +125,8 @@ def laufen(db_path):
         jetzt = datetime.datetime.now()
         if jetzt >= ziel:
             _abgleichen(db_path)
+            nachholen = False
             jetzt = datetime.datetime.now()
             ziel = naechster_termin(jetzt) + datetime.timedelta(seconds=random.randint(0, MAX_VERZOEGERUNG))
-        _schreiben(pfad, ziel, jetzt)
+        _schreiben(pfad, ziel, jetzt, nachholen)
         time.sleep(max(1, min(HERZSCHLAG, (ziel - jetzt).total_seconds())))

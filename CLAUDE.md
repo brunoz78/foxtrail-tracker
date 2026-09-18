@@ -69,7 +69,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   `zeitplan.json`). Start als root, dann `setpriv` auf `PUID`/`PGID` – auch `foxtrailctl` per
   `docker exec`, sonst gehören WAL-Dateien root. Statt systemd-Timer läuft
   `manage.py zeitplan` (`foxtrail/zeitplan.py`) im Hintergrund: Montag 04:30 + bis 30 Min.,
-  verpasste Termine nachholen (anhand `sync_log`, `ausloeser='timer'`), Herzschlag in
+  verpasste Termine nachholen (anhand `sync_log`, `ausloeser='timer'`; Neuinstallation ohne
+  Timer-Lauf zaehlt nicht als verpasst, wie systemd Persistent=true), Herzschlag in
   `zeitplan.json` für die Seite Abgleich (`zeitplan.status`, Fallback wenn kein systemd).
   Workflow `.github/workflows/docker.yml`: bei Push Image bauen und im Container testen
   (Scraper-URL ins Leere, damit CI foxtrail.ch nicht abruft), bei Release amd64+arm64 nach
