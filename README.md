@@ -30,7 +30,7 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 * **Fotos** pro Trail: hochladen, ersetzen, löschen (JPEG/PNG/WebP bis 15 MB). Beim
   Speichern wird das Bild gedreht, auf höchstens 2560 px verkleinert und ohne
   EXIF-Daten (also ohne GPS-Position) abgelegt. In der Liste erscheint eine Vorschau
-* **Statistik**: gemacht von gesamt, Mitspieler, Spielzeit gesamt und im Schnitt,
+* **Statistik**: gemacht von gesamt (davon im laufenden Jahr), erkundete Regionen, Spielzeit gesamt und im Schnitt,
   schnellster und längster Trail, Trails pro Jahr sowie Fortschritt je Region, Typ und
   Schwierigkeit (ein Klick auf einen Balken öffnet die passende Liste)
 * Manuell erfasste Trails für früher gemachte Trails, die nicht mehr angeboten werden

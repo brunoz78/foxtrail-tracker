@@ -24,11 +24,13 @@
 <div class="tiles">
   <div class="tile">
     <div class="t-zahl">{{ st.gemacht }}<span class="t-von"> / {{ st.gesamt }}</span></div>
-    <div class="t-text">Trails gemacht ({{ (100 * st.gemacht / st.gesamt)|round|int }} %)</div>
+    <div class="t-text">Trails gemacht ({{ (100 * st.gemacht / st.gesamt)|round|int }} %),
+      davon {{ st.dieses_jahr }} in {{ st.jahr }}</div>
   </div>
   <div class="tile">
-    <div class="t-zahl">{{ st.mitspieler }}</div>
-    <div class="t-text">Mitspieler gesamt{% if st.mitspieler_schnitt %}, Ø {{ st.mitspieler_schnitt }} pro Trail{% endif %}</div>
+    <div class="t-zahl">{{ st.regionen_besucht }}<span class="t-von"> / {{ st.regionen_gesamt }}</span></div>
+    <div class="t-text">Regionen erkundet{% if st.top_region %}, am meisten in
+      <a href="{{ url_for('index', region=st.top_region[0], f='gemacht') }}">{{ st.top_region[1] }}</a> ({{ st.top_region[2] }}){% endif %}</div>
   </div>
   <div class="tile">
     <div class="t-zahl">{{ st.spielzeit_summe or '–' }}</div>

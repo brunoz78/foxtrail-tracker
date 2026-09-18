@@ -374,20 +374,25 @@ def statistik(conn):
         jahre = {j: jahre.get(j, 0) for j in range(min(jahre), max(jahre) + 1)}
     mit_zeit = sorted((t for t in gemacht if t["spielzeit_min"]), key=lambda t: t["spielzeit_min"])
     minuten = sum(t["spielzeit_min"] for t in mit_zeit)
-    mit_spielern = [t["mitspieler"] for t in gemacht if t["mitspieler"]]
+    regionen = _anteile(alle, "region", None, region_label)     # sortiert: meiste gemachte zuerst
+    besucht = [r for r in regionen if r[2]]
+    jahr = datetime.date.today().year
     return {
         "gemacht": len(gemacht), "gesamt": len(alle),
         "ohne_datum": len(gemacht) - len(datiert),
         "erster": datiert[0] if datiert else None, "letzter": datiert[-1] if datiert else None,
         "jahre": sorted(jahre.items()),
-        "mitspieler": sum(mit_spielern),
-        "mitspieler_schnitt": round(sum(mit_spielern) / len(mit_spielern), 1) if mit_spielern else None,
+        "dieses_jahr": jahre.get(jahr, 0), "jahr": jahr,
+        # Summe der Mitspieler sagt wenig, wenn immer dieselben mitspielen - stattdessen,
+        # wie viele Regionen schon erkundet sind (Wunsch von Bruno, 2026-09-18)
+        "regionen_besucht": len(besucht), "regionen_gesamt": len(regionen),
+        "top_region": besucht[0] if besucht else None,
         "spielzeit_n": len(mit_zeit),
         "spielzeit_summe": spielzeit_label(minuten),
         "spielzeit_schnitt": spielzeit_label(round(minuten / len(mit_zeit))) if mit_zeit else "",
         "schnellster": mit_zeit[0] if mit_zeit else None,
         "laengster": mit_zeit[-1] if len(mit_zeit) > 1 else None,
-        "regionen": _anteile(alle, "region", None, region_label),
+        "regionen": regionen,
         "typen": _anteile(alle, "typ", TYPEN, lambda v: TYP_LABEL.get(v, v)),
         "grade": _anteile(alle, "schwierigkeit", GRADE, lambda v: GRAD_LABEL.get(v, v)),
     }

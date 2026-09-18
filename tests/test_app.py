@@ -331,13 +331,15 @@ def test_statistik(app):
         conn.execute("UPDATE trails SET gemacht = 1, gemacht_datum = '2025-06-01', mitspieler = 2, "
                      "start_zeit = '2025-06-01 10:00', ziel_zeit = '2025-06-01 13:10' WHERE id = 2")
         st = trails.statistik(conn)
-    assert st["gemacht"] == 2 and st["mitspieler"] == 6 and st["mitspieler_schnitt"] == 3.0
+    assert st["gemacht"] == 2 and st["regionen_besucht"] == 2 and st["regionen_gesamt"] == 2
+    assert st["top_region"][1] in ("Aargau", "Wallis") and st["dieses_jahr"] == (1 if st["jahr"] in (2023, 2025) else 0)
     assert st["jahre"] == [(2023, 1), (2024, 0), (2025, 1)]              # Luecke als 0
     assert st["spielzeit_summe"] == "5:40 h" and st["spielzeit_schnitt"] == "2:50 h"
     assert st["schnellster"]["name"] == "Aquae" and st["laengster"]["name"] == "Simplon"
     assert ("aargau", "Aargau", 1, 1) in st["regionen"]
     html = c.get("/statistik").get_data(as_text=True)
-    assert "5:40 h" in html and "Schnellster" in html and "Aargau" in html and "2024" in html
+    assert "5:40 h" in html and "Regionen erkundet" in html and "Mitspieler gesamt" not in html
+    assert "Schnellster" in html and "Aargau" in html and "2024" in html
     c.get("/logout")
     assert c.get("/statistik").status_code == 302
 
