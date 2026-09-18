@@ -57,7 +57,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   im Seed hinterlegt). Titelbilder laedt der Server einmalig bei Bedarf nach
   `fotos/titel/<id>-<hash>.jpg` und liefert sie ueber `/titelbild/<id>` aus – der Browser
   fragt nie direkt bei foxtrail.ch an. Nur URLs unter `https://foxtrail.ch/`. Mit Bruno
-  am 2026-09-18 so vereinbart (Platzhalter-Vorschlag, „weitermachen“).
+  am 2026-09-18 so vereinbart und ausdrücklich bestätigt („Titelbilder sollen geladen werden“).
+  Gemachte Kacheln: Ring und hellgrüner Textbereich im MINI-Grün (`--gemacht*` in style.css).
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:

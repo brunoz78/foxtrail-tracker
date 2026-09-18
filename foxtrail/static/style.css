@@ -2,10 +2,12 @@
   --green: #2e5b3e; --green-dark: #23472f; --green-light: #e6f0e9;
   --bg: #f6f7f5; --card: #fff; --text: #1e2420; --muted: #6b7570; --line: #dfe4e0;
   --warn-bg: #fff3cd; --warn-text: #7a5a00; --done-bg: #eef7f0;
+  --gemacht: #4caf50; --gemacht-bg: #e3f2e4; --gemacht-text: #2e7d32;   /* Gruen wie das MINI-Badge */
 }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #14181a; --card: #1d2326; --text: #e8ebe9; --muted: #98a39d; --line: #2e373b;
-          --green-light: #21382a; --done-bg: #1c2b21; --warn-bg: #3a2f10; --warn-text: #f0c24b; }
+          --green-light: #21382a; --done-bg: #1c2b21; --warn-bg: #3a2f10; --warn-text: #f0c24b;
+          --gemacht-bg: #1f3824; --gemacht-text: #3f9443; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.45 Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
@@ -162,7 +164,11 @@ a.thumb:hover img { box-shadow: 0 0 0 2px var(--green); }
 a.kachel { display: flex; flex-direction: column; background: var(--card); border-radius: 8px; overflow: hidden;
   text-decoration: none; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); transition: transform .12s, box-shadow .12s; }
 a.kachel:hover, a.kachel:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.15); }
-a.kachel.done { outline: 2px solid var(--green); outline-offset: -2px; }
+/* Gemacht: Rahmen rund um die ganze Kachel (Ring per box-shadow, veraendert die Groesse nicht)
+   und hellgruener Textbereich */
+a.kachel.done { background: var(--gemacht-bg); box-shadow: 0 0 0 4px var(--gemacht), 0 1px 3px rgba(0,0,0,.1); }
+a.kachel.done:hover, a.kachel.done:focus-visible { box-shadow: 0 0 0 4px var(--gemacht), 0 6px 16px rgba(0,0,0,.18); }
+a.kachel.done .khaken { background: var(--gemacht-text); }
 .kbild { position: relative; aspect-ratio: 3 / 2; background: var(--green-light); }
 .kbild img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .kachel.gone .kbild img { filter: grayscale(.8); }
