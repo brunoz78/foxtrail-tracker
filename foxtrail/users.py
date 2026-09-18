@@ -35,6 +35,12 @@ def get(conn, username):
     return dict(row) if row else None
 
 
+def set_spalten(conn, username, keys):
+    """Spaltenauswahl speichern; keys=None setzt auf den Standard zurueck."""
+    conn.execute("UPDATE users SET spalten = ? WHERE username = ?",
+                 (",".join(keys) if keys is not None else None, username))
+
+
 def list_users(conn):
     return [dict(r) for r in conn.execute("SELECT * FROM users ORDER BY username")]
 

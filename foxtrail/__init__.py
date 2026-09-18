@@ -192,8 +192,24 @@ def create_app(test_config=None):
             params.update(over)
             return url_for("index", **{k: v for k, v in params.items() if v not in (None, "", [])})
 
+        sp = trails.spalten_aus(current_user().get("spalten"))
         return render_template("index.html", rows=rows, f=f, q=q, sel=sel, sort=sort, ansicht=ansicht,
+                               sp=sp, spalten=trails.SPALTEN,
                                richtung=richtung, opts=trails.filter_options(conn), index_url=index_url)
+
+    @app.route("/spalten", methods=["POST"])
+    @login_required
+    def spalten_speichern():
+        """Sichtbare Spalten der Liste fuer den angemeldeten Benutzer speichern."""
+        if request.form.get("aktion") == "standard":
+            users.set_spalten(get_conn(), current_user()["username"], None)
+            flash("Spalten auf Standard zurückgesetzt.")
+        else:
+            gewaehlt = [k for k in trails.SPALTEN_KEYS if k in request.form.getlist("spalte")]
+            users.set_spalten(get_conn(), current_user()["username"], gewaehlt)
+            flash("Spaltenauswahl gespeichert.")
+        nxt = request.form.get("next") or ""
+        return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
 
     @app.route("/statistik")
     @login_required

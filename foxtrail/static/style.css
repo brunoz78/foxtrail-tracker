@@ -59,7 +59,7 @@ td.empty { text-align: center; color: var(--muted); padding: 24px; }
 a.check { text-decoration: none; font-size: 18px; }
 tr.done a.check { color: var(--green); }
 .actions-cell form { margin: 2px 0; }
-@media (max-width: 900px) { .wide { display: none; } }
+@media (max-width: 900px) { table:not(.karten) .wide { display: none; } }   /* Liste: Route per Spaltenauswahl */
 
 img.foto { max-width: 100%; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
 code { font-size: 13px; background: var(--bg); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
@@ -333,3 +333,27 @@ button.pw-auge { position: absolute; right: 2px; top: 50%; transform: translateY
   border: 0; color: var(--muted); padding: 6px 8px; line-height: 0; cursor: pointer; }
 button.pw-auge:hover { background: transparent; color: var(--green); }
 button.pw-auge:focus-visible { outline: 2px solid var(--green); border-radius: 4px; }
+
+/* ---- Spaltenauswahl der Liste ------------------------------------------------ */
+details.spw { position: relative; }
+details.spw summary { list-style: none; cursor: pointer; border: 1px solid var(--line); border-radius: 6px;
+  padding: 6px 12px; background: var(--card); user-select: none; white-space: nowrap; }
+details.spw summary::-webkit-details-marker { display: none; }
+details.spw summary::before { content: "▥ "; }
+details.spw summary::after { content: " ▾"; font-size: 11px; }
+details.spw[open] summary, details.spw summary:hover { border-color: var(--green); }
+details.spw .hf-menu { top: calc(100% + 4px); min-width: 230px; max-height: 70vh; }
+details.spw .hf-menu p { margin: 2px 0 6px; }
+@media (max-width: 700px) {
+  table.karten td.m-startort, table.karten td.m-zielort { order: 2; }
+  table.karten td.m-startort::before { content: "· Start: "; color: var(--muted); }
+  table.karten td.m-zielort::before { content: "· Ziel: "; color: var(--muted); }
+  table.karten td.m-neu { order: 4; font-size: 13px; }
+  table.karten td.m-neu::before { content: "Neu ab "; color: var(--muted); }
+  table.karten td.m-start, table.karten td.m-ziel, table.karten td.m-team, table.karten td.m-bestellung { order: 6; font-size: 13px; }
+  table.karten td.m-start::before { content: "Start "; color: var(--muted); }
+  table.karten td.m-ziel::before { content: "Ziel "; color: var(--muted); }
+  table.karten td.m-team::before { content: "Code "; color: var(--muted); }
+  table.karten td.m-erfasst { order: 7; flex-basis: 100%; font-size: 12px; }
+  table.karten td.m-erfasst::before { content: "erfasst von "; }
+}

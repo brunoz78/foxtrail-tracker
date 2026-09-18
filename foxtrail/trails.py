@@ -33,6 +33,22 @@ REGION_LABEL = {
     "westschweiz": "Westschweiz", "zuerich-und-umgebung": "Zürich und Umgebung",
 }
 
+# Spalten der Listenansicht, in Anzeigereihenfolge: (Schluessel, Beschriftung im Auswahlmenue,
+# standardmaessig sichtbar). Ort und Trail stehen immer da. Die Auswahl je Benutzer liegt in
+# users.spalten (NULL = Standard), siehe spalten_aus().
+SPALTEN = (
+    ("route", "Route", True), ("startort", "Startort", False), ("zielort", "Zielort", False),
+    ("region", "Region", True), ("typ", "Typ", True), ("grad", "Schwierigkeit", True),
+    ("bewertung", "Bewertung ★", True), ("dauer", "Dauer", True), ("preis", "Preis CHF", True),
+    ("neu", "Neu ab", False), ("datum", "Datum gemacht", True), ("start", "Startzeit", False),
+    ("ziel", "Zielzeit", False), ("zeit", "Spielzeit", True), ("pers", "Mitspieler", True),
+    ("team", "Team-Code", False), ("bestellung", "Bestellnummer", False),
+    ("bemerkung", "Bemerkung", True), ("erfasst", "Erfasst von", False),
+)
+SPALTEN_KEYS = tuple(k for k, _, _ in SPALTEN)
+SPALTEN_STANDARD = tuple(k for k, _, an in SPALTEN if an)
+_ROUTE_TEIL_RE = re.compile(r"\s+[-–]\s+")
+
 _DAUER_RE = re.compile(r"(\d+(?:[.,]\d+)?)(?:\s*[-–]\s*(\d+(?:[.,]\d+)?))?")
 
 
@@ -49,6 +65,24 @@ def typ_aus_name(name, go=False):
     if _MINI_RE.search(name or ""):
         return "mini"
     return "foxtrail"
+
+
+def spalten_aus(wert):
+    """Gespeicherte Auswahl ('route,typ,...' oder Liste) -> gueltige Schluessel in Anzeige-
+    reihenfolge. None -> Standard, "" -> keine Zusatzspalten. Unbekannte werden ignoriert."""
+    if wert is None:
+        return list(SPALTEN_STANDARD)
+    gewaehlt = set(wert.split(",") if isinstance(wert, str) else wert)
+    return [k for k in SPALTEN_KEYS if k in gewaehlt]
+
+
+def route_enden(route):
+    """'Saas-Grund - Saas-Fee - Felskinn' -> ('Saas-Grund', 'Felskinn'). Die Route auf
+    foxtrail.ch nennt die Stationen vom Start bis zum Ziel."""
+    teile = [p.strip() for p in _ROUTE_TEIL_RE.split(route or "") if p.strip()]
+    if not teile:
+        return ("", "")
+    return (teile[0], teile[-1] if len(teile) > 1 else "")
 
 
 def region_label(slug):
@@ -98,6 +132,7 @@ def _row(r):
     d["grad_label"] = GRAD_LABEL.get(d.get("schwierigkeit") or "", "")
     d["spielzeit_min"] = spielzeit_min(d.get("start_zeit"), d.get("ziel_zeit"))
     d["spielzeit"] = spielzeit_label(d["spielzeit_min"])
+    d["startort"], d["zielort"] = route_enden(d.get("route"))
     return d
 
 
@@ -120,6 +155,10 @@ SORTS = {
     "datum": lambda t: t["gemacht_datum"],
     "neu": lambda t: t.get("neu_seit"),
     "spielzeit": lambda t: t["spielzeit_min"],
+    "startort": lambda t: (t["startort"].lower(), t["ort"].lower()) if t["startort"] else None,
+    "zielort": lambda t: (t["zielort"].lower(), t["ort"].lower()) if t["zielort"] else None,
+    "start": lambda t: t.get("start_zeit"),
+    "ziel": lambda t: t.get("ziel_zeit"),
 }
 
 

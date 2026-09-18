@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_admin  INTEGER NOT NULL DEFAULT 0,
     active    INTEGER NOT NULL DEFAULT 1,
     created   TEXT NOT NULL,
-    last_login TEXT
+    last_login TEXT,
+    spalten   TEXT                   -- sichtbare Spalten der Liste, 'route,typ,...'; NULL = Standard
 );
 
 CREATE TABLE IF NOT EXISTS sync_log (
@@ -107,6 +108,9 @@ def init_db(conn):
 
 def _migrate(conn):
     """Kleine, idempotente Migrationen fuer bestehende Datenbanken."""
+    if "spalten" not in {r[1] for r in conn.execute("PRAGMA table_info(users)")}:
+        # 2026-09: Spaltenauswahl der Liste je Benutzer
+        conn.execute("ALTER TABLE users ADD COLUMN spalten TEXT")
     spalten = {r[1] for r in conn.execute("PRAGMA table_info(trails)")}
     if "neu_seit" not in spalten:
         # 2026-09: "Neu ab MM/JJ" fuer Trails, die ein Abgleich neu angelegt hat. Rueckwirkend

@@ -372,5 +372,37 @@ def test_menue(app):
     assert "/import" in html and "/admin/sync" in html and "/admin/benutzer" in html and "(Admin)" in html
 
 
+def test_spalten_pro_benutzer(app):
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET route = 'Bahnhof - Altstadt - Bäder', team_code = 'QWERTZ', "
+                     "start_zeit = '2025-06-01 10:05', ziel_zeit = '2025-06-01 12:40' WHERE id = 1")
+    c = app.test_client()
+    login(c, "gast")
+    html = c.get("/?ansicht=liste").get_data(as_text=True)
+    assert "Bemerkung</th>" in html and "Team-Code</th>" not in html          # Standard
+    assert 'name="spalte" value="team"' in html and 'form="spalten-form"' in html
+    # nur Typ, Startort, Zielort, Startzeit, Team-Code; unbekannte Schluessel werden ignoriert
+    r = c.post("/spalten", data={"spalte": ["typ", "startort", "zielort", "start", "team", "unsinn"],
+                                 "next": "/?ansicht=liste"}, follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert "Spaltenauswahl gespeichert" in html
+    assert "Team-Code</th>" in html and "QWERTZ" in html and ">Bahnhof<" in html and ">Bäder<" in html
+    assert ">10:05<" in html and "Bemerkung</th>" not in html and "Region" not in html.split("<tbody>")[0].split("<thead>")[1]
+    assert "/?ansicht=liste&amp;sort=startort" in html or "sort=startort" in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert users.get(conn, "gast")["spalten"] == "startort,zielort,typ,start,team"   # Anzeigereihenfolge
+        assert users.get(conn, "admin")["spalten"] is None                    # andere unberuehrt
+    assert c.get("/?sort=startort").status_code == 200
+    # alles abwaehlen -> nur Ort und Trail
+    c.post("/spalten", data={"next": "/"})
+    thead = c.get("/?ansicht=liste").get_data(as_text=True).split("<thead>")[1].split("</thead>")[0]
+    assert thead.count("<th") == 3
+    # Standard
+    r = c.post("/spalten", data={"aktion": "standard", "next": "//boese.example"}, follow_redirects=True)
+    assert "Standard zurückgesetzt" in r.get_data(as_text=True) and "Bemerkung</th>" in r.get_data(as_text=True)
+    c.get("/logout")
+    assert c.post("/spalten", data={"spalte": "typ"}).status_code == 302   # nur angemeldet
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"
