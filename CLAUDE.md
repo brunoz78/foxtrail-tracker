@@ -62,6 +62,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Gemachte Kacheln: Ring und hellgrüner Textbereich im MINI-Grün (`--gemacht*` in style.css).
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
+  Die Seite Abgleich zeigt Zeitplan und nächsten Lauf (`sync.timer_status`: liest
+  `systemctl show foxtrail-sync.timer`, ohne Rechte; ohne systemd → Hinweis auf den Standardplan).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
   - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt dauerhaft
     „Neu ab MM/JJ“, Filter `f=neu` listet alle mit `neu_seit`, Standard-Sortierung dort

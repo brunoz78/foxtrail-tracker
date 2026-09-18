@@ -371,3 +371,7 @@ details.spw .hf-menu { padding-bottom: 0; }
 .topscroll > div { height: 1px; }
 .topscroll[hidden] { display: none; }
 @media (max-width: 700px) { .topscroll { display: none; } }
+
+/* Abgleich: Zeitplan des automatischen Abgleichs */
+.timerbox { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 8px 0 14px; }
+.timerbox dl.rekorde { margin-top: 8px; }

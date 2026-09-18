@@ -405,5 +405,29 @@ def test_spalten_pro_benutzer(app):
     assert c.post("/spalten", data={"spalte": "typ"}).status_code == 302   # nur angemeldet
 
 
+def test_timer_status():
+    ausgabe = ("LoadState=loaded\nActiveState=active\n"
+               "TimersCalendar={ OnCalendar=Mon *-*-* 04:30:00 ; next_elapse=Mon 2026-09-21 04:30:00 CEST }\n"
+               "NextElapseUSecRealtime=Mon 2026-09-21 04:30:00 CEST\nLastTriggerUSec=Mon 2026-09-14 04:41:03 CEST\n"
+               "RandomizedDelayUSec=30min\n")
+    t = sync.timer_status(ausgabe)
+    assert t == {"aktiv": True, "plan": "jeden Montag um 04:30", "naechster": "Montag, 21.09.2026, 04:30",
+                 "letzter": "Montag, 14.09.2026, 04:41", "verzoegerung": "30 Min."}
+    assert sync.timer_status("LoadState=not-found\nActiveState=inactive\n") is None
+    assert sync.timer_status("")  is None
+    assert sync.plan_text("*-*-* 03:00:00") == "*-*-* 03:00:00"          # Unbekanntes bleibt
+
+
+def test_sync_seite_zeigt_zeitplan(app, monkeypatch):
+    c = app.test_client()
+    login(c, "admin")
+    monkeypatch.setattr(sync, "timer_status", lambda: {"aktiv": True, "plan": "jeden Montag um 04:30",
+                        "naechster": "Montag, 21.09.2026, 04:30", "letzter": "", "verzoegerung": "30min"})
+    html = c.get("/admin/sync").get_data(as_text=True)
+    assert "Nächster Lauf" in html and "Montag, 21.09.2026, 04:30" in html and "jeden Montag um 04:30" in html
+    monkeypatch.setattr(sync, "timer_status", lambda: None)
+    assert "Montag um 04:30" in c.get("/admin/sync").get_data(as_text=True)   # Hinweis ohne systemd
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

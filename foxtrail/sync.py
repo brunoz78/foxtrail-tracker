@@ -20,6 +20,10 @@ Sicherung: liefert der Scraper deutlich weniger Trails als bisher im Angebot
 halbe Liste ins Archiv schiebt.
 """
 
+import datetime
+import re
+import subprocess
+
 from .db import now
 
 META_FIELDS = ("ort", "name", "route", "typ", "region", "bewertung", "dauer", "preis", "url",
@@ -103,6 +107,64 @@ def _apply(conn, scraped, ts, res):
             res["nicht_mehr_im_angebot"] += 1
         else:
             res["archiviert"] += 1
+
+
+TIMER = "foxtrail-sync.timer"
+_WOCHENTAG = {"Mon": "Montag", "Tue": "Dienstag", "Wed": "Mittwoch", "Thu": "Donnerstag",
+              "Fri": "Freitag", "Sat": "Samstag", "Sun": "Sonntag"}
+_WOCHENTAG_NR = ("Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag")
+_ZEITPUNKT_RE = re.compile(r"(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})")
+_ONCAL_RE = re.compile(r"OnCalendar=([^;}]+)")
+_WOCHE_RE = re.compile(r"^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) \*-\*-\* (\d{2}):(\d{2})(?::\d{2})?$")
+
+
+def _zeitpunkt(text):
+    """'Mon 2026-09-21 04:30:00 CEST' -> datetime (Ortszeit des Containers), sonst None."""
+    m = _ZEITPUNKT_RE.search(text or "")
+    if not m:
+        return None
+    return datetime.datetime.strptime(f"{m.group(1)} {m.group(2)}", "%Y-%m-%d %H:%M")
+
+
+def zeitpunkt_text(dt):
+    """datetime -> 'Montag, 21.09.2026, 04:30'."""
+    return f"{_WOCHENTAG_NR[dt.weekday()]}, {dt:%d.%m.%Y, %H:%M}" if dt else ""
+
+
+def plan_text(oncalendar):
+    """'Mon *-*-* 04:30:00' -> 'jeden Montag um 04:30'; Unbekanntes bleibt wie es ist."""
+    m = _WOCHE_RE.match((oncalendar or "").strip())
+    if not m:
+        return (oncalendar or "").strip()
+    return f"jeden {_WOCHENTAG[m.group(1)]} um {m.group(2)}:{m.group(3)}"
+
+
+def timer_status(ausgabe=None):
+    """Zustand des systemd-Timers fuer die Seite Abgleich. None, wenn es keinen gibt
+    (lokale Entwicklung, Windows, Timer nicht installiert). `ausgabe` fuer Tests.
+    Liest nur (systemctl show), braucht keine Rechte."""
+    if ausgabe is None:
+        try:
+            ausgabe = subprocess.run(
+                ["systemctl", "show", TIMER, "-p", "ActiveState", "-p", "LoadState", "-p", "TimersCalendar",
+                 "-p", "NextElapseUSecRealtime", "-p", "LastTriggerUSec", "-p", "RandomizedDelayUSec"],
+                capture_output=True, text=True, timeout=3).stdout
+        except (OSError, subprocess.SubprocessError):
+            return None
+    werte = dict(z.split("=", 1) for z in ausgabe.splitlines() if "=" in z)
+    if werte.get("LoadState") != "loaded":
+        return None
+    oncal = _ONCAL_RE.search(werte.get("TimersCalendar", ""))
+    # systemd schreibt '30min', '1h', '1h 30min' -> '30 Min.', '1 Std.', '1 Std. 30 Min.'
+    verzoegerung = re.sub(r"(\d+)min", r"\1 Min.", werte.get("RandomizedDelayUSec", ""))
+    verzoegerung = re.sub(r"(\d+)h\b", r"\1 Std.", verzoegerung)
+    return {
+        "aktiv": werte.get("ActiveState") == "active",
+        "plan": plan_text(oncal.group(1)) if oncal else "",
+        "naechster": zeitpunkt_text(_zeitpunkt(werte.get("NextElapseUSecRealtime"))),
+        "letzter": zeitpunkt_text(_zeitpunkt(werte.get("LastTriggerUSec"))),
+        "verzoegerung": verzoegerung if verzoegerung not in ("", "0") else "",
+    }
 
 
 def last_runs(conn, limit=20):

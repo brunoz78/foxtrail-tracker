@@ -6,8 +6,28 @@
   <p>Quelle: <a href="{{ list_url }}" target="_blank" rel="noopener">{{ list_url }}</a></p>
   <p class="muted">Regeln: neue Trails werden angelegt, bestehende aktualisiert (eure Einträge bleiben).
   Nicht mehr gelistete Trails werden nie gelöscht: bereits gemachte bleiben in der Liste
-  („nicht mehr im Angebot“), noch offene wandern ins Archiv. Der automatische Abgleich läuft
-  über den systemd-Timer <code>foxtrail-sync.timer</code>.</p>
+  („nicht mehr im Angebot“), noch offene wandern ins Archiv.</p>
+  <div class="timerbox">
+    <b>Automatischer Abgleich</b>
+    {% if timer %}
+      {% if timer.aktiv %}
+      <span class="tag new">eingeschaltet</span>
+      <dl class="rekorde">
+        {% if timer.plan %}<dt>Zeitplan</dt><dd>{{ timer.plan }}{% if timer.verzoegerung %} <span class="muted small">(bis zu {{ timer.verzoegerung }} später, damit nicht alle Installationen gleichzeitig abrufen)</span>{% endif %}</dd>{% endif %}
+        <dt>Nächster Lauf</dt><dd><b>{{ timer.naechster or 'unbekannt' }}</b></dd>
+        {% if letzter_auto %}<dt>Letzter Lauf</dt><dd>{{ letzter_auto.ts[:16]|datum_zeit }} – {{ 'ok' if letzter_auto.ok else 'Fehler' }}</dd>
+        {% elif timer.letzter %}<dt>Letzter Lauf</dt><dd>{{ timer.letzter }}</dd>{% endif %}
+      </dl>
+      <p class="muted small">Verpasste Termine (Container war aus) holt der Timer nach dem Start nach.</p>
+      {% else %}
+      <span class="tag warn">ausgeschaltet</span>
+      <p class="muted small">Einschalten im Container: <code>systemctl enable --now foxtrail-sync.timer</code></p>
+      {% endif %}
+    {% else %}
+      <p class="muted small">Der Zeitplan lässt sich hier nicht abfragen (kein systemd-Timer <code>foxtrail-sync.timer</code>
+      gefunden). In der Standardinstallation läuft der Abgleich jeden Montag um 04:30.</p>
+    {% endif %}
+  </div>
   <form method="post" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Läuft…'">
     <button type="submit">Jetzt abgleichen</button>
   </form>

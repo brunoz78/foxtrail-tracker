@@ -104,6 +104,11 @@ def create_app(test_config=None):
         """2026-09-14 -> 09/26"""
         return f"{v[5:7]}/{v[2:4]}" if v and len(v) >= 10 else ""
 
+    @app.template_filter("datum_zeit")
+    def _datum_zeit(v):
+        """2026-09-14 04:41 -> 14.09.2026, 04:41"""
+        return f"{_datum(v[:10])}, {v[11:16]}" if v and len(v) >= 16 else _datum(v)
+
     @app.template_filter("datum")
     def _datum(v):
         """2025-06-01 -> 01.06.2025"""
@@ -434,7 +439,10 @@ def create_app(test_config=None):
             else:
                 flash("Abgleich fehlgeschlagen: " + res["meldung"])
             return redirect(url_for("sync_admin"))
-        return render_template("sync.html", runs=sync.last_runs(conn), list_url=config.LIST_URL)
+        letzter_auto = conn.execute("SELECT ts, ok FROM sync_log WHERE ausloeser = 'timer' "
+                                    "ORDER BY id DESC LIMIT 1").fetchone()
+        return render_template("sync.html", runs=sync.last_runs(conn), list_url=config.LIST_URL,
+                               timer=sync.timer_status(), letzter_auto=letzter_auto)
 
     @app.route("/healthz")
     def healthz():
