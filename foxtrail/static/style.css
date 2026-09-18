@@ -357,3 +357,17 @@ details.spw .hf-menu p { margin: 2px 0 6px; }
   table.karten td.m-erfasst { order: 7; flex-basis: 100%; font-size: 12px; }
   table.karten td.m-erfasst::before { content: "erfasst von "; }
 }
+
+/* Spaltenmenue: Knoepfe bleiben unten sichtbar, auch wenn die Liste scrollt */
+details.spw .hf-menu { padding-bottom: 0; }
+.sp-actions { position: sticky; bottom: 0; background: var(--card); padding: 8px 0; flex-wrap: wrap; gap: 8px; }
+.sp-actions button[disabled] { opacity: .5; cursor: default; }
+.sp-mark { color: var(--green); font-weight: bold; margin-left: 4px; }
+.sp-hinweis { background: var(--green-light); border-radius: 4px; padding: 4px 6px; margin: 0 0 6px; }
+
+/* Mitlaufende Scrollleiste ueber der Tabelle */
+.topscroll { position: sticky; top: 0; z-index: 15; overflow-x: auto; overflow-y: hidden; background: var(--bg);
+  border-radius: 6px; margin-bottom: 2px; }
+.topscroll > div { height: 1px; }
+.topscroll[hidden] { display: none; }
+@media (max-width: 700px) { .topscroll { display: none; } }

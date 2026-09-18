@@ -85,15 +85,17 @@
   </div>
   {% if ansicht == 'liste' %}
   <details class="spw">
-    <summary title="Spalten ein- und ausblenden">Spalten</summary>
+    <summary title="Spalten ein- und ausblenden">Spalten{% if not sp_standard %}<span class="sp-mark" title="Eigene Spaltenauswahl aktiv">•</span>{% endif %}</summary>
     <div class="hf-menu right">
       <p class="muted small">Immer sichtbar: Ort und Trail. Die Auswahl gilt nur für dich.</p>
+      {% if not sp_standard %}<p class="small sp-hinweis">Du hast eine eigene Auswahl – „Standardspalten wiederherstellen“ setzt sie zurück.</p>{% endif %}
       {% for k, label, std in spalten %}
       <label><input type="checkbox" name="spalte" value="{{ k }}" form="spalten-form" autocomplete="off" {{ 'checked' if k in sp }}> {{ label }}</label>
       {% endfor %}
-      <div class="hf-actions">
+      <div class="hf-actions sp-actions">
         <button type="submit" form="spalten-form" name="aktion" value="speichern" class="small">Speichern</button>
-        <button type="submit" form="spalten-form" name="aktion" value="standard" class="small secondary">Standard</button>
+        <button type="submit" form="spalten-form" name="aktion" value="standard" class="small secondary"
+                {{ 'disabled title="Es sind bereits die Standardspalten eingestellt"'|safe if sp_standard }}>Standardspalten wiederherstellen</button>
       </div>
     </div>
   </details>
@@ -151,6 +153,9 @@
 {% else %}
 
 {% set ncols = sp|length + 3 %}
+{# Zweite, mitlaufende Scrollleiste: klebt beim Runterscrollen oben, damit man breite Tabellen
+   nicht erst ganz unten seitwaerts ziehen muss (JS unten; ohne JS bleibt sie verborgen) #}
+<div class="topscroll" hidden aria-hidden="true"><div></div></div>
 <div class="tablewrap"><table class="trails karten">
   <thead><tr>
     <th class="c">✓</th>
@@ -208,6 +213,24 @@
       } else if (start !== null && state() !== start) { form.submit(); }
     });
   });
+  // Obere Scrollleiste mit der Tabelle koppeln
+  var ts = form.querySelector('.topscroll');
+  if (ts && wrap) {
+    var innen = ts.firstElementChild;
+    var messen = function () {
+      innen.style.width = wrap.scrollWidth + 'px';
+      ts.hidden = wrap.scrollWidth <= wrap.clientWidth + 1;
+    };
+    ts.addEventListener('scroll', function () {
+      if (wrap.scrollLeft !== ts.scrollLeft) { wrap.scrollLeft = ts.scrollLeft; }
+    });
+    wrap.addEventListener('scroll', function () {
+      if (ts.scrollLeft !== wrap.scrollLeft) { ts.scrollLeft = wrap.scrollLeft; }
+    });
+    window.addEventListener('resize', messen);
+    window.addEventListener('load', messen);            // Vorschaubilder aendern die Breite
+    messen();
+  }
   // Spalten-Menue genauso: geaenderte Auswahl beim Schliessen speichern (wie "Speichern")
   var spw = form.querySelector('details.spw');
   if (spw) {

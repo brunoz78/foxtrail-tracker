@@ -381,11 +381,12 @@ def test_spalten_pro_benutzer(app):
     html = c.get("/?ansicht=liste").get_data(as_text=True)
     assert "Bemerkung</th>" in html and "Team-Code</th>" not in html          # Standard
     assert 'name="spalte" value="team"' in html and 'form="spalten-form"' in html
+    assert "Standardspalten wiederherstellen" in html and "sp-mark" not in html   # Standard aktiv
     # nur Typ, Startort, Zielort, Startzeit, Team-Code; unbekannte Schluessel werden ignoriert
     r = c.post("/spalten", data={"spalte": ["typ", "startort", "zielort", "start", "team", "unsinn"],
                                  "next": "/?ansicht=liste"}, follow_redirects=True)
     html = r.get_data(as_text=True)
-    assert "Spaltenauswahl gespeichert" in html
+    assert "Spaltenauswahl gespeichert" in html and "sp-mark" in html and "eigene Auswahl" in html
     assert "Team-Code</th>" in html and "QWERTZ" in html and ">Bahnhof<" in html and ">Bäder<" in html
     assert ">10:05<" in html and "Bemerkung</th>" not in html and "Region" not in html.split("<tbody>")[0].split("<thead>")[1]
     assert "/?ansicht=liste&amp;sort=startort" in html or "sort=startort" in html

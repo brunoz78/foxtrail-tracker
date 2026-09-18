@@ -195,6 +195,7 @@ def create_app(test_config=None):
         sp = trails.spalten_aus(current_user().get("spalten"))
         return render_template("index.html", rows=rows, f=f, q=q, sel=sel, sort=sort, ansicht=ansicht,
                                sp=sp, spalten=trails.SPALTEN,
+                               sp_standard=(tuple(sp) == trails.SPALTEN_STANDARD),
                                richtung=richtung, opts=trails.filter_options(conn), index_url=index_url)
 
     @app.route("/spalten", methods=["POST"])
