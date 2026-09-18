@@ -38,8 +38,9 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 * Archiv: nicht mehr angebotene, noch nicht gemachte Trails
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen),
   Administratoren verwalten Benutzer und lösen den Abgleich aus
-* Keine externen Abhängigkeiten im Browser (kein CDN), hell/dunkel automatisch,
-  auf dem Handy brauchbar
+* Keine externen Abhängigkeiten im Browser (kein CDN), hell/dunkel automatisch
+* **Auf dem Smartphone** bedienbar: Menü hinter ☰, Liste und Archiv als kompakte
+  Karten statt breiter Tabelle, Sortier- und Filterleiste oben, grosse Tipp-Flächen
 
 ## Abgleich-Regeln
 

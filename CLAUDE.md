@@ -83,7 +83,13 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   gemachter Trail nie im Archiv landet.
 - **Schlüssel** für den Abgleich ist der URL-Slug (`wallis/allalin-maxi`), nie der Name.
 - Kein CDN, kein JavaScript-Framework: Templates + eine CSS-Datei, hell/dunkel per
-  `prefers-color-scheme`, auf dem Handy brauchbar.
+  `prefers-color-scheme`.
+- **Smartphone** (unter 700 px, Block am Ende von `style.css`): Menü hinter ☰ (nur mit JS
+  eingeklappt, Klasse `js` am `<html>`). Liste und Archiv (`table.karten`) werden per CSS zu
+  Karten: `thead` wird zur umbrechenden Sortier-/Filterleiste, jede Zeile ein Flex-Block,
+  Anordnung über die Klassen `m-*` (Zellen) und `k-*` (Köpfe). Kein zweites Markup - sonst
+  gäbe es die Filter-Checkboxen doppelt im selben Formular. Neue Spalten brauchen eine
+  `m-`/`k-`-Klasse und eine Regel im Handy-Block.
 
 ## Aufbau
 

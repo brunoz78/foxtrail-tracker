@@ -84,22 +84,22 @@
 </div>
 {% else %}
 
-<div class="tablewrap"><table class="trails">
+<div class="tablewrap"><table class="trails karten">
   <thead><tr>
     <th class="c">✓</th>
-    <th>{{ sortlink('ort', 'Ort') }}</th>
-    <th>{{ sortlink('name', 'Trail') }}{% if f == 'neu' %} · {{ sortlink('neu', 'Neu ab', 'desc') }}{% endif %}</th>
+    <th class="k-ort">{{ sortlink('ort', 'Ort') }}</th>
+    <th class="k-name">{{ sortlink('name', 'Trail') }}{% if f == 'neu' %} · {{ sortlink('neu', 'Neu ab', 'desc') }}{% endif %}</th>
     <th class="wide">Route</th>
-    <th>{{ sortlink('region', 'Region') }}{{ hfilter('region', opts.region) }}</th>
-    <th>{{ sortlink('typ', 'Typ') }}{{ hfilter('typ', opts.typ) }}</th>
-    <th>{{ sortlink('schwierigkeit', 'Grad') }}{{ hfilter('grad', opts.grad) }}</th>
-    <th class="r">{{ sortlink('bewertung', '★', 'desc') }}</th>
-    <th>{{ sortlink('dauer', 'Dauer') }}{{ hfilter('dauer', opts.dauer) }}</th>
-    <th class="r">{{ sortlink('preis', 'CHF') }}</th>
-    <th>{{ sortlink('datum', 'Datum', 'desc') }}</th>
-    <th class="r">{{ sortlink('spielzeit', 'Zeit', 'desc') }}</th>
-    <th class="r">Pers.</th>
-    <th>Bemerkung</th>
+    <th class="k-region">{{ sortlink('region', 'Region') }}{{ hfilter('region', opts.region) }}</th>
+    <th class="k-typ">{{ sortlink('typ', 'Typ') }}{{ hfilter('typ', opts.typ) }}</th>
+    <th class="k-grad">{{ sortlink('schwierigkeit', 'Grad') }}{{ hfilter('grad', opts.grad) }}</th>
+    <th class="r k-bew">{{ sortlink('bewertung', '★', 'desc') }}</th>
+    <th class="k-dauer">{{ sortlink('dauer', 'Dauer') }}{{ hfilter('dauer', opts.dauer) }}</th>
+    <th class="r k-preis">{{ sortlink('preis', 'CHF') }}</th>
+    <th class="k-datum">{{ sortlink('datum', 'Datum', 'desc') }}</th>
+    <th class="r k-zeit">{{ sortlink('spielzeit', 'Zeit', 'desc') }}</th>
+    <th class="r k-aus">Pers.</th>
+    <th class="k-aus">Bemerkung</th>
   </tr></thead>
   <tbody>
   {% for t in rows %}
@@ -108,24 +108,24 @@
   {% endif %}
   <tr class="{{ 'done' if t.gemacht }} {{ 'gone' if (not t.im_angebot and t.quelle == 'foxtrail') }}">
     <td class="c"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}" class="check" title="Bearbeiten">{{ '✔' if t.gemacht else '○' }}</a></td>
-    <td>{{ t.ort }}</td>
-    <td><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}"><b>{{ t.name }}</b></a>
+    <td class="m-ort">{{ t.ort }}</td>
+    <td class="m-name"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}"><b>{{ t.name }}</b></a>
       {% if t.quelle == 'manual' %}<span class="tag">manuell</span>
       {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }}">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span>
       {% elif t.neu %}<span class="tag new" title="Vom Abgleich am {{ t.neu_seit|datum }} neu auf foxtrail.ch gefunden">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
       {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch öffnen">↗</a>{% endif %}
       {% if t.foto %}<a class="thumb" href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}#foto" title="Schlussfoto ansehen"><img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="" loading="lazy"></a>{% endif %}</td>
     <td class="wide muted">{{ t.route }}</td>
-    <td class="nowrap muted">{{ t.region_label }}</td>
-    <td>{{ typ_badge(t) }}</td>
-    <td class="nowrap">{% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}" title="Schwierigkeitsgrad laut foxtrail.ch">{{ t.grad_label }}</span>{% else %}<span class="muted">–</span>{% endif %}</td>
-    <td class="r">{{ t.bewertung if t.bewertung else '–' }}</td>
-    <td class="nowrap">{{ t.dauer|dauer }}</td>
-    <td class="r">{{ t.preis|chf }}</td>
-    <td class="nowrap">{{ t.gemacht_datum|datum }}</td>
-    <td class="r nowrap">{{ t.spielzeit }}</td>
-    <td class="r">{{ t.mitspieler or '' }}</td>
-    <td class="muted">{{ t.bemerkung }}</td>
+    <td class="nowrap muted m-region">{{ t.region_label }}</td>
+    <td class="m-typ">{{ typ_badge(t) }}</td>
+    <td class="nowrap m-grad">{% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}" title="Schwierigkeitsgrad laut foxtrail.ch">{{ t.grad_label }}</span>{% else %}<span class="muted leer">–</span>{% endif %}</td>
+    <td class="r m-bew">{% if t.bewertung %}{{ t.bewertung }}{% else %}<span class="leer">–</span>{% endif %}</td>
+    <td class="nowrap m-dauer">{{ t.dauer|dauer }}</td>
+    <td class="r m-preis">{{ t.preis|chf }}</td>
+    <td class="nowrap m-datum">{{ t.gemacht_datum|datum }}</td>
+    <td class="r nowrap m-zeit">{{ t.spielzeit }}</td>
+    <td class="r m-pers">{{ t.mitspieler or '' }}</td>
+    <td class="muted m-bem">{{ t.bemerkung }}</td>
   </tr>
   {% else %}
   <tr><td colspan="14" class="empty">Keine Trails gefunden.</td></tr>

@@ -342,5 +342,15 @@ def test_statistik(app):
     assert c.get("/statistik").status_code == 302
 
 
+def test_handy_markup(app):
+    """Die Handy-Darstellung haengt an Klassen im HTML - hier pruefen, dass sie da sind."""
+    c = app.test_client()
+    login(c, "gast")
+    html = c.get("/?ansicht=liste").get_data(as_text=True)
+    assert 'class="navtoggle"' in html and 'id="hauptnav"' in html and 'name="theme-color"' in html
+    assert 'class="trails karten"' in html and 'class="m-name"' in html and 'class="k-region"' in html
+    assert 'class="trails karten ohne-haken"' in c.get("/archiv").get_data(as_text=True)
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

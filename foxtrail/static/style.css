@@ -212,3 +212,80 @@ dl.rekorde { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; marg
 dl.rekorde dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
 dl.rekorde dd { margin: 0; }
 @media (prefers-color-scheme: dark) { .s-bar, .a-wert { background: #4f9a69; } .saeule:hover .s-bar { background: #62b17d; } }
+
+/* ---- Smartphone ---------------------------------------------------------- */
+.navtoggle { display: none; }
+@media (max-width: 700px) {
+  main { padding: 12px; }
+  h1 { font-size: 20px; margin: 4px 0 8px; }
+  .head { gap: 4px 12px; }
+  .kpis { gap: 10px; font-size: 13px; }
+  .kpis b { font-size: 16px; }
+  /* Menue hinter ☰ */
+  .top { padding: 8px 12px; gap: 8px; }
+  .navtoggle { display: block; margin-left: auto; background: transparent; border: 1px solid rgba(255,255,255,.4);
+    color: #fff; font-size: 20px; line-height: 1; padding: 6px 11px; }
+  .js .top nav { display: none; }
+  .top.offen nav, .top nav { width: 100%; flex-direction: column; margin: 0; }
+  .js .top.offen nav { display: flex; }
+  .top nav a { padding: 10px 8px; font-size: 16px; }
+  /* Suche und Umschalter: volle Breite, fingerfreundlich */
+  .filter { gap: 8px; }
+  .filter input[name=q] { min-width: 0; flex: 1 1 160px; }
+  .filter .seg { flex: 1 1 auto; }
+  .filter .seg a { flex: 1; text-align: center; padding: 8px 6px; }
+  .seg.ansicht { margin-left: 0; }
+  input, select, textarea, button { font-size: 16px; }      /* iOS zoomt sonst beim Antippen */
+  button.small, .btn.small { font-size: 14px; padding: 6px 10px; }
+  form label.upload { font-size: 14px; padding: 7px 10px; line-height: 1.45; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tile { padding: 12px; }
+  .t-zahl { font-size: 24px; }
+  .row { flex-direction: column; gap: 0; }
+  .card { padding: 14px; }
+
+  /* Liste/Archiv als Karten: Spaltenkoepfe werden zur umbrechenden Sortier-/Filterleiste,
+     jede Zeile zu einem Block. Gleiche Elemente wie auf dem Desktop, nur anders angeordnet. */
+  .tablewrap:has(table.karten) { overflow: visible; }
+  table.trails.karten { min-width: 0; display: block; overflow: visible; }
+  table.karten thead, table.karten tbody { display: block; }
+  table.karten thead tr { display: flex; flex-wrap: wrap; align-items: center; border-radius: 8px 8px 0 0;
+    background: var(--green-light); }
+  table.karten th { border: 0; padding: 8px 8px; background: transparent; }
+  table.karten th.c, table.karten th.wide, table.karten th.k-aus { display: none; }
+  table.karten tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 10px; position: relative;
+    padding: 10px 12px 10px 46px; border-bottom: 1px solid var(--line); }
+  table.karten.ohne-haken tbody tr { padding-left: 12px; }
+  table.karten.ohne-haken thead { display: none; }             /* Archiv: Koepfe sortieren nicht */
+  table.karten.ohne-haken tbody tr:first-child { border-radius: 8px 8px 0 0; }
+  table.karten tbody td { display: block; border: 0; padding: 0; max-width: none; }
+  table.karten tbody td:empty, table.karten td.wide, table.karten td:has(> .leer:only-child) { display: none; }
+  table.karten td.c { position: absolute; left: 4px; top: 6px; width: 38px; }
+  table.karten td.c a.check { display: block; padding: 4px 0; font-size: 22px; }
+  /* Zeile 1: Name (+ Status, Vorschau) - Zeile 2: Ort · Region - Zeile 3: Merkmale - Zeile 4: eigene Angaben */
+  table.karten td.m-name { order: 1; flex-basis: 100%; font-size: 16px; }
+  table.karten td.m-ort { order: 2; }
+  table.karten td.m-region { order: 2; }
+  table.karten td.m-region::before { content: "· "; }
+  table.karten tbody tr::before { content: ""; order: 3; flex-basis: 100%; height: 0; }
+  table.karten td.m-typ, table.karten td.m-grad, table.karten td.m-dauer, table.karten td.m-bew,
+  table.karten td.m-preis { order: 4; font-size: 13px; color: var(--muted); }
+  table.karten td.m-bew::before { content: "★ "; }
+  table.karten td.m-preis::before { content: "CHF "; }
+  table.karten tbody tr::after { content: ""; order: 5; flex-basis: 100%; height: 0; }
+  table.karten td.m-datum, table.karten td.m-zeit, table.karten td.m-pers, table.karten td.m-gesehen { order: 6; font-size: 13px; }
+  table.karten td.m-datum::before { content: "✔ "; color: var(--green); }
+  table.karten td.m-zeit::before { content: "⏱ "; }
+  table.karten td.m-pers::before { content: "👥 "; }
+  table.karten td.m-gesehen::before { content: "zuletzt gesehen "; color: var(--muted); }
+  table.karten td.m-bem { order: 7; flex-basis: 100%; font-size: 13px; }
+  table.karten td.m-aktion { order: 8; flex-basis: 100%; margin-top: 4px; }
+  table.karten tr.grp { padding: 6px 12px; }
+  table.karten tr.grp::before, table.karten tr.grp::after { display: none; }
+  table.karten tr.grp td { background: transparent; padding: 0; }
+  table.karten tr.grp { background: var(--green-light); }
+  table.karten td.empty { flex-basis: 100%; }
+  a.thumb img { width: 52px; height: 36px; }
+  /* Filtermenue: nie breiter als der Bildschirm */
+  .hf-menu { min-width: 200px; max-width: calc(100vw - 32px); }
+}

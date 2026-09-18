@@ -3,15 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2e5b3e">
+<script>document.documentElement.classList.add('js')</script>
 <title>{% block title %}Foxtrail-Tracker{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%232e5b3e'/%3E%3C/svg%3E">
 </head>
 <body>
-<header class="top">
+<header class="top" id="top">
   <a class="brand" href="{{ url_for('index') }}">🦊 Foxtrail-Tracker</a>
   {% if me %}
-  <nav>
+  {# Auf dem Handy klappt ☰ das Menue auf; ohne JavaScript bleibt es immer offen #}
+  <button type="button" class="navtoggle" aria-controls="hauptnav" aria-expanded="false" aria-label="Menü"
+          onclick="var o=document.getElementById('top').classList.toggle('offen');this.setAttribute('aria-expanded',o)">☰</button>
+  <nav id="hauptnav">
     <a href="{{ url_for('index') }}" class="{{ 'on' if request.endpoint == 'index' }}">Trails
       {% if stats %}<span class="pill">{{ stats.gemacht }}/{{ stats.total }}</span>{% endif %}</a>
     <a href="{{ url_for('statistik') }}" class="{{ 'on' if request.endpoint == 'statistik' }}">Statistik</a>
