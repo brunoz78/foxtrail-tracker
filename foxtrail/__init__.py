@@ -251,7 +251,7 @@ def create_app(test_config=None):
 
     # ---- Import der eigenen Bestellungen (foxtrail.ch-Konto) ------------ #
     @app.route("/import", methods=["GET", "POST"])
-    @login_required
+    @admin_required                     # schreibt viele Trails auf einmal - nur Admins
     def import_bestellungen():
         conn = get_conn()
         if request.method == "POST" and request.form.get("schritt") == "schreiben":

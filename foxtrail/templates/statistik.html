@@ -79,7 +79,7 @@
     </dl>
     <p class="muted small">Spielzeit = Start bis Ziel laut foxtrail.ch, nur für importierte Bestellungen bekannt.</p>
     {% else %}
-    <p class="muted">Noch keine Zeiten – sie kommen über den <a href="{{ url_for('import_bestellungen') }}">Import</a> der Bestellungen.</p>
+    <p class="muted">Noch keine Zeiten – sie kommen über den {% if me.is_admin %}<a href="{{ url_for('import_bestellungen') }}">Import</a>{% else %}Import{% endif %} der Bestellungen{% if not me.is_admin %} (durch einen Admin){% endif %}.</p>
     {% endif %}
   </section>
 

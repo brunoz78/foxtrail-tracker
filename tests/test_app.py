@@ -191,6 +191,10 @@ def test_import_seite(app, monkeypatch, tmp_path):
     monkeypatch.setattr(bestellungen.requests, "get", lambda url, timeout=None, headers=None: _Antwort())
     c = app.test_client()
     login(c, "gast")
+    assert c.get("/import").status_code == 403                      # nur Admins
+    assert c.post("/import", data={"schritt": "schreiben", "daten": "[]"}).status_code == 403
+    c.get("/logout")
+    login(c, "admin")
     assert "konto.json" in c.get("/import").get_data(as_text=True)
     with db.session(app.config["DB_PATH"]) as conn:
         conn.execute("UPDATE trails SET name = 'Columban' WHERE slug = 'aargau/aquae'")
@@ -360,12 +364,12 @@ def test_menue(app):
     login(c, "gast")
     html = c.get("/").get_data(as_text=True)
     assert 'class="dd"' in html and "Archiv" in html and "Trail manuell erfassen" in html
-    assert "Passwort ändern" in html and "Abmelden" in html and "/import" in html
-    assert "/admin/sync" not in html and "/admin/benutzer" not in html     # nur fuer Admins
+    assert "Passwort ändern" in html and "Abmelden" in html
+    assert "/import" not in html and "/admin/sync" not in html and "/admin/benutzer" not in html  # nur Admins
     c.get("/logout")
     login(c, "admin")
     html = c.get("/archiv").get_data(as_text=True)
-    assert "/admin/sync" in html and "/admin/benutzer" in html and "(Admin)" in html
+    assert "/import" in html and "/admin/sync" in html and "/admin/benutzer" in html and "(Admin)" in html
 
 
 def test_healthz(app):

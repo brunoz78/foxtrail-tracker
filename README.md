@@ -37,7 +37,7 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 * Abgleich mit foxtrail.ch – wöchentlich per systemd-Timer und per Knopfdruck
 * Archiv: nicht mehr angebotene, noch nicht gemachte Trails
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen),
-  Administratoren verwalten Benutzer und lösen den Abgleich aus
+  Administratoren verwalten Benutzer, lösen den Abgleich aus und importieren Bestellungen
 * Keine externen Abhängigkeiten im Browser (kein CDN), hell/dunkel automatisch
 * **Auf dem Smartphone** bedienbar: Menü hinter ☰, Liste und Archiv als kompakte
   Karten statt breiter Tabelle, Sortier- und Filterleiste oben, grosse Tipp-Flächen
@@ -154,7 +154,7 @@ die mit „Manuell ergänzte Trails“ beginnt, werden als manuelle Trails angel
 Auf foxtrail.ch unter **Account → Deine Bestellungen** stehen alle gebuchten
 Trails. Am einfachsten: im selben Browser, angemeldet, die Adresse
 `https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account` öffnen und mit Ctrl+S als
-`konto.json` speichern. Dann in der App unter **Import** hochladen: Die Seite
+`konto.json` speichern. Dann in der App unter ⚙ → **Import** hochladen (nur Administratoren): Die Seite
 zeigt einen Probelauf und trägt nach Bestätigung ein. Alternativ die Bestellseite
 als „Webseite, vollständig“ speichern oder den Seitentext einfügen (dann ohne
 Zeiten und Foto). Dasselbe auf der Kommandozeile:

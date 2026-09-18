@@ -20,7 +20,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   (HttpOnly, SameSite=Lax, kein permanentes Cookie), Passwörter gehasht mit
   `werkzeug.security`, Sperre nach 5 Fehlversuchen für 5 Minuten (In-Memory).
   Bewusst **kein** 2FA, **kein** Rollen-/Rechte-System, **kein** Audit-Log – nur
-  das Flag `is_admin` (Benutzerverwaltung + Abgleich auslösen).
+  das Flag `is_admin` (Benutzerverwaltung, Abgleich auslösen, Bestellungs-Import – Import
+  seit 2026-09-18 nur Admin, Wunsch von Bruno).
 - **Eine gemeinsame Liste** für alle Benutzer, **ein Eintrag pro Trail** (kein
   Mehrfach-Tracking). `erfasst_von` hält fest, wer zuletzt gespeichert hat.
 - **Mitspieler** = einfaches Zahlenfeld, keine Namen.
@@ -86,7 +87,7 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - Kein CDN, kein JavaScript-Framework: Templates + eine CSS-Datei, hell/dunkel per
   `prefers-color-scheme`.
 - **Kopfzeile:** Trails · Statistik · „Mehr ▾“ (Archiv, Trail manuell erfassen) · „⚙ ▾“
-  (Import, Abgleich + Benutzer nur Admin, Passwort ändern, Abmelden). Aufklappmenüs sind
+  (Import, Abgleich, Benutzer – alle drei nur Admin; Passwort ändern, Abmelden). Aufklappmenüs sind
   `<details class="dd">` in `base.html`, JS schliesst sie bei Klick daneben/Escape. Auf dem
   Handy klappen sie im ☰-Menü nach unten auf. Wunsch von Bruno (2026-09-18): Kopfzeile schlank halten.
 - **Smartphone** (unter 700 px, Block am Ende von `style.css`): Menü hinter ☰ (nur mit JS

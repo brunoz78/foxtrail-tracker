@@ -39,9 +39,9 @@
                title="Einstellungen" aria-label="Einstellungen"><span class="zahnrad" aria-hidden="true">⚙</span><span class="dd-text">Einstellungen</span></summary>
       <div class="dd-menu">
         <div class="dd-kopf">Angemeldet als <b>{{ me.username }}</b>{% if me.is_admin %} (Admin){% endif %}</div>
+        {% if me.is_admin %}
         <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if ep == 'import_bestellungen' }}">Import
           <small>Bestellungen von foxtrail.ch übernehmen</small></a>
-        {% if me.is_admin %}
         <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if ep == 'sync_admin' }}">Abgleich
           <small>Trail-Liste mit foxtrail.ch abgleichen</small></a>
         <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}">Benutzer
