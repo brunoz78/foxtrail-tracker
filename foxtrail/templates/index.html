@@ -123,6 +123,9 @@
   {% if sort == 'region' and (loop.first or t.region != loop.previtem.region) %}
   <h2 class="kgrp">{{ t.region_label or 'Ohne Region' }}</h2>
   {% endif %}
+  {# Die Kachel ist ein Link; der Link zu foxtrail.ch liegt daneben (Links duerfen nicht
+     verschachtelt sein) und wird per CSS unten rechts aufs Bild gelegt #}
+  <div class="kzelle">
   <a class="kachel {{ 'done' if t.gemacht }} {{ 'gone' if (not t.im_angebot and t.quelle == 'foxtrail') }}"
      href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}">
     <div class="kbild">
@@ -146,6 +149,9 @@
       </div>
     </div>
   </a>
+  {% if t.url %}<div class="kfox-lage"><a class="kfox" href="{{ t.url }}" target="_blank" rel="noopener"
+     title="{{ t.name }} auf {{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else 'der Website' }} öffnen">{{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else 'Website' }} ↗</a></div>{% endif %}
+  </div>
   {% else %}
   <p class="empty muted">Keine Trails gefunden.</p>
   {% endfor %}

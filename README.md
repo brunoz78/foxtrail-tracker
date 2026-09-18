@@ -28,7 +28,7 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
   Startort, Zielort, Start- und Zielzeit, Team-Code, Bestellnummer, „Neu ab“ und „Erfasst von“
 * **Kachelansicht** als Standardansicht (umschaltbar auf die Tabelle): drei Kacheln pro Reihe (auf dem Handy
   eine) mit dem eigenen Foto oder dem Titelbild von foxtrail.ch, Klick öffnet den Trail;
-  Sortierung und Filter wie in der Liste, die gewählte Ansicht bleibt in der Sitzung
+  Sortierung und Filter wie in der Liste, die gewählte Ansicht bleibt in der Sitzung; unten rechts im Bild ein Direktlink zu foxtrail.ch
 * **Fotos** pro Trail: hochladen, ersetzen, löschen (JPEG/PNG/WebP bis 15 MB). Beim
   Speichern wird das Bild gedreht, auf höchstens 2560 px verkleinert und ohne
   EXIF-Daten (also ohne GPS-Position) abgelegt. In der Liste erscheint eine Vorschau

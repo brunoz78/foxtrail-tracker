@@ -161,14 +161,21 @@ a.thumb:hover img { box-shadow: 0 0 0 2px var(--green); }
 .kgrp { grid-column: 1 / -1; margin: 8px 0 -4px; color: var(--green); }
 @media (prefers-color-scheme: dark) { .kgrp { color: #a9d8b8; } }
 .kacheln .empty { grid-column: 1 / -1; text-align: center; padding: 24px; }
-a.kachel { display: flex; flex-direction: column; background: var(--card); border-radius: 8px; overflow: hidden;
-  text-decoration: none; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); transition: transform .12s, box-shadow .12s; }
-a.kachel:hover, a.kachel:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.15); }
+.kzelle { position: relative; display: flex; flex-direction: column; transition: transform .12s; }
+.kzelle:hover, .kzelle:focus-within { transform: translateY(-2px); }
+a.kachel { flex: 1; display: flex; flex-direction: column; background: var(--card); border-radius: 8px; overflow: hidden;
+  text-decoration: none; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); transition: box-shadow .12s; }
+.kzelle:hover a.kachel, a.kachel:focus-visible { box-shadow: 0 6px 16px rgba(0,0,0,.15); }
 /* Gemacht: Rahmen rund um die ganze Kachel (Ring per box-shadow, veraendert die Groesse nicht)
    und hellgruener Textbereich */
 a.kachel.done { background: var(--gemacht-bg); box-shadow: 0 0 0 4px var(--gemacht), 0 1px 3px rgba(0,0,0,.1); }
-a.kachel.done:hover, a.kachel.done:focus-visible { box-shadow: 0 0 0 4px var(--gemacht), 0 6px 16px rgba(0,0,0,.18); }
+.kzelle:hover a.kachel.done, a.kachel.done:focus-visible { box-shadow: 0 0 0 4px var(--gemacht), 0 6px 16px rgba(0,0,0,.18); }
 a.kachel.done .khaken { background: var(--gemacht-text); }
+/* Link zu foxtrail.ch: Ebene in Bildgroesse ueber der Kachel, nur der Knopf selbst ist klickbar */
+.kfox-lage { position: absolute; top: 0; left: 0; right: 0; aspect-ratio: 16 / 9; pointer-events: none; }
+a.kfox { position: absolute; right: 8px; bottom: 8px; pointer-events: auto; background: rgba(0,0,0,.6); color: #fff;
+  font-size: 12px; font-weight: bold; padding: 3px 9px; border-radius: 10px; text-decoration: none; }
+a.kfox:hover, a.kfox:focus-visible { background: var(--green); }
 /* 16:9 wie die Handyfotos; andere Formate (Titelbilder 3:2, Hochformat) ganz zeigen statt abschneiden */
 .kbild { position: relative; aspect-ratio: 16 / 9; background: var(--green-light); }
 .kbild img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block;

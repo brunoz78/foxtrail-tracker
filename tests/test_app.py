@@ -316,6 +316,7 @@ def test_kachelansicht_und_titelbild(app, monkeypatch, tmp_path):
     login(c, "gast")
     html = c.get("/?ansicht=kacheln").get_data(as_text=True)
     assert 'class="kacheln"' in html and "/titelbild/1" in html and "<table" not in html
+    assert 'class="kfox"' in html and "foxtrail.ch ↗" in html        # Direktlink zu foxtrail.ch
     assert 'onerror="this.remove()"' in html and "Brig" in html   # Ort bleibt sichtbar, wenn das Bild fehlt
     # die Wahl bleibt in der Sitzung
     assert 'class="kacheln"' in c.get("/?sort=name").get_data(as_text=True)
