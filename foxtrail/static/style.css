@@ -289,3 +289,31 @@ dl.rekorde dd { margin: 0; }
   /* Filtermenue: nie breiter als der Bildschirm */
   .hf-menu { min-width: 200px; max-width: calc(100vw - 32px); }
 }
+
+/* ---- Aufklappmenues in der Kopfzeile (Mehr, Einstellungen) -------------- */
+.top nav { align-items: center; }
+details.dd { position: relative; }
+details.dd summary { list-style: none; cursor: pointer; color: #fff; padding: 6px 10px; border-radius: 6px; opacity: .9;
+  user-select: none; white-space: nowrap; }
+details.dd summary::-webkit-details-marker { display: none; }
+details.dd summary::after { content: " ▾"; font-size: 11px; }
+details.dd summary:hover, details.dd summary.on, details.dd[open] summary { background: rgba(255,255,255,.18); opacity: 1; }
+details.dd .zahnrad { font-size: 17px; line-height: 1; vertical-align: -1px; }
+details.dd .dd-text { display: none; }
+.dd-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; min-width: 250px; padding: 6px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.top nav .dd-menu a { display: block; color: var(--text); opacity: 1; padding: 8px 10px; border-radius: 6px; }
+.top nav .dd-menu a:hover { background: var(--green-light); }
+.top nav .dd-menu a.on { background: var(--green-light); font-weight: bold; }
+.dd-menu a small { display: block; color: var(--muted); font-size: 12px; font-weight: normal; }
+.dd-menu .pill.grey { background: var(--line); color: var(--muted); }
+.dd-kopf { padding: 6px 10px 8px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.dd-kopf b { color: var(--text); }
+.top nav .dd-menu a.dd-trenner { border-top: 1px solid var(--line); border-radius: 0 0 6px 6px; margin-top: 4px; }
+@media (max-width: 700px) {
+  /* im ☰-Menue: Gruppen klappen nach unten auf statt als schwebendes Menue */
+  .top nav { align-items: stretch; }
+  details.dd summary { padding: 10px 8px; font-size: 16px; }
+  details.dd .dd-text { display: inline; margin-left: 6px; }
+  .dd-menu { position: static; min-width: 0; margin: 0 0 6px 12px; box-shadow: none; }
+}

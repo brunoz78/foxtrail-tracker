@@ -352,5 +352,18 @@ def test_handy_markup(app):
     assert 'class="trails karten ohne-haken"' in c.get("/archiv").get_data(as_text=True)
 
 
+def test_menue(app):
+    c = app.test_client()
+    login(c, "gast")
+    html = c.get("/").get_data(as_text=True)
+    assert 'class="dd"' in html and "Archiv" in html and "Trail manuell erfassen" in html
+    assert "Passwort ändern" in html and "Abmelden" in html and "/import" in html
+    assert "/admin/sync" not in html and "/admin/benutzer" not in html     # nur fuer Admins
+    c.get("/logout")
+    login(c, "admin")
+    html = c.get("/archiv").get_data(as_text=True)
+    assert "/admin/sync" in html and "/admin/benutzer" in html and "(Admin)" in html
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

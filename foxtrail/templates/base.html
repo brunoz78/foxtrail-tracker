@@ -16,21 +16,58 @@
   {# Auf dem Handy klappt ☰ das Menue auf; ohne JavaScript bleibt es immer offen #}
   <button type="button" class="navtoggle" aria-controls="hauptnav" aria-expanded="false" aria-label="Menü"
           onclick="var o=document.getElementById('top').classList.toggle('offen');this.setAttribute('aria-expanded',o)">☰</button>
+  {% set ep = request.endpoint %}
   <nav id="hauptnav">
-    <a href="{{ url_for('index') }}" class="{{ 'on' if request.endpoint == 'index' }}">Trails
+    <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}">Trails
       {% if stats %}<span class="pill">{{ stats.gemacht }}/{{ stats.total }}</span>{% endif %}</a>
-    <a href="{{ url_for('statistik') }}" class="{{ 'on' if request.endpoint == 'statistik' }}">Statistik</a>
-    <a href="{{ url_for('archiv') }}" class="{{ 'on' if request.endpoint == 'archiv' }}">Archiv
-      {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</a>
-    <a href="{{ url_for('trail_new') }}" class="{{ 'on' if request.endpoint == 'trail_new' }}">+ Manuell</a>
-    <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if request.endpoint == 'import_bestellungen' }}">Import</a>
-    {% if me.is_admin %}
-    <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if request.endpoint == 'sync_admin' }}">Abgleich</a>
-    <a href="{{ url_for('user_admin') }}" class="{{ 'on' if request.endpoint == 'user_admin' }}">Benutzer</a>
-    {% endif %}
-    <a href="{{ url_for('profil') }}" class="{{ 'on' if request.endpoint == 'profil' }}">{{ me.username }}</a>
-    <a href="{{ url_for('logout') }}">Abmelden</a>
+    <a href="{{ url_for('statistik') }}" class="{{ 'on' if ep == 'statistik' }}">Statistik</a>
+    {# Aufklappmenues: <details> geht ohne JavaScript; ein paar Zeilen JS schliessen sie beim
+       Klick daneben bzw. wenn ein anderes aufgeht #}
+    <details class="dd">
+      <summary class="{{ 'on' if ep in ('archiv', 'trail_new') }}">Mehr
+        {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</summary>
+      <div class="dd-menu">
+        <a href="{{ url_for('archiv') }}" class="{{ 'on' if ep == 'archiv' }}">Archiv
+          {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}
+          <small>nicht mehr angebotene, offene Trails</small></a>
+        <a href="{{ url_for('trail_new') }}" class="{{ 'on' if ep == 'trail_new' }}">+ Trail manuell erfassen
+          <small>für Trails, die es nicht mehr gibt</small></a>
+      </div>
+    </details>
+    <details class="dd">
+      <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'profil') }}"
+               title="Einstellungen" aria-label="Einstellungen"><span class="zahnrad" aria-hidden="true">⚙</span><span class="dd-text">Einstellungen</span></summary>
+      <div class="dd-menu">
+        <div class="dd-kopf">Angemeldet als <b>{{ me.username }}</b>{% if me.is_admin %} (Admin){% endif %}</div>
+        <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if ep == 'import_bestellungen' }}">Import
+          <small>Bestellungen von foxtrail.ch übernehmen</small></a>
+        {% if me.is_admin %}
+        <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if ep == 'sync_admin' }}">Abgleich
+          <small>Trail-Liste mit foxtrail.ch abgleichen</small></a>
+        <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}">Benutzer
+          <small>Benutzer anlegen und verwalten</small></a>
+        {% endif %}
+        <a href="{{ url_for('profil') }}" class="{{ 'on' if ep == 'profil' }}">Passwort ändern</a>
+        <a href="{{ url_for('logout') }}" class="dd-trenner">Abmelden</a>
+      </div>
+    </details>
   </nav>
+  <script>
+  (function () {
+    var dds = document.querySelectorAll('#hauptnav details.dd');
+    document.addEventListener('click', function (e) {
+      dds.forEach(function (d) { if (!d.contains(e.target)) { d.removeAttribute('open'); } });
+    });
+    dds.forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        if (d.open) { dds.forEach(function (x) { if (x !== d) { x.removeAttribute('open'); } }); }
+      });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { dds.forEach(function (d) { d.removeAttribute('open'); }); }
+    });
+  })();
+  </script>
   {% endif %}
 </header>
 <main>

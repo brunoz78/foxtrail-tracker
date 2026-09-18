@@ -84,6 +84,10 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Schlüssel** für den Abgleich ist der URL-Slug (`wallis/allalin-maxi`), nie der Name.
 - Kein CDN, kein JavaScript-Framework: Templates + eine CSS-Datei, hell/dunkel per
   `prefers-color-scheme`.
+- **Kopfzeile:** Trails · Statistik · „Mehr ▾“ (Archiv, Trail manuell erfassen) · „⚙ ▾“
+  (Import, Abgleich + Benutzer nur Admin, Passwort ändern, Abmelden). Aufklappmenüs sind
+  `<details class="dd">` in `base.html`, JS schliesst sie bei Klick daneben/Escape. Auf dem
+  Handy klappen sie im ☰-Menü nach unten auf. Wunsch von Bruno (2026-09-18): Kopfzeile schlank halten.
 - **Smartphone** (unter 700 px, Block am Ende von `style.css`): Menü hinter ☰ (nur mit JS
   eingeklappt, Klasse `js` am `<html>`). Liste und Archiv (`table.karten`) werden per CSS zu
   Karten: `thead` wird zur umbrechenden Sortier-/Filterleiste, jede Zeile ein Flex-Block,
