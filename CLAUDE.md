@@ -92,7 +92,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   `SPALTEN` + Zweig in beiden Makros + `m-`-Regel im Handy-Block (+ ggf. `SORTS`). Startort/Zielort
   werden aus der Route abgeleitet (erster/letzter Abschnitt, `trails.route_enden`). Das Menü
   „Spalten“ postet an `/spalten` über ein eigenes Formular (`form="spalten-form"`, weil die Liste
-  selbst ein GET-Formular ist). Blendet man eine Spalte mit Filter aus, verschwindet auch ihr Filter.
+  selbst ein GET-Formular ist); wie bei den Filtern speichert das Schliessen des Menüs eine
+  geänderte Auswahl automatisch. Blendet man eine Spalte mit Filter aus, verschwindet auch ihr Filter.
 - **Kopfzeile:** Trails · Statistik · „Mehr ▾“ (Archiv, Trail manuell erfassen) · „⚙ ▾“
   (Import, Abgleich, Benutzer – alle drei nur Admin; Passwort ändern, Abmelden). Aufklappmenüs sind
   `<details class="dd">` in `base.html`, JS schliesst sie bei Klick daneben/Escape. Auf dem

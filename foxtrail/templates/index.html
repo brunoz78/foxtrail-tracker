@@ -89,7 +89,7 @@
     <div class="hf-menu right">
       <p class="muted small">Immer sichtbar: Ort und Trail. Die Auswahl gilt nur für dich.</p>
       {% for k, label, std in spalten %}
-      <label><input type="checkbox" name="spalte" value="{{ k }}" form="spalten-form" {{ 'checked' if k in sp }}> {{ label }}</label>
+      <label><input type="checkbox" name="spalte" value="{{ k }}" form="spalten-form" autocomplete="off" {{ 'checked' if k in sp }}> {{ label }}</label>
       {% endfor %}
       <div class="hf-actions">
         <button type="submit" form="spalten-form" name="aktion" value="speichern" class="small">Speichern</button>
@@ -208,6 +208,18 @@
       } else if (start !== null && state() !== start) { form.submit(); }
     });
   });
+  // Spalten-Menue genauso: geaenderte Auswahl beim Schliessen speichern (wie "Speichern")
+  var spw = form.querySelector('details.spw');
+  if (spw) {
+    var spStart = null;
+    var spState = function () {
+      return Array.prototype.map.call(spw.querySelectorAll('input:checked'), function (i) { return i.value; }).join('|');
+    };
+    spw.addEventListener('toggle', function () {
+      if (spw.open) { spStart = spState(); }
+      else if (spStart !== null && spState() !== spStart) { document.getElementById('spalten-form').submit(); }
+    });
+  }
 })();
 </script>
 {% endblock %}
