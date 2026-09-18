@@ -135,11 +135,11 @@
       {% elif t.bild_url %}<img class="titel" src="{{ url_for('titelbild', tid=t.id) }}" alt="" loading="lazy" onerror="this.remove()">{% endif %}
       {% if t.gemacht %}<span class="khaken" title="Gemacht">✔{% if t.gemacht_datum %} {{ t.gemacht_datum|datum }}{% endif %}</span>{% endif %}
       {% if t.quelle == 'manual' %}<span class="kstatus tag">manuell</span>
-      {% elif not t.im_angebot %}<span class="kstatus tag warn">nicht mehr im Angebot</span>
-      {% elif t.neu %}<span class="kstatus tag new">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
+      {% elif not t.im_angebot %}<span class="kstatus tag warn">nicht mehr im Angebot</span>{% endif %}
     </div>
     <div class="ktext">
-      <div class="ktitel"><b>{{ t.name }}</b> <span class="muted">· {{ t.ort }}</span></div>
+      <div class="ktitel"><span class="kname"><b>{{ t.name }}</b> <span class="muted">· {{ t.ort }}</span></span>
+        {% if t.neu and t.im_angebot and t.quelle != 'manual' %}<span class="tag new">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}</div>
       <div class="kmeta">{{ typ_badge(t) }}
         {% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}
         {% if t.dauer %}<span>{{ t.dauer|dauer }}</span>{% endif %}

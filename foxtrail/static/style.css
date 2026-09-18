@@ -193,7 +193,10 @@ a.kfox:hover, a.kfox:focus-visible { text-decoration: underline; }
 .kstatus { position: absolute; right: 8px; top: 8px; margin: 0; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .kstatus.tag:not(.new):not(.warn) { background: var(--card); color: var(--text); }
 .ktext { padding: 8px 12px 10px; }
-.ktitel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Name · Ort wird bei Platzmangel gekuerzt, das Etikett "Neu ab" dahinter bleibt ganz sichtbar */
+.ktitel { display: flex; align-items: center; gap: 6px; }
+.kname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ktitel .tag { flex-shrink: 0; margin: 0; }
 .kmeta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-top: 4px; font-size: 13px; color: var(--muted); }
 
 /* ---- Statistik ----------------------------------------------------------- */
