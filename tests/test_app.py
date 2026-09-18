@@ -349,6 +349,7 @@ def test_handy_markup(app):
     c = app.test_client()
     login(c, "gast")
     html = c.get("/?ansicht=liste").get_data(as_text=True)
+    assert "pw-auge" in html                                    # Auge fuer Passwortfelder
     assert 'class="navtoggle"' in html and 'id="hauptnav"' in html and 'name="theme-color"' in html
     assert 'class="trails karten"' in html and 'class="m-name"' in html and 'class="k-region"' in html
     assert 'class="trails karten ohne-haken"' in c.get("/archiv").get_data(as_text=True)

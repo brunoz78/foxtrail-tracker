@@ -323,3 +323,13 @@ details.dd .dd-text { display: none; }
   details.dd .dd-text { display: inline; margin-left: 6px; }
   .dd-menu { position: static; min-width: 0; margin: 0 0 6px 12px; box-shadow: none; }
 }
+
+/* ---- Passwortfeld mit Auge ------------------------------------------------ */
+.pw { position: relative; display: block; margin-top: 3px; }
+form label .pw input { margin-top: 0; padding-right: 40px; }
+form.inline .pw { display: inline-block; margin-top: 0; }
+form.inline .pw input { padding-right: 40px; }
+button.pw-auge { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: transparent;
+  border: 0; color: var(--muted); padding: 6px 8px; line-height: 0; cursor: pointer; }
+button.pw-auge:hover { background: transparent; color: var(--green); }
+button.pw-auge:focus-visible { outline: 2px solid var(--green); border-radius: 4px; }
