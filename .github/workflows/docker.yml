@@ -31,7 +31,7 @@ jobs:
           set -x
           curl -fsS http://127.0.0.1:8080/login | grep -q Anmelden
           docker exec ft foxtrailctl list-users | grep -q admin
-          docker exec ft foxtrailctl stats | grep -q gesamt
+          docker exec ft foxtrailctl stats | grep -q "^total  *97"
           for i in $(seq 1 10); do docker exec ft test -s /data/zeitplan.json && break; sleep 1; done
           docker exec ft cat /data/zeitplan.json
           docker exec ft test -s /data/secret_key
