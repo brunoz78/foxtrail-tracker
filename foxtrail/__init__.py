@@ -13,9 +13,9 @@ import json
 import time
 
 from flask import (Flask, abort, flash, g, redirect, render_template, request,
-                   send_from_directory, session, url_for)
+                   send_file, send_from_directory, session, url_for)
 
-from . import bestellungen, config, db, sync, trails, users
+from . import bestellungen, config, db, fotos, sync, trails, users
 
 _ATTEMPTS = {}   # username -> [fails, lock_until_ts]
 
@@ -28,7 +28,7 @@ def create_app(test_config=None):
     app.config["SESSION_COOKIE_SECURE"] = config.force_https()
     app.config["DB_PATH"] = config.db_path()
     app.config["FOTO_DIR"] = config.foto_dir()
-    app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024      # konto.json mit vielen Bestellungen
+    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024     # Handy-Fotos (Upload) und konto.json
     if test_config:
         app.config.update(test_config)
 
@@ -125,6 +125,10 @@ def create_app(test_config=None):
     def _notfound(_):
         return render_template("fehler.html", fehler="Seite nicht gefunden."), 404
 
+    @app.errorhandler(413)
+    def _zugross(_):
+        return render_template("fehler.html", fehler="Die Datei ist zu gross (hoechstens 15 MB)."), 413
+
     # ---- Login / Logout ------------------------------------------------ #
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -171,6 +175,11 @@ def create_app(test_config=None):
         richtung = "desc" if request.args.get("dir") == "desc" else "asc"
         if f == "neu" and "sort" not in request.args:
             sort, richtung = "neu", "desc"           # neueste zuerst
+        # Ansicht Liste/Kacheln: aus der URL, sonst die zuletzt gewaehlte (Sitzung)
+        ansicht = request.args.get("ansicht") or session.get("ansicht") or "liste"
+        if ansicht not in ("liste", "kacheln"):
+            ansicht = "liste"
+        session["ansicht"] = ansicht
         conn = get_conn()
         rows = trails.list_active(conn, f, q, sort=sort, richtung=richtung, **sel)
 
@@ -183,7 +192,7 @@ def create_app(test_config=None):
             params.update(over)
             return url_for("index", **{k: v for k, v in params.items() if v not in (None, "", [])})
 
-        return render_template("index.html", rows=rows, f=f, q=q, sel=sel, sort=sort,
+        return render_template("index.html", rows=rows, f=f, q=q, sel=sel, sort=sort, ansicht=ansicht,
                                richtung=richtung, opts=trails.filter_options(conn), index_url=index_url)
 
     @app.route("/archiv")
@@ -272,13 +281,64 @@ def create_app(test_config=None):
         return render_template("import.html", zeilen=zeilen, daten=daten, n_setzen=n["setzen"],
                                n_erg=n["ergaenzen"], n_skip=n["uebersprungen"], n_unbekannt=n["unbekannt"])
 
+    # ---- Bilder ------------------------------------------------------- #
+    # Die URLs tragen den Dateinamen als ?v=..., ein ersetztes Foto hat also eine neue URL
+    # und darf lange im Browser-Cache liegen.
     @app.route("/foto/<int:tid>")
     @login_required
     def foto(tid):
         t = trails.get(get_conn(), tid)
         if not t or not t.get("foto"):
             abort(404)
-        return send_from_directory(app.config["FOTO_DIR"], t["foto"], max_age=86400)
+        if request.args.get("g") == "klein":
+            pfad = fotos.vorschau(app.config["FOTO_DIR"], t["foto"])
+            if pfad:
+                return send_file(pfad, mimetype="image/jpeg", max_age=30 * 86400)
+        return send_from_directory(app.config["FOTO_DIR"], t["foto"], max_age=30 * 86400)
+
+    @app.route("/titelbild/<int:tid>")
+    @login_required
+    def titelbild(tid):
+        t = trails.get(get_conn(), tid)
+        pfad = fotos.titelbild(app.config["FOTO_DIR"], tid, t.get("bild_url")) if t else None
+        if not pfad:
+            abort(404)
+        return send_file(pfad, mimetype="image/jpeg", max_age=7 * 86400)
+
+    @app.route("/trail/<int:tid>/foto", methods=["POST"])
+    @login_required
+    def trail_foto(tid):
+        """Schlussfoto hochladen/ersetzen, loeschen oder von foxtrail.ch neu laden."""
+        conn = get_conn()
+        t = trails.get(conn, tid)
+        if not t:
+            abort(404)
+        ordner, aktion = app.config["FOTO_DIR"], request.form.get("aktion")
+        if aktion == "hochladen":
+            f = request.files.get("datei")
+            try:
+                name = fotos.speichern(ordner, tid, f.read() if f and f.filename else b"")
+            except fotos.FotoError as ex:
+                flash(str(ex))
+            else:
+                fotos.entfernen(ordner, t.get("foto"))
+                trails.set_foto(conn, tid, name)
+                flash("Foto gespeichert.")
+        elif aktion == "loeschen" and t.get("foto"):
+            fotos.entfernen(ordner, t["foto"])
+            trails.set_foto(conn, tid, "")          # '' = bewusst geloescht, Import laedt es nicht neu
+            flash("Foto geloescht.")
+        elif aktion == "foxtrail" and t.get("foto_url"):
+            name = bestellungen.lade_foto(t["foto_url"], ordner, tid)
+            if name:
+                if t.get("foto") and t["foto"] != name:
+                    fotos.entfernen(ordner, t["foto"])
+                fotos.entfernen_vorschau(ordner, name)     # gleicher Name, alte Vorschau weg
+                trails.set_foto(conn, tid, name)
+                flash("Schlussfoto von foxtrail.ch geladen.")
+            else:
+                flash("Das Schlussfoto ist auf foxtrail.ch nicht mehr abrufbar.")
+        return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None) + "#foto")
 
     # ---- Profil -------------------------------------------------------- #
     @app.route("/profil", methods=["GET", "POST"])

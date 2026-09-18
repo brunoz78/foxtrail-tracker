@@ -22,6 +22,9 @@ def test_parse_fixture():
     assert a["bewertung"] == 4.6 and a["dauer"] == "3.5-4.5 Stunden" and a["preis"] == 36.0
     assert a["region"] == "wallis"
     assert a["url"] == "https://foxtrail.ch/produkte/trails/wallis/allalin-maxi/"
+    assert a["bild_url"] == "https://foxtrail.ch/wp-content/uploads/2026/08/Allalin-Maxi-Titelbild-441x294.jpg"
+    assert items[1]["bild_url"] == "https://foxtrail.ch/wp-content/uploads/2026/03/Alti-Titelbild-441x294.jpg"  # lazy
+    assert items[2]["bild_url"] is None
     b = items[1]
     assert b["bewertung"] is None and b["preis"] == 32.0 and b["ort"] == "Lausanne"
     assert b["typ"] == "foxtrail"

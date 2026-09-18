@@ -47,7 +47,9 @@ CREATE TABLE IF NOT EXISTS trails (
     team_code     TEXT,
     bestellung    TEXT,                              -- Bestellnummer bei foxtrail.ch
     foto_url      TEXT,                              -- Quelle des Schlussfotos
-    foto          TEXT,                              -- Dateiname unter config.foto_dir()
+    foto          TEXT,                              -- Dateiname unter config.foto_dir();
+                                                     -- '' = von Hand geloescht (Import laedt es nicht neu)
+    bild_url      TEXT,                              -- Titelbild auf foxtrail.ch (Kachelansicht)
     gemacht       INTEGER NOT NULL DEFAULT 0,
     gemacht_datum TEXT,
     mitspieler    INTEGER,
@@ -120,6 +122,9 @@ def _migrate(conn):
         if spalte not in spalten:
             # 2026-09: Import der Bestellungen (Zeiten, Team-Code, Bestellnummer, Schlussfoto)
             conn.execute(f"ALTER TABLE trails ADD COLUMN {spalte} TEXT")
+    if "bild_url" not in spalten:
+        # 2026-09: Titelbild fuer die Kachelansicht; Seed und Abgleich fuellen es.
+        conn.execute("ALTER TABLE trails ADD COLUMN bild_url TEXT")
     # 2026-09: Mini/Maxi als eigener Typ (vorher alles 'foxtrail'). Nur Website-Trails -
     # bei manuell erfassten entscheidet der Benutzer selbst. LIKE ist in SQLite fuer
     # ASCII case-insensitive, deckt also "Maxi"/"MAXI" ab (vgl. trails.typ_aus_name).

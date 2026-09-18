@@ -46,6 +46,18 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   liegen als `<id>.jpg` in `config.foto_dir()` (LXC: `/var/lib/foxtrail-tracker/fotos`,
   lokal `data/fotos`, gitignored) und werden ueber `/foto/<id>` nur angemeldet ausgeliefert.
   Kein Weg B (Tracker meldet sich selbst bei foxtrail.ch an) ohne neue Absprache.
+- **Fotos** (`foxtrail/fotos.py`): Upload auf der Detailseite (`POST /trail/<id>/foto`,
+  aktion `hochladen | loeschen | foxtrail`). Pillow dreht nach EXIF, verkleinert auf 2560 px
+  und speichert als JPEG `<id>-<zeit>.jpg` (entfernt EXIF/GPS; neuer Name = neue URL, daher
+  langer Browser-Cache ok). `foto = ''` heisst „von Hand geloescht“: der Import laedt es
+  dann nicht wieder (`bestellungen.anwenden` prueft `is None`). Vorschau 640 px unter
+  `fotos/klein/`, erzeugt beim ersten Abruf von `/foto/<id>?g=klein`.
+- **Kachelansicht** (`?ansicht=kacheln`, gemerkt in der Session): Bild = eigenes Foto,
+  sonst Titelbild von foxtrail.ch (`bild_url`, vom Scraper aus `data-lazy-src`/`src`,
+  im Seed hinterlegt). Titelbilder laedt der Server einmalig bei Bedarf nach
+  `fotos/titel/<id>-<hash>.jpg` und liefert sie ueber `/titelbild/<id>` aus – der Browser
+  fragt nie direkt bei foxtrail.ch an. Nur URLs unter `https://foxtrail.ch/`. Mit Bruno
+  am 2026-09-18 so vereinbart (Platzhalter-Vorschlag, „weitermachen“).
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
@@ -89,7 +101,8 @@ foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse
                        Schlussfoto-Download nach config.foto_dir()). Zuordnung nur ueber
                        exakten Namen. Die JSON-Adresse braucht das Session-Cookie des Browsers;
                        der Tracker ruft sie nie selbst ab - Upload auf der Seite /import.
-foxtrail/templates/    base, login, index, archiv, trail_form, trail_new, profil,
+foxtrail/fotos.py      Fotos pruefen/verkleinern (Pillow), Vorschaubilder, Titelbild-Cache
+foxtrail/templates/    base, login, index (Liste + Kacheln), archiv, trail_form, trail_new, profil,
                        benutzer, sync, fehler, import (Upload + Probelauf + Bestaetigen),
                        _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
 data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Erstbefüllung
@@ -155,8 +168,3 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
 - Karte nach Region (Filter, Sortierung und Gruppen-Zeilen nach Region gibt es seit 2026-09)
 - Statistik-Seite (Trails pro Jahr, Mitspieler gesamt, Spielzeit gesamt und im Schnitt,
   schnellster und laengster Trail, Verteilung nach Region und Typ) - von Bruno bestaetigt
-- Fotos von Hand pflegen: eigenes Foto hochladen, vorhandenes ersetzen oder loeschen
-  (bisher kommen Fotos nur ueber den Bestellungs-Import)
-- Statt des Kamera-Symbols in der Liste eine Mini-Vorschau des Schlussfotos
-- Kachelansicht als zweite Ansicht der Liste: grosse Fotos, drei pro Reihe,
-  Klick fuehrt auf die Detailseite

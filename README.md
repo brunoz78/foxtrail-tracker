@@ -24,6 +24,12 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
   ins Bild gezeichnet); sortiert nach Region erscheinen Gruppen-Zeilen
 * Pro Trail: **gemacht**, **Datum**, **Anzahl Mitspieler**, **Bemerkung**
   (ein Eintrag je Trail, gemeinsam für alle Benutzer)
+* **Kachelansicht** als zweite Ansicht der Liste: drei Kacheln pro Reihe (auf dem Handy
+  eine) mit dem eigenen Foto oder dem Titelbild von foxtrail.ch, Klick öffnet den Trail;
+  Sortierung und Filter wie in der Liste, die gewählte Ansicht bleibt in der Sitzung
+* **Fotos** pro Trail: hochladen, ersetzen, löschen (JPEG/PNG/WebP bis 15 MB). Beim
+  Speichern wird das Bild gedreht, auf höchstens 2560 px verkleinert und ohne
+  EXIF-Daten (also ohne GPS-Position) abgelegt. In der Liste erscheint eine Vorschau
 * Manuell erfasste Trails für früher gemachte Trails, die nicht mehr angeboten werden
 * Abgleich mit foxtrail.ch – wöchentlich per systemd-Timer und per Knopfdruck
 * Archiv: nicht mehr angebotene, noch nicht gemachte Trails
@@ -158,7 +164,8 @@ Aus dem JSON kommen zusätzlich Start- und Zielzeit (daraus die **Spielzeit**,
 sortierbare Spalte „Zeit“), Team-Code und Bestellnummer. Das **Schlussfoto** wird
 einmalig heruntergeladen, unter `/var/lib/foxtrail-tracker/fotos` abgelegt und auf
 der Detailseite gezeigt. Bereits gemachte Trails werden nur um fehlende Angaben
-ergänzt, nie überschrieben.
+ergänzt, nie überschrieben. Ein von Hand gelöschtes Foto lädt der Import nicht wieder;
+auf der Detailseite lässt es sich mit „Schlussfoto von foxtrail.ch laden“ zurückholen.
 
 Zuordnung über den genauen Trail-Namen („Trail Columban“ → Columban, nicht
 Columban Mini). Eingetragen werden Datum (Startzeit) und Mitspieler (Erwachsene
@@ -219,7 +226,12 @@ Der Abgleich ruft die öffentliche Trail-Übersicht ab (ca. 9 Seiten) und zusät
 die nach Schwierigkeit gefilterte Übersicht je Stufe (ca. 8 Seiten) – insgesamt rund
 17 Seitenabrufe, eine Sekunde Pause dazwischen, standardmässig einmal pro Woche. Er
 nennt sich im User-Agent.
-Bitte die Frequenz nicht unnötig erhöhen. Ändert Foxtrail den Aufbau der Seite,
+Bitte die Frequenz nicht unnötig erhöhen.
+
+Die Titelbilder für die Kachelansicht (441×294 px, rund 40 KB) lädt der Server erst,
+wenn eine Kachel zum ersten Mal angezeigt wird, und legt sie unter `fotos/titel/` ab.
+Danach fragt weder er noch der Browser erneut bei foxtrail.ch an – ausser das Bild
+ändert sich dort (neue Adresse). Ändert Foxtrail den Aufbau der Seite,
 bricht der Abgleich kontrolliert ab („Keine Trails gefunden“) – dann muss
 `foxtrail/scraper.py` angepasst werden; `tests/fixture_page.html` zeigt die
 erwartete Struktur.

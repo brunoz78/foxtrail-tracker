@@ -12,6 +12,7 @@ Die Seite ist ein WooCommerce-Shop (Theme "Shoptimizer"). Je Trail ein
   .star-rating[aria-label="Rated 4.61 out of 5"]
   .trail-meta > span (ohne Klasse)            -> Dauer, z. B. "2-3 Stunden"
   .trail-price                                -> "CHF 32.00"
+  img.attachment-woocommerce_thumbnail        -> Titelbild (441x294), data-lazy-src vor src
 Paginierung: a.next.page-numbers existiert, solange eine weitere Seite folgt.
 
 Schwierigkeit steht nicht in den Karten, aber die Uebersicht laesst sich per URL nach
@@ -22,7 +23,7 @@ liefern die Stufe fuer alle Foxtrail-Trails; GO-Trails haben keine (None).
 
 fetch_all() liefert eine Liste von dicts mit den Feldern
   slug, ort, name, route, typ ('foxtrail'|'mini'|'maxi'|'go'), region, bewertung, dauer, preis, url,
-  schwierigkeit ('einfach'|'mittel'|'schwierig'|None)
+  bild_url (None wenn keins), schwierigkeit ('einfach'|'mittel'|'schwierig'|None)
 Typ: GO am Badge, Mini/Maxi am Namen (trails.typ_aus_name) - das MINI/MAXI-Badge auf
 der Website ist nur ins Titelbild gezeichnet, im HTML gibt es kein Element dafuer.
 parse_page() ist rein (kein Netz) und damit offline testbar.
@@ -94,7 +95,12 @@ def parse_page(html):
         pm = _PRICE_RE.search(_text(li.select_one(".trail-price")).replace("’", "").replace("'", ""))
         if pm:
             preis = float(pm.group(1).replace(",", "."))
+        # Bilder weiter unten laedt die Seite verzoegert: src ist dann ein SVG-Platzhalter,
+        # die echte Adresse steht in data-lazy-src
+        img = li.select_one("img.attachment-woocommerce_thumbnail") or li.select_one("img")
+        bild = (img.get("data-lazy-src") or img.get("src") or "") if img else ""
         out.append({
+            "bild_url": bild if bild.startswith("https://") else None,
             "slug": slug, "ort": ort, "name": name, "route": route, "typ": typ,
             "region": region, "bewertung": rating, "dauer": dauer, "preis": preis,
             "url": href if href.startswith("http") else f"https://foxtrail.ch/produkte/trails/{slug}/",

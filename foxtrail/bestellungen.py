@@ -276,7 +276,8 @@ def anwenden(conn, plan, benutzer="import", foto_dir=None):
         trails.set_import(conn, t["id"], start=e["start"], ziel=e["ziel"],
                           code=", ".join(e["codes"]) or None, bestellung=e["bestellung"] or None,
                           foto_url=e["foto_url"])
-        if foto_dir and e["foto_url"] and not t.get("foto"):
+        # foto '' = von Hand geloescht -> nicht wieder laden
+        if foto_dir and e["foto_url"] and t.get("foto") is None:
             name = lade_foto(e["foto_url"], foto_dir, t["id"])
             if name:
                 trails.set_foto(conn, t["id"], name)

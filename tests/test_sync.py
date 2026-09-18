@@ -124,6 +124,16 @@ def test_schwierigkeit_sync():
     assert trails.get(c, tid)["region"] == "tessin"
 
 
+def test_titelbild_sync():
+    c = conn_mem()
+    sync.apply(c, [mk("a/x", bild_url="https://foxtrail.ch/b1.jpg")], "test")
+    assert trails.get(c, 1)["bild_url"] == "https://foxtrail.ch/b1.jpg"
+    # None (kein Bild gefunden) laesst den Wert stehen; ein neues Bild ist keine "Aktualisierung"
+    r = sync.apply(c, [mk("a/x", bild_url=None)], "test")
+    assert r["aktualisiert"] == 0 and trails.get(c, 1)["bild_url"] == "https://foxtrail.ch/b1.jpg"
+    r = sync.apply(c, [mk("a/x", bild_url="https://foxtrail.ch/b2.jpg")], "test")
+    assert r["aktualisiert"] == 0 and trails.get(c, 1)["bild_url"] == "https://foxtrail.ch/b2.jpg"
+
 def test_dauer_parsen_und_kuerzen():
     assert trails.parse_dauer("1.5-2.5 Stunden") == (1.5, 2.5)
     assert trails.parse_dauer("2 Stunden") == (2.0, 2.0)

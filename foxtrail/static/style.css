@@ -127,3 +127,52 @@ tr.grp td { background: var(--green-light); color: var(--green); font-weight: bo
 .grad-mittel::before { background: #e0a400; }
 .grad-schwierig::before { background: #c8443c; }
 @media (prefers-color-scheme: dark) { .typ-go { background: #55687a; } .typ-maxi { background: #3f7d55; } }
+
+/* ---- Fotos: Detailseite, Vorschau in der Liste -------------------------- */
+.fotobox { margin: 12px 0; }
+.fotobox img.foto { display: block; margin-bottom: 8px; }
+.foto-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.foto-actions form { margin: 0; }
+form label.upload { display: inline-block; margin: 0; cursor: pointer; font-size: 13px; color: var(--text);
+  border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; background: var(--card); position: relative; }
+form label.upload:hover { border-color: var(--green); }
+form label.upload input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; margin: 0; }
+form label.upload:focus-within { outline: 2px solid var(--green); outline-offset: 1px; }
+a.thumb { display: inline-block; vertical-align: middle; margin-left: 6px; line-height: 0; }
+a.thumb img { width: 44px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 0 0 1px var(--line); }
+a.thumb:hover img { box-shadow: 0 0 0 2px var(--green); }
+
+/* ---- Kachelansicht ------------------------------------------------------- */
+.seg.ansicht { margin-left: auto; }
+.kachel-bar { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin: 0 0 12px; padding: 8px 12px;
+  background: var(--card); border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.06); position: relative; }
+.kachel-bar a.sort { text-decoration: none; color: var(--text); padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+.kachel-bar a.sort:hover { background: var(--green-light); }
+.kachel-bar a.sort.on { background: var(--green); color: #fff; }
+.kachel-bar a.sort .arrow { font-size: 9px; }
+.kachel-bar .sep { margin-left: 8px; }
+.kachel-bar .kf { position: relative; font-size: 14px; white-space: nowrap; }
+.kachel-bar .hf-menu { top: calc(100% + 4px); }
+.kacheln { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 960px) { .kacheln { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .kacheln { grid-template-columns: minmax(0, 1fr); } }
+.kgrp { grid-column: 1 / -1; margin: 8px 0 -4px; color: var(--green); }
+@media (prefers-color-scheme: dark) { .kgrp { color: #a9d8b8; } }
+.kacheln .empty { grid-column: 1 / -1; text-align: center; padding: 24px; }
+a.kachel { display: flex; flex-direction: column; background: var(--card); border-radius: 8px; overflow: hidden;
+  text-decoration: none; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); transition: transform .12s, box-shadow .12s; }
+a.kachel:hover, a.kachel:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.15); }
+a.kachel.done { outline: 2px solid var(--green); outline-offset: -2px; }
+.kbild { position: relative; aspect-ratio: 3 / 2; background: var(--green-light); }
+.kbild img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.kachel.gone .kbild img { filter: grayscale(.8); }
+.kleer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--green); font-size: 22px; font-weight: bold; text-align: center; padding: 12px; }
+@media (prefers-color-scheme: dark) { .kleer { color: #a9d8b8; } }
+.khaken { position: absolute; left: 8px; top: 8px; background: var(--green); color: #fff; font-size: 12px;
+  font-weight: bold; padding: 2px 8px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.kstatus { position: absolute; right: 8px; top: 8px; margin: 0; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.kstatus.tag:not(.new):not(.warn) { background: var(--card); color: var(--text); }
+.ktext { padding: 8px 12px 10px; }
+.ktitel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kmeta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-top: 4px; font-size: 13px; color: var(--muted); }

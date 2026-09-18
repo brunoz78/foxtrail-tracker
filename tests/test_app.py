@@ -220,5 +220,106 @@ def test_import_seite(app, monkeypatch, tmp_path):
     assert c.get("/foto/1").status_code == 302                    # nur angemeldet
 
 
+def _jpeg_bytes(breite=1200, hoehe=800):
+    from PIL import Image
+    out = io.BytesIO()
+    Image.new("RGB", (breite, hoehe), (40, 90, 60)).save(out, "JPEG")
+    return out.getvalue()
+
+
+def test_foto_hochladen_ersetzen_loeschen(app, tmp_path):
+    from PIL import Image
+    ordner = tmp_path / "fotos"
+    app.config["FOTO_DIR"] = str(ordner)
+    c = app.test_client()
+    login(c, "gast")
+    assert "Foto hinzufuegen" in c.get("/trail/1").get_data(as_text=True)
+    # kein Bild -> abgelehnt, nichts gespeichert
+    r = c.post("/trail/1/foto", data={"aktion": "hochladen", "datei": (io.BytesIO(b"kein bild"), "x.jpg")},
+               content_type="multipart/form-data", follow_redirects=True)
+    assert "Nur JPEG" in r.get_data(as_text=True)
+    # grosses Bild -> verkleinert auf 2560 px
+    r = c.post("/trail/1/foto", data={"aktion": "hochladen", "datei": (io.BytesIO(_jpeg_bytes(4000, 3000)), "a.jpg")},
+               content_type="multipart/form-data", follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert "Foto gespeichert" in html and "Foto ersetzen" in html and "Foto loeschen" in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        erstes = trails.get(conn, 1)["foto"]
+    assert erstes.startswith("1-") and Image.open(ordner / erstes).size == (2560, 1920)
+    # Vorschau fuer Liste/Kacheln
+    r = c.get(f"/foto/1?g=klein&v={erstes}")
+    assert r.status_code == 200 and Image.open(io.BytesIO(r.data)).size[0] == 640
+    r.close()                                                 # Windows loescht keine offenen Dateien
+    assert (ordner / "klein" / (erstes[:-4] + ".jpg")).exists()
+    assert f"/foto/1?g=klein" in c.get("/?ansicht=liste").get_data(as_text=True)
+    # ersetzen -> alte Datei samt Vorschau weg
+    import time
+    time.sleep(1.1)                                           # neuer Zeitstempel im Namen
+    c.post("/trail/1/foto", data={"aktion": "hochladen", "datei": (io.BytesIO(_jpeg_bytes()), "b.jpg")},
+           content_type="multipart/form-data")
+    with db.session(app.config["DB_PATH"]) as conn:
+        zweites = trails.get(conn, 1)["foto"]
+    assert zweites != erstes and not (ordner / erstes).exists() and (ordner / zweites).exists()
+    assert not (ordner / "klein" / (erstes[:-4] + ".jpg")).exists()
+    # loeschen -> '' (Import laedt es nicht wieder)
+    r = c.post("/trail/1/foto", data={"aktion": "loeschen"}, follow_redirects=True)
+    assert "Foto geloescht" in r.get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 1)["foto"] == ""
+    assert not (ordner / zweites).exists() and c.get("/foto/1").status_code == 404
+    c.get("/logout")
+    assert c.post("/trail/1/foto", data={"aktion": "loeschen"}).status_code == 302   # nur angemeldet
+
+
+def test_import_laedt_geloeschtes_foto_nicht_neu(app, monkeypatch, tmp_path):
+    from foxtrail import bestellungen
+    from tests.test_bestellungen import MUSTER_JSON, _Antwort
+    geladen = []
+    monkeypatch.setattr(bestellungen.requests, "get",
+                        lambda url, timeout=None, headers=None: geladen.append(url) or _Antwort())
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET name = 'Columban', foto = '' WHERE slug = 'aargau/aquae'")
+        plan = bestellungen.zuordnen(conn, bestellungen.parse(json.dumps(MUSTER_JSON)))
+        res = bestellungen.anwenden(conn, plan, "test", str(tmp_path))
+        assert res["gesetzt"] == 1 and res["fotos"] == 0 and not geladen
+        assert trails.get(conn, 1)["foto"] == "" and trails.get(conn, 1)["foto_url"]
+    # von Hand wieder holen geht
+    app.config["FOTO_DIR"] = str(tmp_path)
+    c = app.test_client()
+    login(c, "gast")
+    assert "Schlussfoto von foxtrail.ch laden" in c.get("/trail/1").get_data(as_text=True)
+    r = c.post("/trail/1/foto", data={"aktion": "foxtrail"}, follow_redirects=True)
+    assert "Schlussfoto von foxtrail.ch geladen" in r.get_data(as_text=True) and geladen
+
+
+def test_kachelansicht_und_titelbild(app, monkeypatch, tmp_path):
+    from foxtrail import fotos
+
+    class Bild:
+        content = _jpeg_bytes(441, 294)
+        def raise_for_status(self):
+            pass
+    abrufe = []
+    monkeypatch.setattr(fotos.requests, "get", lambda url, timeout=None, headers=None: abrufe.append(url) or Bild())
+    app.config["FOTO_DIR"] = str(tmp_path)
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET bild_url = 'https://foxtrail.ch/wp-content/uploads/a.jpg' WHERE id = 1")
+        conn.execute("UPDATE trails SET bild_url = 'https://boese.example/x.jpg' WHERE id = 2")
+    c = app.test_client()
+    login(c, "gast")
+    html = c.get("/?ansicht=kacheln").get_data(as_text=True)
+    assert 'class="kacheln"' in html and "/titelbild/1" in html and "<table" not in html
+    assert 'onerror="this.remove()"' in html and "Brig" in html   # Ort bleibt sichtbar, wenn das Bild fehlt
+    # die Wahl bleibt in der Sitzung
+    assert 'class="kacheln"' in c.get("/?sort=name").get_data(as_text=True)
+    assert "<table" in c.get("/?ansicht=liste").get_data(as_text=True)
+    assert "<table" in c.get("/").get_data(as_text=True)
+    # Titelbild: einmal laden, danach aus dem Zwischenspeicher
+    assert c.get("/titelbild/1").status_code == 200 and c.get("/titelbild/1").status_code == 200
+    assert abrufe == ["https://foxtrail.ch/wp-content/uploads/a.jpg"]
+    assert c.get("/titelbild/2").status_code == 404            # nur Bilder von foxtrail.ch
+    assert c.get("/titelbild/99").status_code == 404
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

@@ -28,7 +28,60 @@
   <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[]) }}">Filter zuruecksetzen</a>
   {% endif %}
   <span class="muted small">{{ rows|length }} Trails</span>
+  <div class="seg ansicht" title="Ansicht">
+    <a href="{{ index_url(ansicht='liste') }}" class="{{ 'on' if ansicht == 'liste' }}">☰ Liste</a>
+    <a href="{{ index_url(ansicht='kacheln') }}" class="{{ 'on' if ansicht == 'kacheln' }}">▦ Kacheln</a>
+  </div>
 </div>
+
+{% if ansicht == 'kacheln' %}
+{# Kachelansicht: Sortierung und Filter stehen hier in einer Leiste statt in den Spaltenkoepfen #}
+<div class="kachel-bar">
+  <span class="muted small">Sortieren</span>
+  {% for col, label, first in [('ort', 'Ort', 'asc'), ('name', 'Trail', 'asc'), ('region', 'Region', 'asc'),
+       ('typ', 'Typ', 'asc'), ('schwierigkeit', 'Grad', 'asc'), ('bewertung', '★', 'desc'),
+       ('dauer', 'Dauer', 'asc'), ('preis', 'CHF', 'asc'), ('datum', 'Datum', 'desc'),
+       ('spielzeit', 'Zeit', 'desc')] %}{{ sortlink(col, label, first) }}{% endfor %}
+  {% if f == 'neu' %}{{ sortlink('neu', 'Neu ab', 'desc') }}{% endif %}
+  <span class="muted small sep">Filter</span>
+  <span class="kf">Region{{ hfilter('region', opts.region) }}</span>
+  <span class="kf">Typ{{ hfilter('typ', opts.typ) }}</span>
+  <span class="kf">Grad{{ hfilter('grad', opts.grad) }}</span>
+  <span class="kf">Dauer{{ hfilter('dauer', opts.dauer) }}</span>
+</div>
+<div class="kacheln">
+  {% for t in rows %}
+  {% if sort == 'region' and (loop.first or t.region != loop.previtem.region) %}
+  <h2 class="kgrp">{{ t.region_label or 'Ohne Region' }}</h2>
+  {% endif %}
+  <a class="kachel {{ 'done' if t.gemacht }} {{ 'gone' if (not t.im_angebot and t.quelle == 'foxtrail') }}"
+     href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}">
+    <div class="kbild">
+      {# Ort als Platzhalter unter dem Bild: bleibt sichtbar, wenn es keins gibt oder es nicht laedt #}
+      <div class="kleer"><span>{{ t.ort }}</span></div>
+      {% if t.foto %}<img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="Schlussfoto {{ t.name }}" loading="lazy" onerror="this.remove()">
+      {% elif t.bild_url %}<img class="titel" src="{{ url_for('titelbild', tid=t.id) }}" alt="" loading="lazy" onerror="this.remove()">{% endif %}
+      {% if t.gemacht %}<span class="khaken" title="Gemacht">✔{% if t.gemacht_datum %} {{ t.gemacht_datum|datum }}{% endif %}</span>{% endif %}
+      {% if t.quelle == 'manual' %}<span class="kstatus tag">manuell</span>
+      {% elif not t.im_angebot %}<span class="kstatus tag warn">nicht mehr im Angebot</span>
+      {% elif t.neu %}<span class="kstatus tag new">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
+    </div>
+    <div class="ktext">
+      <div class="ktitel"><b>{{ t.name }}</b> <span class="muted">· {{ t.ort }}</span></div>
+      <div class="kmeta">{{ typ_badge(t) }}
+        {% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}
+        {% if t.dauer %}<span>{{ t.dauer|dauer }}</span>{% endif %}
+        {% if t.bewertung %}<span>★ {{ t.bewertung }}</span>{% endif %}
+        {% if t.spielzeit %}<span title="Unsere Spielzeit">⏱ {{ t.spielzeit }}</span>{% endif %}
+        {% if t.mitspieler %}<span title="Mitspieler">👥 {{ t.mitspieler }}</span>{% endif %}
+      </div>
+    </div>
+  </a>
+  {% else %}
+  <p class="empty muted">Keine Trails gefunden.</p>
+  {% endfor %}
+</div>
+{% else %}
 
 <div class="tablewrap"><table class="trails">
   <thead><tr>
@@ -60,7 +113,7 @@
       {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }}">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span>
       {% elif t.neu %}<span class="tag new" title="Vom Abgleich am {{ t.neu_seit|datum }} neu auf foxtrail.ch gefunden">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
       {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch oeffnen">↗</a>{% endif %}
-      {% if t.foto %}<a class="ext" href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}#foto" title="Schlussfoto ansehen">📷</a>{% endif %}</td>
+      {% if t.foto %}<a class="thumb" href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}#foto" title="Schlussfoto ansehen"><img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="" loading="lazy"></a>{% endif %}</td>
     <td class="wide muted">{{ t.route }}</td>
     <td class="nowrap muted">{{ t.region_label }}</td>
     <td>{{ typ_badge(t) }}</td>
@@ -78,6 +131,7 @@
   {% endfor %}
   </tbody>
 </table></div>
+{% endif %}
 </form>
 
 <script>
@@ -97,7 +151,7 @@
       return Array.prototype.map.call(d.querySelectorAll('input:checked'), function (i) { return i.value; }).join('|');
     };
     d.addEventListener('toggle', function () {
-      wrap.classList.toggle('menu-open', !!form.querySelector('details.hf[open]'));
+      if (wrap) { wrap.classList.toggle('menu-open', !!form.querySelector('details.hf[open]')); }
       if (d.open) {
         start = state();
         // Menue am rechten Rand nach links aufklappen, damit es im Fenster bleibt

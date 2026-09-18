@@ -24,6 +24,8 @@ from .db import now
 
 META_FIELDS = ("ort", "name", "route", "typ", "region", "bewertung", "dauer", "preis", "url",
                "schwierigkeit")
+# bild_url wird mitgefuehrt, zaehlt aber nicht als Aenderung (ein neues Titelbild ist keine
+# Meldung wert) und None ueberschreibt einen bekannten Wert nie.
 MIN_RATIO = 0.5
 
 
@@ -70,11 +72,11 @@ def _apply(conn, scraped, ts, res):
         if old is None:
             conn.execute(
                 "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, "
-                "dauer, preis, url, schwierigkeit, im_angebot, first_seen, last_seen, neu_seit) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?,?)",
+                "dauer, preis, url, schwierigkeit, bild_url, im_angebot, first_seen, last_seen, neu_seit) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,1,?,?,?)",
                 (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"),
                  t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
-                 t.get("url", ""), t.get("schwierigkeit"), ts, ts, ts[:10]))
+                 t.get("url", ""), t.get("schwierigkeit"), t.get("bild_url"), ts, ts, ts[:10]))
             res["neu"] += 1
             continue
         # Schwierigkeit None = "diesmal nicht ermittelt" (z. B. Filter-Abruf gescheitert):
@@ -87,11 +89,11 @@ def _apply(conn, scraped, ts, res):
             res["aktualisiert"] += 1
         conn.execute(
             "UPDATE trails SET ort=?, name=?, route=?, typ=?, region=?, bewertung=?, dauer=?, "
-            "preis=?, url=?, schwierigkeit=COALESCE(?, schwierigkeit), im_angebot=1, last_seen=? "
-            "WHERE id=?",
+            "preis=?, url=?, schwierigkeit=COALESCE(?, schwierigkeit), bild_url=COALESCE(?, bild_url), "
+            "im_angebot=1, last_seen=? WHERE id=?",
             (t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"), t.get("region", ""),
              t.get("bewertung"), t.get("dauer", ""), t.get("preis"), t.get("url", ""),
-             t.get("schwierigkeit"), ts, old["id"]))
+             t.get("schwierigkeit"), t.get("bild_url"), ts, old["id"]))
 
     for slug, old in existing.items():
         if slug in slugs or not old["im_angebot"]:

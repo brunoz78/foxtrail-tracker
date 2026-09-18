@@ -13,7 +13,8 @@
    "dauer": "3.5-4.5 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/wallis/allalin-maxi/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Allalin-Maxi-Titelbild-441x294.jpg"
   },
   {
    "slug": "wallis/allalin",
@@ -26,7 +27,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/wallis/allalin/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Allalin-Maxi-Saas-Fee-Wallis-Header-48-441x294.jpg"
   },
   {
    "slug": "wallis/allalin-winter",
@@ -39,7 +41,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/wallis/allalin-winter/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Allalin-Winter-Saas-Fee-Header-30-441x294.jpg"
   },
   {
    "slug": "westschweiz/alti",
@@ -52,7 +55,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/alti/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Alti-Lausanne-Westschweiz-Palais-de-Rumine-36-441x294.jpg"
   },
   {
    "slug": "graubuenden/anda",
@@ -65,7 +69,8 @@
    "dauer": "2-3 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/graubuenden/anda/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Anda-Lenzerheide-Sommer-Schnitzeljagd-Header-24-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/apollon",
@@ -78,7 +83,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/apollon/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Apollon-Titelbild-51-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/apollon-maxi",
@@ -91,7 +97,8 @@
    "dauer": "3-4 Stunden",
    "preis": 42.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/apollon-maxi/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Apollon-Maxi-Titelbild-441x294.jpg"
   },
   {
    "slug": "ostschweiz/appenzell-foxtrail-go",
@@ -104,7 +111,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/appenzell-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/07/Appenzell_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "aargau/aquae",
@@ -117,7 +125,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/aquae/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Aquae-Baden-Aargau-Header-18-441x294.jpg"
   },
   {
    "slug": "ostschweiz/atlas",
@@ -131,7 +140,8 @@
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/atlas/",
    "schwierigkeit": "einfach",
-   "neu_seit": "2025-05-03"
+   "neu_seit": "2025-05-03",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/2-441x294.png"
   },
   {
    "slug": "ostschweiz/baccara",
@@ -144,7 +154,8 @@
    "dauer": "3-4 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/baccara/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Baccara-Rapperswil-Zrich-Ostschweiz-Header-46-441x294.jpg"
   },
   {
    "slug": "ostschweiz/baccara-mini",
@@ -157,7 +168,8 @@
    "dauer": "1-2 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/baccara-mini/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Baccara-Mini-TB-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/basel-foxtrail-go",
@@ -170,7 +182,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/basel-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Basel_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "tessin/bellinzona-foxtrail-go",
@@ -183,7 +196,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/tessin/bellinzona-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Bellinzona_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/biel-foxtrail-go",
@@ -196,7 +210,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/biel-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Biel_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/castello",
@@ -209,7 +224,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/castello/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Castello-Thun-Bern-Schnitzeljagd-9-441x294.jpg"
   },
   {
    "slug": "graubuenden/foxtrail-go-chur",
@@ -222,7 +238,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/graubuenden/foxtrail-go-chur/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2025/10/Chur_Cover_Marker-1-441x294.jpg"
   },
   {
    "slug": "westschweiz/citi",
@@ -235,7 +252,8 @@
    "dauer": "1-2 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/citi/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Citi-Mini-TB-3-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/cityfox",
@@ -248,7 +266,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/cityfox/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Cityfox-Thun-Bern-Sehenswrdigkeiten-14-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/cityfox-mini",
@@ -261,7 +280,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/cityfox-mini/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Cityfox-Mini-tb-441x294.jpg"
   },
   {
    "slug": "ostschweiz/clarona",
@@ -274,7 +294,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/clarona/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Glarus_MRH_DSC_5740-1-441x294.jpg"
   },
   {
    "slug": "ostschweiz/columban",
@@ -287,7 +308,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/columban/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Columban-St-Gallen-Altstadt-Header-25-441x294.jpg"
   },
   {
    "slug": "ostschweiz/columban-mini",
@@ -300,7 +322,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/columban-mini/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Columban-Mini-tb-441x294.jpg"
   },
   {
    "slug": "ostschweiz/conexus",
@@ -313,7 +336,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/conexus/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Conexus-Kreuzlingen-Konstanz-Ostschweiz-Header-12-441x294.jpg"
   },
   {
    "slug": "graubuenden/cuolm",
@@ -326,7 +350,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/graubuenden/cuolm/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail_Cuolm_Davos_Header-34-441x294.jpg"
   },
   {
    "slug": "graubuenden/cuolm-striunau",
@@ -339,7 +364,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/graubuenden/cuolm-striunau/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail_Cuolm_Davos_Sommer_Bergfahrt-6-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/cyan",
@@ -352,7 +378,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/cyan/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Cyan-Basel-Rhein-Schnitzeljagd-70-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/cyan-mini",
@@ -365,7 +392,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/cyan-mini/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Cyan-Mini-tb-441x294.jpg"
   },
   {
    "slug": "wallis/desoria",
@@ -378,7 +406,8 @@
    "dauer": "2-3 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/wallis/desoria/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Desoria-Aletsch-Wallis-Spass-Spiel-12-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/dolomit",
@@ -391,7 +420,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/dolomit/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Schiefer-Bern-Bundeshaus-Sightseeing-Header-73-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/elixira",
@@ -404,7 +434,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/elixira/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Titelbild-Elixira-ohne-NEW-Scratch-9-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/emma",
@@ -417,7 +448,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/emma/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Emma-Emmental-Entlebuch-Bern-Luzern-Header-12-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/flora",
@@ -430,7 +462,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/flora/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Erlebnis-Restaurant_Rossweid_Sommer_Soerenberg_Samuel-Buettler-29-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/flueelen-foxtrail-go",
@@ -443,7 +476,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/flueelen-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Flluelen_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "westschweiz/fribourg-foxtrail-go",
@@ -456,7 +490,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/fribourg-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/02/Fribourg_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "ostschweiz/funi",
@@ -469,7 +504,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/funi/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Funi-Wildhaus-Ostschweiz-Header-24-441x294.jpg"
   },
   {
    "slug": "liechtenstein/furisto",
@@ -482,7 +518,8 @@
    "dauer": "2-3 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/liechtenstein/furisto/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/001122_Vaduz_FJMeier-30-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/gaia",
@@ -495,7 +532,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/gaia/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Gaia-Zrich-FOGO-Schnitzeljagd-6-441x294.jpg"
   },
   {
    "slug": "tessin/galileo",
@@ -508,7 +546,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/tessin/galileo/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/iStock-1280035788-Copy-15-441x294.png"
   },
   {
    "slug": "ostschweiz/gallus-stadt",
@@ -521,7 +560,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/gallus-stadt/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Gallus-Stadt-St-Gallen-Ostschweiz-Header-12-441x294.jpg"
   },
   {
    "slug": "westschweiz/genf-uno-wto-foxtrail-go",
@@ -534,7 +574,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/genf-uno-wto-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Genf02_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "westschweiz/genf-foxtrail-go",
@@ -547,7 +588,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/genf-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2025/10/Genf01_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/granit",
@@ -560,7 +602,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/granit/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Granit-Bern-Zytglogge-Altstadt-Header-45-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/helios",
@@ -573,7 +616,8 @@
    "dauer": "3-4 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/helios/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Helios-Weggis-Vitznau-Header-64-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/helios-mini",
@@ -586,7 +630,8 @@
    "dauer": "1-2 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/helios-mini/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Helios-Mini-tb-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/hera",
@@ -599,7 +644,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/hera/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Hera-Zrich-Stadt-Blick-Header-36-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/ikarus",
@@ -612,7 +658,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/ikarus/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Ikarus-Zrich-Header-36-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/interlaken-foxtrail-go",
@@ -625,7 +672,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/interlaken-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Interlaken_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "aargau/jurapark",
@@ -638,7 +686,8 @@
    "dauer": "2-3 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/jurapark/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Jurapark-Aargau-Aussicht-24-441x294.jpg"
   },
   {
    "slug": "graubuenden/klosters-foxtrail-go",
@@ -651,7 +700,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/graubuenden/klosters-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/09/Coverbild_Klosters_02_marker-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/kronos",
@@ -664,7 +714,8 @@
    "dauer": "3-4 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/kronos/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Kronos-Luzern-Header-30-441x294.jpg"
   },
   {
    "slug": "westschweiz/lausanne-foxtrail-go",
@@ -677,7 +728,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/lausanne-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Lausanne_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/leonis",
@@ -690,7 +742,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/leonis/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/csm_Kultur-Altstadt_Willisau-Bea-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/liestal-foxtrail-go",
@@ -703,7 +756,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/liestal-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/07/Liestal_Cover_Marker_03-441x294.jpg"
   },
   {
    "slug": "tessin/locarno-foxtrail-go",
@@ -716,7 +770,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/tessin/locarno-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Locarno_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "tessin/lugano-foxtrail-go",
@@ -729,7 +784,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/tessin/lugano-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Lugano_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "westschweiz/montreux-foxtrail-go",
@@ -742,7 +798,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/montreux-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2025/11/Montreux_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/neptun",
@@ -756,7 +813,8 @@
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/neptun/",
    "schwierigkeit": "schwierig",
-   "neu_seit": "2025-10-14"
+   "neu_seit": "2025-10-14",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/10-441x294.jpg"
   },
   {
    "slug": "westschweiz/neuchatel-foxtrail-go",
@@ -769,7 +827,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/neuchatel-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2025/12/Neuchatel_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/odysseus",
@@ -782,7 +841,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/odysseus/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Odysseus-Zrich-St.-Peter-Altstadt-Header-42-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/picasso",
@@ -795,7 +855,8 @@
    "dauer": "2-3 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/picasso/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Picasso-Kloten-Zrich-Header-36-441x294.jpg"
   },
   {
    "slug": "jura/porrentruy-foxtrail-go",
@@ -808,7 +869,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/jura/porrentruy-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Porrentruy_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/prometheus",
@@ -821,7 +883,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/prometheus/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Prometheus-Zrich-Sihl-Header-47-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/prometheus-mini",
@@ -834,7 +897,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/prometheus-mini/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Prometheus-Mini-tb-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/purple",
@@ -847,7 +911,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/purple/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Purple-Basel-Spalentor-7-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/quarz",
@@ -861,7 +926,8 @@
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz/",
    "schwierigkeit": "schwierig",
-   "neu_seit": "2026-01-26"
+   "neu_seit": "2026-01-26",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/1440x960px-14-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/quarz-mini",
@@ -875,7 +941,8 @@
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/quarz-mini/",
    "schwierigkeit": "mittel",
-   "neu_seit": "2026-01-26"
+   "neu_seit": "2026-01-26",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Quarz-Mini-tb-441x294.jpg"
   },
   {
    "slug": "ostschweiz/rosalie",
@@ -888,7 +955,8 @@
    "dauer": "3-4 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/rosalie/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Rosalie-Winterthur-Zrich-Altstadt-15-441x294.jpg"
   },
   {
    "slug": "ostschweiz/rosalie-mini",
@@ -901,7 +969,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/ostschweiz/rosalie-mini/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Rosalie-Mini-tb-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/schaffhausen-foxtrail-go",
@@ -914,7 +983,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/schaffhausen-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2025/10/Schaffhausen_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/schatz",
@@ -927,7 +997,8 @@
    "dauer": "3-4 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/schatz/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Schatz-Thun-Bern-Sightseeing-Header-48-441x294.jpg"
   },
   {
    "slug": "bern-und-umgebung/schatz-maxi",
@@ -940,7 +1011,8 @@
    "dauer": "4-5 Stunden",
    "preis": 42.0,
    "url": "https://foxtrail.ch/produkte/trails/bern-und-umgebung/schatz-maxi/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Schatz-Maxi-Titelbild-441x294.jpg"
   },
   {
    "slug": "aargau/schloss-hallwyl",
@@ -953,7 +1025,8 @@
    "dauer": "3-4 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-hallwyl/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Schloss-Hallwyl-Aargau-Aussicht-63-441x294.jpg"
   },
   {
    "slug": "aargau/schloss-hallwyl-mini",
@@ -966,7 +1039,8 @@
    "dauer": "1-2 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-hallwyl-mini/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Schloss-Hallwyl-Mini-tb-441x294.jpg"
   },
   {
    "slug": "aargau/schloss-lenzburg",
@@ -979,7 +1053,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-lenzburg/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail_Schloss-Lenzburg_Aargau_Header-24-441x294.jpg"
   },
   {
    "slug": "aargau/schloss-wildegg",
@@ -992,7 +1067,8 @@
    "dauer": "2-3 Stunden",
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/schloss-wildegg/",
-   "schwierigkeit": "schwierig"
+   "schwierigkeit": "schwierig",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Schloss-Wildegg-Erlebnis-42-441x294.jpg"
   },
   {
    "slug": "wallis/simplon",
@@ -1006,7 +1082,8 @@
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/wallis/simplon/",
    "schwierigkeit": "mittel",
-   "neu_seit": "2026-05-01"
+   "neu_seit": "2026-05-01",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Simplon_01-441x294.png"
   },
   {
    "slug": "wallis/sion-foxtrail-go",
@@ -1019,7 +1096,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/wallis/sion-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Sion_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/soletta",
@@ -1032,7 +1110,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soletta/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Aaresicht_Wengibrcke_Solothurn-Switzerland-TourismMarkus-Buehler-Rasom-55-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/soletta-mini",
@@ -1045,7 +1124,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soletta-mini/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Soletta-Mini-tb-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/soleure",
@@ -1058,7 +1138,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soleure/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Marktplatz-Solothurn_-Solothurn-Tourismus_Tino-Zurbrgg-42-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/soleure-mini",
@@ -1071,7 +1152,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/soleure-mini/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Soleure-Mini-tb-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/spartakus-mini",
@@ -1084,7 +1166,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/spartakus-mini/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Spartakus-Mini-tb-441x294.jpg"
   },
   {
    "slug": "aargau/klosterhalbinsel-wettingen",
@@ -1098,7 +1181,8 @@
    "preis": 36.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/klosterhalbinsel-wettingen/",
    "schwierigkeit": "schwierig",
-   "neu_seit": "2024-06-28"
+   "neu_seit": "2024-06-28",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/klosterhalbinsel-wettingen-1-47-441x294.jpg"
   },
   {
    "slug": "graubuenden/striunau",
@@ -1111,7 +1195,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/graubuenden/striunau/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail_Striunau_Davos_Header-52-441x294.jpg"
   },
   {
    "slug": "aargau/veritas",
@@ -1125,7 +1210,8 @@
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/veritas/",
    "schwierigkeit": "mittel",
-   "neu_seit": "2025-04-17"
+   "neu_seit": "2025-04-17",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/kettenbrcke_Veritas-441x294.jpg"
   },
   {
    "slug": "aargau/victoria",
@@ -1139,7 +1225,8 @@
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/victoria/",
    "schwierigkeit": "schwierig",
-   "neu_seit": "2025-04-17"
+   "neu_seit": "2025-04-17",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/obertorturm-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/winterthur-foxtrail-go",
@@ -1152,7 +1239,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/winterthur-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Winti_Cover_Marker-2-441x294.jpg"
   },
   {
    "slug": "basel-und-umgebung/yellow",
@@ -1165,7 +1253,8 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/basel-und-umgebung/yellow/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Yellow-Basel-Header-27-441x294.jpg"
   },
   {
    "slug": "westschweiz/yverdon-les-bains-foxtrail-go",
@@ -1178,7 +1267,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/westschweiz/yverdon-les-bains-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/04/Yverdon_Cover_Marker-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/zeus",
@@ -1191,7 +1281,8 @@
    "dauer": "3-4 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Zeus-Luzern-Header-24-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/zeus-rollstuhlgaengig",
@@ -1204,7 +1295,8 @@
    "dauer": "2-3 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus-rollstuhlgaengig/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Zeus-rollstuhlgngig-Luzern-Header-768x512-16-441x294.jpg"
   },
   {
    "slug": "luzern-und-umgebung/zeus-mini",
@@ -1217,7 +1309,8 @@
    "dauer": "1-2 Stunden",
    "preis": 32.0,
    "url": "https://foxtrail.ch/produkte/trails/luzern-und-umgebung/zeus-mini/",
-   "schwierigkeit": "einfach"
+   "schwierigkeit": "einfach",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Zeus-mini-tb-441x294.jpg"
   },
   {
    "slug": "aargau/zofingen-foxtrail-go",
@@ -1230,7 +1323,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/aargau/zofingen-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/08/Coverbild_Zofingen_02_Marker-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/zug-foxtrail-go",
@@ -1243,7 +1337,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 19.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zug-foxtrail-go/",
-   "schwierigkeit": null
+   "schwierigkeit": null,
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2025/10/Zug_Cover_Marker-1-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/zuerich-hb",
@@ -1256,7 +1351,8 @@
    "dauer": "1-2 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zuerich-hb/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Hauptbahnhof-Zrich-indoor-Erlebnis-Header-48-441x294.jpg"
   },
   {
    "slug": "zuerich-und-umgebung/zuerich-hb-rollstuhlgaengig",
@@ -1269,7 +1365,8 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 29.0,
    "url": "https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/zuerich-hb-rollstuhlgaengig/",
-   "schwierigkeit": "mittel"
+   "schwierigkeit": "mittel",
+   "bild_url": "https://foxtrail.ch/wp-content/uploads/2026/03/Foxtrail-Hauptbahnhof-Zrich-indoor-Erlebnis-Header-30-441x294.jpg"
   }
  ],
  "neu_seit_quelle": "https://foxtrail.ch/thema/neuigkeiten/ (Datum des Beitrags), Stand 2026-09-17"
