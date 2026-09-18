@@ -77,7 +77,7 @@ def set_password(conn, username, new_password):
 
 def change_own_password(conn, username, old, new, new2):
     if new != new2:
-        raise UserError("Die beiden neuen Passwoerter stimmen nicht ueberein.")
+        raise UserError("Die beiden neuen Passwörter stimmen nicht überein.")
     u = get(conn, username)
     if not u or not check_password_hash(u["pw_hash"], old or ""):
         raise UserError("Altes Passwort ist falsch.")
@@ -106,4 +106,4 @@ def delete(conn, username):
 def _ensure_one_admin(conn):
     n = conn.execute("SELECT COUNT(*) FROM users WHERE is_admin = 1 AND active = 1").fetchone()[0]
     if n == 0:
-        raise UserError("Es muss mindestens ein aktiver Administrator uebrig bleiben.")
+        raise UserError("Es muss mindestens ein aktiver Administrator übrig bleiben.")

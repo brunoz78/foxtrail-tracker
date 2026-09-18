@@ -191,7 +191,7 @@ def fetch_all(base_url=None, max_pages=50, delay=None):
         if delay:
             time.sleep(delay)
     if not trails:
-        raise ScrapeError("Keine Trails gefunden - hat sich die Seitenstruktur geaendert?")
+        raise ScrapeError("Keine Trails gefunden - hat sich die Seitenstruktur geändert?")
     grade = fetch_difficulty(base, first_html, sess, delay)
     for t in trails:
         t["schwierigkeit"] = grade.get(t["slug"])

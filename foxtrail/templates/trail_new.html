@@ -3,8 +3,8 @@
 {% block content %}
 <div class="card narrow">
   <h1>Trail manuell erfassen</h1>
-  <p class="muted">Fuer Trails, die es auf foxtrail.ch nicht mehr gibt, die ihr aber gemacht habt.
-  Manuell erfasste Trails werden vom Abgleich nie veraendert.</p>
+  <p class="muted">Für Trails, die es auf foxtrail.ch nicht mehr gibt, die ihr aber gemacht habt.
+  Manuell erfasste Trails werden vom Abgleich nie verändert.</p>
   <form method="post">
     <fieldset><legend>Trail-Daten</legend>
       <div class="row">
@@ -27,7 +27,7 @@
         <label>Dauer <input name="dauer" value="{{ form.dauer or '' }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
       </div>
     </fieldset>
-    <fieldset><legend>Unsere Eintraege</legend>
+    <fieldset><legend>Unsere Einträge</legend>
       <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if form.gemacht or not form }}> Trail gemacht</label>
       <div class="row">
         <label>Datum <input type="date" name="gemacht_datum" value="{{ form.gemacht_datum or '' }}"></label>

@@ -25,7 +25,7 @@
   <input name="q" value="{{ q }}" placeholder="Suche Ort, Name, Route, Bemerkung">
   <button type="submit">Suchen</button>
   {% if q or sel.typ or sel.region or sel.dauer or sel.grad %}
-  <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[]) }}">Filter zuruecksetzen</a>
+  <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[]) }}">Filter zurücksetzen</a>
   {% endif %}
   <span class="muted small">{{ rows|length }} Trails</span>
   <div class="seg ansicht" title="Ansicht">
@@ -35,19 +35,20 @@
 </div>
 
 {% if ansicht == 'kacheln' %}
-{# Kachelansicht: Sortierung und Filter stehen hier in einer Leiste statt in den Spaltenkoepfen #}
-<div class="kachel-bar">
-  <span class="muted small">Sortieren</span>
-  {% for col, label, first in [('ort', 'Ort', 'asc'), ('name', 'Trail', 'asc'), ('region', 'Region', 'asc'),
-       ('typ', 'Typ', 'asc'), ('schwierigkeit', 'Grad', 'asc'), ('bewertung', '★', 'desc'),
-       ('dauer', 'Dauer', 'asc'), ('preis', 'CHF', 'asc'), ('datum', 'Datum', 'desc'),
-       ('spielzeit', 'Zeit', 'desc')] %}{{ sortlink(col, label, first) }}{% endfor %}
-  {% if f == 'neu' %}{{ sortlink('neu', 'Neu ab', 'desc') }}{% endif %}
-  <span class="muted small sep">Filter</span>
-  <span class="kf">Region{{ hfilter('region', opts.region) }}</span>
-  <span class="kf">Typ{{ hfilter('typ', opts.typ) }}</span>
-  <span class="kf">Grad{{ hfilter('grad', opts.grad) }}</span>
-  <span class="kf">Dauer{{ hfilter('dauer', opts.dauer) }}</span>
+{# Kachelansicht: dieselben Koepfe wie in der Tabelle, jedes Feld einmal -
+   Name = sortieren, ▾ = filtern #}
+<div class="kachel-kopf">
+  <span class="kk">{{ sortlink('ort', 'Ort') }}</span>
+  <span class="kk">{{ sortlink('name', 'Trail') }}</span>
+  {% if f == 'neu' %}<span class="kk">{{ sortlink('neu', 'Neu ab', 'desc') }}</span>{% endif %}
+  <span class="kk">{{ sortlink('region', 'Region') }}{{ hfilter('region', opts.region) }}</span>
+  <span class="kk">{{ sortlink('typ', 'Typ') }}{{ hfilter('typ', opts.typ) }}</span>
+  <span class="kk">{{ sortlink('schwierigkeit', 'Grad') }}{{ hfilter('grad', opts.grad) }}</span>
+  <span class="kk">{{ sortlink('bewertung', '★', 'desc') }}</span>
+  <span class="kk">{{ sortlink('dauer', 'Dauer') }}{{ hfilter('dauer', opts.dauer) }}</span>
+  <span class="kk">{{ sortlink('preis', 'CHF') }}</span>
+  <span class="kk">{{ sortlink('datum', 'Datum', 'desc') }}</span>
+  <span class="kk">{{ sortlink('spielzeit', 'Zeit', 'desc') }}</span>
 </div>
 <div class="kacheln">
   {% for t in rows %}
@@ -112,7 +113,7 @@
       {% if t.quelle == 'manual' %}<span class="tag">manuell</span>
       {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }}">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span>
       {% elif t.neu %}<span class="tag new" title="Vom Abgleich am {{ t.neu_seit|datum }} neu auf foxtrail.ch gefunden">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
-      {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch oeffnen">↗</a>{% endif %}
+      {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch öffnen">↗</a>{% endif %}
       {% if t.foto %}<a class="thumb" href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}#foto" title="Schlussfoto ansehen"><img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="" loading="lazy"></a>{% endif %}</td>
     <td class="wide muted">{{ t.route }}</td>
     <td class="nowrap muted">{{ t.region_label }}</td>

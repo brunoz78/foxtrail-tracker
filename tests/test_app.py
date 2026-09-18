@@ -92,7 +92,7 @@ def test_manueller_trail(app):
     assert "Tell" in html and "manuell" in html and "Luzern und Umgebung" in html
     assert "Tell" in c.get("/?region=luzern-und-umgebung").get_data(as_text=True)
     r = c.post("/trail/3/loeschen", follow_redirects=True)
-    assert "geloescht" in r.get_data(as_text=True)
+    assert "gelöscht" in r.get_data(as_text=True)
     assert c.post("/trail/1/loeschen", follow_redirects=True).status_code == 200
     with db.session(app.config["DB_PATH"]) as conn:
         assert trails.get(conn, 1) is not None       # foxtrail-Trail nicht loeschbar
@@ -111,7 +111,7 @@ def test_admin_rechte(app):
     r = c.post("/admin/benutzer/admin", data={"action": "admin", "is_admin": ""}, follow_redirects=True)
     assert "mindestens ein aktiver Administrator" in r.get_data(as_text=True)
     r = c.post("/admin/benutzer/neu", data={"action": "loeschen"}, follow_redirects=True)
-    assert "geloescht" in r.get_data(as_text=True)
+    assert "gelöscht" in r.get_data(as_text=True)
 
 
 def test_passwort_aendern(app):
@@ -215,7 +215,7 @@ def test_import_seite(app, monkeypatch, tmp_path):
     assert "2:50 h" in c.get("/?sort=spielzeit").get_data(as_text=True)
     assert "Keine Bestellungen gefunden" in c.post("/import", data={"text": "nix"}).get_data(as_text=True)
     r = c.post("/import", data={"schritt": "schreiben", "daten": "{"}, follow_redirects=True)
-    assert "Ungueltige Daten" in r.get_data(as_text=True)
+    assert "Ungültige Daten" in r.get_data(as_text=True)
     c.get("/logout")
     assert c.get("/foto/1").status_code == 302                    # nur angemeldet
 
@@ -233,7 +233,7 @@ def test_foto_hochladen_ersetzen_loeschen(app, tmp_path):
     app.config["FOTO_DIR"] = str(ordner)
     c = app.test_client()
     login(c, "gast")
-    assert "Foto hinzufuegen" in c.get("/trail/1").get_data(as_text=True)
+    assert "Foto hinzufügen" in c.get("/trail/1").get_data(as_text=True)
     # kein Bild -> abgelehnt, nichts gespeichert
     r = c.post("/trail/1/foto", data={"aktion": "hochladen", "datei": (io.BytesIO(b"kein bild"), "x.jpg")},
                content_type="multipart/form-data", follow_redirects=True)
@@ -242,7 +242,7 @@ def test_foto_hochladen_ersetzen_loeschen(app, tmp_path):
     r = c.post("/trail/1/foto", data={"aktion": "hochladen", "datei": (io.BytesIO(_jpeg_bytes(4000, 3000)), "a.jpg")},
                content_type="multipart/form-data", follow_redirects=True)
     html = r.get_data(as_text=True)
-    assert "Foto gespeichert" in html and "Foto ersetzen" in html and "Foto loeschen" in html
+    assert "Foto gespeichert" in html and "Foto ersetzen" in html and "Foto löschen" in html
     with db.session(app.config["DB_PATH"]) as conn:
         erstes = trails.get(conn, 1)["foto"]
     assert erstes.startswith("1-") and Image.open(ordner / erstes).size == (2560, 1920)
@@ -263,7 +263,7 @@ def test_foto_hochladen_ersetzen_loeschen(app, tmp_path):
     assert not (ordner / "klein" / (erstes[:-4] + ".jpg")).exists()
     # loeschen -> '' (Import laedt es nicht wieder)
     r = c.post("/trail/1/foto", data={"aktion": "loeschen"}, follow_redirects=True)
-    assert "Foto geloescht" in r.get_data(as_text=True)
+    assert "Foto gelöscht" in r.get_data(as_text=True)
     with db.session(app.config["DB_PATH"]) as conn:
         assert trails.get(conn, 1)["foto"] == ""
     assert not (ordner / zweites).exists() and c.get("/foto/1").status_code == 404

@@ -30,9 +30,9 @@
       </form>
       {% if u.username != me.username %}
       <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline"
-            onsubmit="return confirm('Benutzer {{ u.username }} wirklich loeschen?')">
+            onsubmit="return confirm('Benutzer {{ u.username }} wirklich löschen?')">
         <input type="hidden" name="action" value="loeschen">
-        <button type="submit" class="small secondary">Loeschen</button>
+        <button type="submit" class="small secondary">Löschen</button>
       </form>
       {% endif %}
     </td>

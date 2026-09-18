@@ -62,7 +62,7 @@ _CODE_RE = re.compile(r"Team code:\s*([A-Z0-9]+)")
 _STATUS_RE = re.compile(r"Status:\s*(\S+)")
 _ISO_RE = re.compile(r"(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})")
 _STATUS_LABEL = {"completed": "Abgeschlossen", "cancelled": "Storniert", "canceled": "Storniert",
-                 "refunded": "Rueckerstattet", "pending": "Offen", "processing": "In Bearbeitung"}
+                 "refunded": "Rückerstattet", "pending": "Offen", "processing": "In Bearbeitung"}
 FELDER = ("name", "datum", "personen", "teams", "bestellung", "bestellt_am", "status",
           "start", "ziel", "codes", "foto_url")
 MAX_FOTO_BYTES = 8 * 1024 * 1024

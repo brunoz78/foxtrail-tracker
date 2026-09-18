@@ -119,7 +119,7 @@ def create_app(test_config=None):
 
     @app.errorhandler(403)
     def _forbidden(_):
-        return render_template("fehler.html", fehler="Dafuer fehlt dir die Berechtigung."), 403
+        return render_template("fehler.html", fehler="Dafür fehlt dir die Berechtigung."), 403
 
     @app.errorhandler(404)
     def _notfound(_):
@@ -127,7 +127,7 @@ def create_app(test_config=None):
 
     @app.errorhandler(413)
     def _zugross(_):
-        return render_template("fehler.html", fehler="Die Datei ist zu gross (hoechstens 15 MB)."), 413
+        return render_template("fehler.html", fehler="Die Datei ist zu gross (höchstens 15 MB)."), 413
 
     # ---- Login / Logout ------------------------------------------------ #
     @app.route("/login", methods=["GET", "POST"])
@@ -137,7 +137,7 @@ def create_app(test_config=None):
         if request.method == "POST":
             name = (request.form.get("username") or "").strip().lower()
             if _locked(name):
-                flash(f"Zu viele Fehlversuche - bitte in {config.LOGIN_LOCK_SECONDS // 60} Minuten erneut.")
+                flash(f"Zu viele Fehlversuche – bitte in {config.LOGIN_LOCK_SECONDS // 60} Minuten erneut.")
                 return render_template("login.html")
             u = users.authenticate(get_conn(), name, request.form.get("password", ""))
             if u:
@@ -244,7 +244,7 @@ def create_app(test_config=None):
     def trail_delete(tid):
         try:
             trails.delete_manual(get_conn(), tid)
-            flash("Manuell erfasster Trail geloescht.")
+            flash("Manuell erfasster Trail gelöscht.")
         except trails.TrailError as ex:
             flash(str(ex))
         return redirect(url_for("index"))
@@ -258,11 +258,11 @@ def create_app(test_config=None):
             try:
                 eintraege = bestellungen.eintraege_aus_json(request.form.get("daten", ""))
             except ValueError:
-                flash("Ungueltige Daten - bitte die Datei nochmals pruefen.")
+                flash("Ungültige Daten – bitte die Datei nochmals prüfen.")
                 return redirect(url_for("import_bestellungen"))
             plan = bestellungen.zuordnen(conn, eintraege)
             res = bestellungen.anwenden(conn, plan, current_user()["username"], app.config["FOTO_DIR"])
-            msg = (f"Import: {res['gesetzt']} als gemacht eingetragen, {res['ergaenzt']} ergaenzt, "
+            msg = (f"Import: {res['gesetzt']} als gemacht eingetragen, {res['ergaenzt']} ergänzt, "
                    f"{res['fotos']} Schlussfoto(s) geladen")
             if res["foto_fehler"]:
                 msg += f", {res['foto_fehler']} Foto(s) nicht ladbar"
@@ -332,7 +332,7 @@ def create_app(test_config=None):
         elif aktion == "loeschen" and t.get("foto"):
             fotos.entfernen(ordner, t["foto"])
             trails.set_foto(conn, tid, "")          # '' = bewusst geloescht, Import laedt es nicht neu
-            flash("Foto geloescht.")
+            flash("Foto gelöscht.")
         elif aktion == "foxtrail" and t.get("foto_url"):
             name = bestellungen.lade_foto(t["foto_url"], ordner, tid)
             if name:
@@ -354,7 +354,7 @@ def create_app(test_config=None):
                 users.change_own_password(get_conn(), current_user()["username"],
                                           request.form.get("old", ""), request.form.get("new", ""),
                                           request.form.get("new2", ""))
-                flash("Passwort geaendert.")
+                flash("Passwort geändert.")
                 return redirect(url_for("index"))
             except users.UserError as ex:
                 flash(str(ex))
@@ -385,7 +385,7 @@ def create_app(test_config=None):
         try:
             if action == "passwort":
                 users.set_password(conn, name, request.form.get("password", ""))
-                flash(f"Passwort fuer „{name}“ gesetzt.")
+                flash(f"Passwort für „{name}“ gesetzt.")
             elif action == "admin":
                 users.update(conn, name, is_admin=bool(request.form.get("is_admin")))
                 flash("Gespeichert.")
@@ -394,9 +394,9 @@ def create_app(test_config=None):
                 flash("Gespeichert.")
             elif action == "loeschen":
                 if name == current_user()["username"]:
-                    raise users.UserError("Du kannst dich nicht selbst loeschen.")
+                    raise users.UserError("Du kannst dich nicht selbst löschen.")
                 users.delete(conn, name)
-                flash(f"Benutzer „{name}“ geloescht.")
+                flash(f"Benutzer „{name}“ gelöscht.")
         except users.UserError as ex:
             conn.rollback()
             flash(str(ex))

@@ -149,8 +149,10 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
   1 s Pause zwischen Seiten, sprechender User-Agent). Keine weiteren Seiten als die
   Kategorie-Übersicht und deren Schwierigkeits-Filteransichten abgrasen, ohne dass das
   besprochen wurde (insbesondere keine Detailseiten).
-- Umlaute in Python-Strings, die im Browser landen, sind in Ordnung; in
-  Log-/CLI-Ausgaben bisher ae/oe/ue – Stil beibehalten.
+- **Umlaute:** Alles, was im Browser erscheint (Templates, Flash-Meldungen, Fehlertexte,
+  Titel), schreibt ä/ö/ü – nie ae/oe/ue (Wunsch von Bruno, 2026-09-18). ASCII bleibt bei
+  internen Schlüsseln (`aktion='ergaenzen'`, `value="loeschen"`, Spaltennamen, URLs), in
+  Code-Kommentaren und in CLI-/Log-Ausgaben. Tests prüfen die sichtbaren Texte mit Umlaut.
 - Commit-Messages auf Deutsch, Betreffzeile < 70 Zeichen, Begründung im Body.
 - Keine Secrets, Datenbanken (`data/*.db`) oder `.env` committen (`.gitignore` beachten).
 - `proxmox/` ist die Quelle der Proxmox-Scripts. Nach Aenderungen die drei Dateien

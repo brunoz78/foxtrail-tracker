@@ -283,7 +283,7 @@ def add_manual(conn, form, username):
 def update_manual(conn, trail_id, form):
     t = get(conn, trail_id)
     if not t or t["quelle"] != "manual":
-        raise TrailError("Nur manuell erfasste Trails koennen so bearbeitet werden.")
+        raise TrailError("Nur manuell erfasste Trails können so bearbeitet werden.")
     ort = (form.get("ort") or "").strip()[:100]
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
@@ -298,7 +298,7 @@ def update_manual(conn, trail_id, form):
 def delete_manual(conn, trail_id):
     t = get(conn, trail_id)
     if not t or t["quelle"] != "manual":
-        raise TrailError("Nur manuell erfasste Trails koennen geloescht werden.")
+        raise TrailError("Nur manuell erfasste Trails können gelöscht werden.")
     conn.execute("DELETE FROM trails WHERE id = ?", (trail_id,))
 
 

@@ -4,18 +4,18 @@
 <div class="head"><h1>Abgleich mit foxtrail.ch</h1></div>
 <div class="card">
   <p>Quelle: <a href="{{ list_url }}" target="_blank" rel="noopener">{{ list_url }}</a></p>
-  <p class="muted">Regeln: neue Trails werden angelegt, bestehende aktualisiert (eure Eintraege bleiben).
-  Nicht mehr gelistete Trails werden nie geloescht: bereits gemachte bleiben in der Liste
-  („nicht mehr im Angebot“), noch offene wandern ins Archiv. Der automatische Abgleich laeuft
-  ueber den systemd-Timer <code>foxtrail-sync.timer</code>.</p>
-  <form method="post" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Laeuft…'">
+  <p class="muted">Regeln: neue Trails werden angelegt, bestehende aktualisiert (eure Einträge bleiben).
+  Nicht mehr gelistete Trails werden nie gelöscht: bereits gemachte bleiben in der Liste
+  („nicht mehr im Angebot“), noch offene wandern ins Archiv. Der automatische Abgleich läuft
+  über den systemd-Timer <code>foxtrail-sync.timer</code>.</p>
+  <form method="post" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Läuft…'">
     <button type="submit">Jetzt abgleichen</button>
   </form>
 </div>
 
-<h2>Letzte Laeufe</h2>
+<h2>Letzte Läufe</h2>
 <div class="tablewrap"><table class="trails">
-  <thead><tr><th>Zeit</th><th>Ausloeser</th><th>Status</th><th class="r">Gefunden</th><th class="r">Neu</th>
+  <thead><tr><th>Zeit</th><th>Auslöser</th><th>Status</th><th class="r">Gefunden</th><th class="r">Neu</th>
     <th class="r">Aktualisiert</th><th class="r">Reaktiviert</th><th class="r">Archiv</th><th class="r">Gemacht, weg</th><th>Meldung</th></tr></thead>
   <tbody>
   {% for r in runs %}

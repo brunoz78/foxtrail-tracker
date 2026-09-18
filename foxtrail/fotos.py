@@ -65,7 +65,7 @@ def _jpeg(daten, kante):
             im.save(out, "JPEG", quality=85, optimize=True)
             return out.getvalue()
     except (OSError, ValueError, Image.DecompressionBombError) as ex:
-        raise FotoError("Das Bild laesst sich nicht lesen.") from ex
+        raise FotoError("Das Bild lässt sich nicht lesen.") from ex
 
 
 def _schreiben(pfad, daten):
@@ -81,9 +81,9 @@ def speichern(foto_dir, trail_id, daten):
     """Hochgeladenes Foto pruefen und ablegen, gibt den neuen Dateinamen zurueck.
     Der Zeitstempel im Namen sorgt dafuer, dass der Browser ein ersetztes Foto neu laedt."""
     if not daten:
-        raise FotoError("Keine Datei ausgewaehlt.")
+        raise FotoError("Keine Datei ausgewählt.")
     if len(daten) > MAX_UPLOAD_BYTES:
-        raise FotoError(f"Das Bild ist groesser als {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+        raise FotoError(f"Das Bild ist grösser als {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
     endung = art(daten)
     if not endung:
         raise FotoError("Nur JPEG-, PNG- oder WebP-Bilder.")

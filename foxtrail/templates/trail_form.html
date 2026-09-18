@@ -18,25 +18,25 @@
     {% if t.start_zeit %}Start {{ t.start_zeit[11:16] }}{% if t.ziel_zeit %} · Ziel {{ t.ziel_zeit[11:16] }}{% endif %}{% if t.spielzeit %} · Spielzeit <b>{{ t.spielzeit }}</b>{% endif %}{% endif %}
     {% if t.team_code %} · Team-Code {{ t.team_code }}{% endif %}
     {% if t.bestellung %} · Bestellung #{{ t.bestellung }}
-      <a href="https://api.foxtrail.ch/invoice/print/{{ t.bestellung }}" target="_blank" rel="noopener" title="Rechnung als PDF (Anmeldung bei foxtrail.ch noetig)">Rechnung ↗</a>{% endif %}
+      <a href="https://api.foxtrail.ch/invoice/print/{{ t.bestellung }}" target="_blank" rel="noopener" title="Rechnung als PDF (Anmeldung bei foxtrail.ch nötig)">Rechnung ↗</a>{% endif %}
   </p>
   {% endif %}
   <section id="foto" class="fotobox">
     {% if t.foto %}
-    <a href="{{ url_for('foto', tid=t.id, v=t.foto) }}" target="_blank" title="In voller Groesse oeffnen"><img class="foto" src="{{ url_for('foto', tid=t.id, v=t.foto) }}" alt="Schlussfoto {{ t.name }}"></a>
+    <a href="{{ url_for('foto', tid=t.id, v=t.foto) }}" target="_blank" title="In voller Grösse öffnen"><img class="foto" src="{{ url_for('foto', tid=t.id, v=t.foto) }}" alt="Schlussfoto {{ t.name }}"></a>
     {% endif %}
     <div class="foto-actions">
       <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" enctype="multipart/form-data">
         <input type="hidden" name="next" value="{{ next }}">
         <input type="hidden" name="aktion" value="hochladen">
         <label class="upload"><input type="file" name="datei" accept="image/jpeg,image/png,image/webp" required
-               onchange="this.form.submit()"><span>{{ '📷 Foto ersetzen' if t.foto else '📷 Foto hinzufuegen' }}</span></label>
+               onchange="this.form.submit()"><span>{{ '📷 Foto ersetzen' if t.foto else '📷 Foto hinzufügen' }}</span></label>
         <noscript><button type="submit" class="small">Hochladen</button></noscript>
       </form>
       {% if t.foto %}
-      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" onsubmit="return confirm('Foto wirklich loeschen?')">
+      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" onsubmit="return confirm('Foto wirklich löschen?')">
         <input type="hidden" name="next" value="{{ next }}">
-        <button type="submit" name="aktion" value="loeschen" class="secondary small">Foto loeschen</button>
+        <button type="submit" name="aktion" value="loeschen" class="secondary small">Foto löschen</button>
       </form>
       {% elif t.foto_url %}
       <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}">
@@ -44,7 +44,7 @@
         <button type="submit" name="aktion" value="foxtrail" class="secondary small" title="Das Schlussfoto aus deiner Bestellung erneut herunterladen">Schlussfoto von foxtrail.ch laden</button>
       </form>
       {% endif %}
-      <span class="muted small">JPEG, PNG oder WebP, hoechstens 15 MB</span>
+      <span class="muted small">JPEG, PNG oder WebP, höchstens 15 MB</span>
     </div>
   </section>
 
@@ -73,7 +73,7 @@
       </div>
     </fieldset>
     {% endif %}
-    <fieldset><legend>Unsere Eintraege</legend>
+    <fieldset><legend>Unsere Einträge</legend>
       <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if t.gemacht }}> Trail gemacht</label>
       <div class="row">
         <label>Datum <input type="date" name="gemacht_datum" value="{{ t.gemacht_datum or '' }}"></label>
@@ -89,8 +89,8 @@
   </form>
   {% if t.quelle == 'manual' %}
   <form method="post" action="{{ url_for('trail_delete', tid=t.id) }}" class="danger"
-        onsubmit="return confirm('Diesen manuell erfassten Trail wirklich loeschen?')">
-    <button type="submit" class="secondary">Manuellen Trail loeschen</button>
+        onsubmit="return confirm('Diesen manuell erfassten Trail wirklich löschen?')">
+    <button type="submit" class="secondary">Manuellen Trail löschen</button>
   </form>
   {% endif %}
 </div>

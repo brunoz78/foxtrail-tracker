@@ -4,25 +4,25 @@
 <div class="card">
   <h1>Bestellungen von foxtrail.ch importieren</h1>
   <p class="muted">Im Browser bei foxtrail.ch angemeldet die Adresse
-    <code>https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account</code> oeffnen und mit Ctrl+S als
+    <code>https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account</code> öffnen und mit Ctrl+S als
     <b>konto.json</b> speichern, dann hier hochladen. Alternativ den Text der Seite „Deine Bestellungen“
-    einfuegen (dann ohne Zeiten und Foto). Eingetragen werden Datum, Mitspieler, Start- und Zielzeit,
-    Team-Code, Bestellnummer und Schlussfoto. Bereits gemachte Trails werden nur ergaenzt, nie ueberschrieben.</p>
+    einfügen (dann ohne Zeiten und Foto). Eingetragen werden Datum, Mitspieler, Start- und Zielzeit,
+    Team-Code, Bestellnummer und Schlussfoto. Bereits gemachte Trails werden nur ergänzt, nie überschrieben.</p>
 
   {% if zeilen is none %}
   <form method="post" enctype="multipart/form-data">
     <label>Datei (konto.json oder gespeicherte Seite)
       <input type="file" name="datei" accept=".json,.html,.htm,.txt"></label>
-    <label>oder Seitentext einfuegen
+    <label>oder Seitentext einfügen
       <textarea name="text" rows="6" placeholder="Bestellung vom 17.09.2026 (#418324) ..."></textarea></label>
     <div class="actions">
-      <button type="submit">Pruefen</button>
+      <button type="submit">Prüfen</button>
       <span class="muted small">Es wird noch nichts gespeichert.</span>
     </div>
   </form>
   {% else %}
   <p><b>{{ zeilen|length }}</b> Bestellungen gelesen:
-    <b>{{ n_setzen }}</b> als gemacht eintragen, <b>{{ n_erg }}</b> ergaenzen, {{ n_skip }} uebersprungen, {{ n_unbekannt }} unbekannt.</p>
+    <b>{{ n_setzen }}</b> als gemacht eintragen, <b>{{ n_erg }}</b> ergänzen, {{ n_skip }} übersprungen, {{ n_unbekannt }} unbekannt.</p>
   <div class="tablewrap"><table class="trails">
     <thead><tr><th>Datum</th><th>Trail</th><th class="r">Pers.</th><th class="r">Spielzeit</th><th>Foto</th><th>Aktion</th><th>Zuordnung</th></tr></thead>
     <tbody>
@@ -34,9 +34,9 @@
       <td class="r nowrap">{{ z.spielzeit }}</td>
       <td>{{ '📷' if z.e.foto_url else '' }}</td>
       <td class="nowrap">{% if z.aktion == 'setzen' %}<span class="tag new">eintragen</span>
-        {% elif z.aktion == 'ergaenzen' %}<span class="tag new">ergaenzen</span>
+        {% elif z.aktion == 'ergaenzen' %}<span class="tag new">ergänzen</span>
         {% elif z.aktion == 'unbekannt' %}<span class="tag warn">unbekannt</span>
-        {% else %}<span class="tag">uebersprungen</span>{% endif %}</td>
+        {% else %}<span class="tag">übersprungen</span>{% endif %}</td>
       <td class="muted">{% if z.t %}{{ z.t.ort }} | {{ z.t.name }}{% endif %}{% if z.grund %} <span class="small">({{ z.grund }})</span>{% endif %}</td>
     </tr>
     {% endfor %}
