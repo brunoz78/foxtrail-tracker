@@ -16,6 +16,7 @@ Konfiguration ueber Umgebungsvariablen (z. B. systemd EnvironmentFile).
   SCRAPER_DELAY        Pause zwischen zwei Seitenabrufen in Sekunden (Default 1.0)
   LOGIN_MAX_FAILS      Fehlversuche bis zur Sperre (Default 5)
   LOGIN_LOCK_SECONDS   Sperrdauer in Sekunden (Default 300)
+  FOXTRAIL_UPDATE_CHECK  "0" -> nicht bei GitHub nach neuen Versionen fragen (Default 1)
 """
 
 import os
@@ -53,5 +54,9 @@ USER_AGENT = os.environ.get(
     "SCRAPER_USER_AGENT",
     "foxtrail-tracker/1.0 (+https://github.com/brunoz78/foxtrail-tracker; private Trail-Liste, 1 Abruf/Woche)")
 SCRAPER_DELAY = float(os.environ.get("SCRAPER_DELAY", "1.0"))
+def update_check():
+    return os.environ.get("FOXTRAIL_UPDATE_CHECK", "1") != "0"
+
+
 LOGIN_MAX_FAILS = int(os.environ.get("LOGIN_MAX_FAILS", "5"))
 LOGIN_LOCK_SECONDS = int(os.environ.get("LOGIN_LOCK_SECONDS", "300"))

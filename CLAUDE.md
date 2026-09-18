@@ -74,6 +74,14 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Workflow `.github/workflows/docker.yml`: bei Push Image bauen und im Container testen
   (Scraper-URL ins Leere, damit CI foxtrail.ch nicht abruft), bei Release amd64+arm64 nach
   `ghcr.io/brunoz78/foxtrail-tracker` (Tags X.Y.Z, X.Y, latest).
+- **Version / Über** (2026-09-18, Wunsch von Bruno): `foxtrail/version.py` hält `VERSION`;
+  ⚙-Menü zeigt „Über Foxtrail-Tracker“ (Version, Link aufs Repo) für alle. Update-Hinweis nur für
+  Admins: `version.verfuegbar` liest `<Datenordner>/update.json`, fragt bei Bedarf (12 h, nach
+  Fehler 1 h) im Hintergrund-Thread `api.github.com/.../releases/latest` ab; orangefarbener Punkt
+  am Zahnrad + Menüeintrag. Tests fragen nie an (`app.testing`). `dev-update.sh` schreibt
+  `DEV_STAND` (Anzeige „Entwicklungsstand main@abc1234“), ein Release-Update entfernt ihn.
+- **Screenshots** im README (`docs/screenshots/`): nur erfundene Demo-Daten und gezeichnete
+  Platzhalterbilder, keine echten Fotos und keine Titelbilder von foxtrail.ch (Rechte).
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
   - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt dauerhaft
     „Neu ab MM/JJ“, Filter `f=neu` listet alle mit `neu_seit`, Standard-Sortierung dort
@@ -137,6 +145,7 @@ foxtrail/trails.py:statistik()  Kennzahlen fuer /statistik (Hauptliste ohne Arch
                        Luecken als 0, Spielzeit nur aus importierten Zeiten)
 foxtrail/fotos.py      Fotos pruefen/verkleinern (Pillow), Vorschaubilder, Titelbild-Cache
 foxtrail/zeitplan.py   woechentlicher Abgleich im Docker-Container (ersetzt den systemd-Timer)
+foxtrail/version.py    VERSION, Anzeige "Über", Update-Hinweis (GitHub-API, zwischengespeichert)
 foxtrail/templates/    base, login, index (Liste + Kacheln), statistik, archiv, trail_form, trail_new, profil,
                        benutzer, sync, fehler, import (Upload + Probelauf + Bestaetigen),
                        _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
@@ -195,6 +204,7 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
   Dort laeuft alles als root ohne Dienstbenutzer (community-scripts-Konvention);
   Kommentare und Ausgaben in `proxmox/` bleiben englisch. Das Repo muss dafuer
   oeffentlich sein.
+- Vor jedem Release `VERSION` in `foxtrail/version.py` auf die neue Nummer setzen (ohne „v“).
 - **Kein Release ohne Freigabe.** Ablauf: Aenderung auf `main` pushen, Bruno testet im
   LXC mit `deploy/dev-update.sh` (holt den Branch-Stand ohne Release), erst nach seinem
   OK Tag + Release erstellen.

@@ -6,6 +6,7 @@ import io
 import json
 import os
 import sys
+import time
 
 import pytest
 
@@ -467,6 +468,29 @@ def test_sync_seite_docker(app, monkeypatch):
     zeitplan._schreiben(zeitplan.datei(app.config["DB_PATH"]), datetime.datetime(2026, 9, 28, 4, 47),
                         datetime.datetime(2026, 1, 1))
     assert "läuft nicht" in c.get("/admin/sync").get_data(as_text=True)
+
+
+def test_ueber_und_update_hinweis(app, tmp_path):
+    from foxtrail import version
+    assert version.neuer("1.10.0", "1.9.3") and version.neuer("v2.0", "1.3.0")
+    assert not version.neuer("1.3.0", "1.3.0") and not version.neuer("kaputt", "1.3.0")
+    assert version.stand(str(tmp_path)) == version.VERSION
+    (tmp_path / "DEV_STAND").write_text("main@abc1234\n")
+    assert version.stand(str(tmp_path)) == f"{version.VERSION} (Entwicklungsstand main@abc1234)"
+
+    c = app.test_client()
+    login(c, "admin")
+    html = c.get("/").get_data(as_text=True)
+    assert f"Version {version.VERSION}" in html and version.REPO_URL in html and "upd-punkt" not in html
+    # Zwischenspeicher mit neuerer Version -> Hinweis fuer Admins, nicht fuer andere
+    with open(version.datei(app.config["DB_PATH"]), "w") as fh:
+        json.dump({"geprueft": time.time(), "version": "99.0.0", "url": "https://example.org/rel"}, fh)
+    html = c.get("/").get_data(as_text=True)
+    assert "upd-punkt" in html and "Neue Version 99.0.0 verfügbar" in html
+    c2 = app.test_client()
+    login(c2, "gast")
+    html = c2.get("/").get_data(as_text=True)
+    assert "upd-punkt" not in html and f"Version {version.VERSION}" in html
 
 
 def test_healthz(app):

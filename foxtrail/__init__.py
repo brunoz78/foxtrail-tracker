@@ -15,7 +15,7 @@ import time
 from flask import (Flask, abort, flash, g, redirect, render_template, request,
                    send_file, send_from_directory, session, url_for)
 
-from . import bestellungen, config, db, fotos, sync, trails, users, zeitplan
+from . import bestellungen, config, db, fotos, sync, trails, users, version, zeitplan
 
 _ATTEMPTS = {}   # username -> [fails, lock_until_ts]
 
@@ -29,8 +29,11 @@ def create_app(test_config=None):
     app.config["DB_PATH"] = config.db_path()
     app.config["FOTO_DIR"] = config.foto_dir()
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024     # Handy-Fotos (Upload) und konto.json
+    app.config["UPDATE_CHECK"] = config.update_check()
     if test_config:
         app.config.update(test_config)
+    if app.testing:
+        app.config["UPDATE_CHECK"] = False                  # Tests fragen nie bei GitHub an
 
     with db.session(app.config["DB_PATH"]):
         pass   # Schema anlegen
@@ -118,9 +121,15 @@ def create_app(test_config=None):
 
     @app.context_processor
     def _inject():
-        return {"me": current_user(), "stats": trails.stats(get_conn()) if current_user() else None,
+        me = current_user()
+        # Hinweis auf neue Versionen nur fuer Admins (nur sie koennen aktualisieren);
+        # andere Besucher loesen auch keine Anfrage bei GitHub aus
+        update = (version.verfuegbar(version.datei(app.config["DB_PATH"]), app.config["UPDATE_CHECK"])
+                  if me and me["is_admin"] else None)
+        return {"me": me, "stats": trails.stats(get_conn()) if me else None,
                 "typen": trails.TYP_LABEL, "grade": trails.GRAD_LABEL,
-                "regionen": trails.REGION_LABEL}
+                "regionen": trails.REGION_LABEL, "app_version": version.stand(config.REPO_ROOT),
+                "repo_url": version.REPO_URL, "update": update}
 
     @app.errorhandler(403)
     def _forbidden(_):

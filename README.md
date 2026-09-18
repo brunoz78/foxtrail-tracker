@@ -12,6 +12,19 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
 > Trail-Daten (Name, Ort, Route, Dauer, Preis, Bewertung) stammen von der
 > öffentlichen Übersicht auf foxtrail.ch und gehören der Foxtrail AG.
 
+## So sieht es aus
+
+![Kachelansicht: gemachte Trails mit Foto, Datum und grünem Rahmen](docs/screenshots/kacheln.png)
+
+| Liste mit wählbaren Spalten | Statistik |
+|---|---|
+| ![Liste](docs/screenshots/liste.png) | ![Statistik](docs/screenshots/statistik.png) |
+
+![Auf dem Smartphone: Kacheln und Liste als Karten](docs/screenshots/handy.png)
+
+<sub>Screenshots mit erfundenen Beispieldaten; die Bilder sind gezeichnete Platzhalter,
+keine Fotos von foxtrail.ch.</sub>
+
 ## Funktionen
 
 * Liste aller aktuell angebotenen Trails mit Filter (alle / offen / gemacht) und
@@ -249,6 +262,7 @@ Alles über Umgebungsvariablen (siehe `deploy/foxtrail-tracker.env.example`):
 | `FOXTRAIL_LIST_URL` | `https://foxtrail.ch/kategorie/trails/` | Quelle des Abgleichs |
 | `SCRAPER_DELAY` | `1.0` | Pause zwischen Seitenabrufen (Sekunden) |
 | `LOGIN_MAX_FAILS` / `LOGIN_LOCK_SECONDS` | `5` / `300` | Sperre nach Fehlversuchen |
+| `FOXTRAIL_UPDATE_CHECK` | `1` | `0` = nicht bei GitHub nach neuen Versionen fragen |
 
 Nur im Docker-Image: `PUID`/`PGID` (1000), `TZ` (`Europe/Zurich`), `FOXTRAIL_ZEITPLAN`
 (`1` = wöchentlicher Abgleich im Container), `FOXTRAIL_ADMIN_PASSWORD` (Administrator beim
@@ -276,6 +290,15 @@ tests/                  pytest
 Ein Trail ist „archiviert“, wenn `quelle = 'foxtrail' AND im_angebot = 0 AND gemacht = 0`
 – das wird nicht gespeichert, sondern abgeleitet. Deshalb kann ein gemachter Trail
 nie im Archiv landen, egal was der Abgleich tut.
+
+## Version und Update-Hinweis
+
+Unter ⚙ → „Über Foxtrail-Tracker“ steht die installierte Version; der Eintrag öffnet
+diese GitHub-Seite. Für Administratoren fragt der Server höchstens alle 12 Stunden bei der
+GitHub-API nach dem neuesten Release (im Hintergrund). Gibt es ein neueres, erscheint ein
+orangefarbener Punkt am Zahnrad und im Menü der Eintrag „Neue Version … verfügbar“.
+Dabei wird nichts übertragen ausser der Anfrage selbst; abschalten mit
+`FOXTRAIL_UPDATE_CHECK=0`.
 
 ## Hinweis zum Scraper
 

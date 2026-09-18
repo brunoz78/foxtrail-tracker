@@ -36,9 +36,13 @@
     </details>
     <details class="dd">
       <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'profil') }}"
-               title="Einstellungen" aria-label="Einstellungen"><span class="zahnrad" aria-hidden="true">⚙</span><span class="dd-text">Einstellungen</span></summary>
+               title="Einstellungen{% if update %} – neue Version {{ update.version }} verfügbar{% endif %}" aria-label="Einstellungen"><span class="zahnrad" aria-hidden="true">⚙</span>{% if update %}<span class="upd-punkt" aria-hidden="true"></span>{% endif %}<span class="dd-text">Einstellungen</span></summary>
       <div class="dd-menu">
         <div class="dd-kopf">Angemeldet als <b>{{ me.username }}</b>{% if me.is_admin %} (Admin){% endif %}</div>
+        {% if update %}
+        <a href="{{ update.url }}" class="dd-update" target="_blank" rel="noopener">Neue Version {{ update.version }} verfügbar ↗
+          <small>Update: im Proxmox-LXC <code>update</code>, mit Docker <code>docker compose pull</code></small></a>
+        {% endif %}
         {% if me.is_admin %}
         <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if ep == 'import_bestellungen' }}">Import
           <small>Bestellungen von foxtrail.ch übernehmen</small></a>
@@ -48,6 +52,8 @@
           <small>Benutzer anlegen und verwalten</small></a>
         {% endif %}
         <a href="{{ url_for('profil') }}" class="{{ 'on' if ep == 'profil' }}">Passwort ändern</a>
+        <a href="{{ repo_url }}" class="dd-trenner" target="_blank" rel="noopener">Über Foxtrail-Tracker ↗
+          <small>Version {{ app_version }} · GitHub</small></a>
         <a href="{{ url_for('logout') }}" class="dd-trenner">Abmelden</a>
       </div>
     </details>

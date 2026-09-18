@@ -42,11 +42,13 @@ echo "== CLI, Schema-Migration, Neustart"
 install -m 755 "$APP_DIR/deploy/foxtrailctl" /usr/local/bin/foxtrailctl
 foxtrailctl init-db
 foxtrailctl seed      # nur neue Trails und fehlende Seed-Werte (z. B. neu_seit), nichts wird ueberschrieben
-systemctl restart foxtrail
 
 commit="$(curl -fsSL "https://api.github.com/repos/$REPO/commits/$BRANCH" 2>/dev/null \
   | sed -n 's/^ *"sha": "\([0-9a-f]\{7\}\).*/\1/p' | head -n1 || true)"
 echo "$BRANCH${commit:+@$commit}" >"$HOME/.foxtrail-tracker-dev"
+# Anzeige unter "Über" (Version + Entwicklungsstand); ein Release-Update entfernt die Datei
+echo "$BRANCH${commit:+@$commit}" >"$APP_DIR/DEV_STAND"
+systemctl restart foxtrail
 echo
 echo "== Fertig: $BRANCH${commit:+ (Commit $commit)}"
 systemctl --no-pager --lines=0 status foxtrail | head -3
