@@ -59,7 +59,7 @@
       "type": "info"
     },
     {
-      "text": "Behind a reverse proxy with TLS set `BIND=127.0.0.1:8080` and `FORCE_HTTPS=1` in `/etc/foxtrail-tracker.env`, then `systemctl restart foxtrail`.",
+      "text": "Works behind a reverse proxy as is. Optional in `/etc/foxtrail-tracker.env` (then `systemctl restart foxtrail`): `FORCE_HTTPS=1` if the app is only reached via HTTPS (login over plain http stops working); `BIND=127.0.0.1:8080` only if the proxy runs in the same container.",
       "type": "info"
     }
   ]

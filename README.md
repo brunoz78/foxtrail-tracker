@@ -125,9 +125,17 @@ legt an:
 **Aktualisieren:** `cd /root/foxtrail-tracker && git pull && bash deploy/install.sh`
 (Datenbank und Konfiguration bleiben erhalten).
 
-**Reverse-Proxy / HTTPS:** Läuft die App hinter nginx, Caddy oder Traefik mit TLS,
-in `/etc/foxtrail-tracker.env` `BIND=127.0.0.1:8080` und `FORCE_HTTPS=1` setzen,
-dann `systemctl restart foxtrail`.
+**Reverse-Proxy / HTTPS:** Hinter nginx, Caddy oder Traefik läuft die App ohne weitere
+Einstellungen. Zwei optionale Absicherungen in `/etc/foxtrail-tracker.env`, danach
+`systemctl restart foxtrail`:
+
+* `FORCE_HTTPS=1` – das Login-Cookie wird nur noch über HTTPS gesendet. Nur setzen, wenn
+  ausschliesslich über den Proxy mit HTTPS zugegriffen wird: Über `http://<IP>:8080`
+  funktioniert die Anmeldung danach nicht mehr.
+* `BIND=127.0.0.1:8080` – die App ist nur noch im Container selbst erreichbar. Nur
+  sinnvoll, wenn der Proxy **im selben Container** läuft. Läuft er woanders (eigener LXC,
+  Nginx Proxy Manager, …), `BIND=0.0.0.0:8080` lassen und den direkten Zugriff bei Bedarf
+  per Firewall auf die IP des Proxys beschränken (z. B. Proxmox-Firewall des LXC).
 
 **Backup:** Die Datei `/var/lib/foxtrail-tracker/foxtrail.db` sichern (oder
 `foxtrailctl export-json backup.json`).
@@ -198,8 +206,8 @@ Alles über Umgebungsvariablen (siehe `deploy/foxtrail-tracker.env.example`):
 |---|---|---|
 | `SECRET_KEY` | zufällig pro Start | Session-Signatur – in Produktion fest setzen |
 | `FOXTRAIL_DB` | `/var/lib/foxtrail-tracker/foxtrail.db` bzw. `data/foxtrail.local.db` | SQLite-Datei |
-| `BIND` | `0.0.0.0:8080` | Adresse für gunicorn (nur in der systemd-Unit verwendet) |
-| `FORCE_HTTPS` | `0` | `1` = Session-Cookie nur über HTTPS |
+| `BIND` | `0.0.0.0:8080` | Adresse für gunicorn (nur in der systemd-Unit verwendet); `127.0.0.1:8080` nur, wenn der Reverse-Proxy im selben Container läuft |
+| `FORCE_HTTPS` | `0` | `1` = Session-Cookie nur über HTTPS; dann keine Anmeldung mehr über `http://` |
 | `FOXTRAIL_LIST_URL` | `https://foxtrail.ch/kategorie/trails/` | Quelle des Abgleichs |
 | `SCRAPER_DELAY` | `1.0` | Pause zwischen Seitenabrufen (Sekunden) |
 | `LOGIN_MAX_FAILS` / `LOGIN_LOCK_SECONDS` | `5` / `300` | Sperre nach Fehlversuchen |
