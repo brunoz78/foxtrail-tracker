@@ -181,9 +181,9 @@ def create_app(test_config=None):
         if f == "neu" and "sort" not in request.args:
             sort, richtung = "neu", "desc"           # neueste zuerst
         # Ansicht Liste/Kacheln: aus der URL, sonst die zuletzt gewaehlte (Sitzung)
-        ansicht = request.args.get("ansicht") or session.get("ansicht") or "liste"
+        ansicht = request.args.get("ansicht") or session.get("ansicht") or "kacheln"
         if ansicht not in ("liste", "kacheln"):
-            ansicht = "liste"
+            ansicht = "kacheln"
         session["ansicht"] = ansicht
         conn = get_conn()
         rows = trails.list_active(conn, f, q, sort=sort, richtung=richtung, **sel)

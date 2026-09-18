@@ -80,8 +80,8 @@
   {% endif %}
   <span class="muted small">{{ rows|length }} Trails</span>
   <div class="seg ansicht" title="Ansicht">
-    <a href="{{ index_url(ansicht='liste') }}" class="{{ 'on' if ansicht == 'liste' }}">☰ Liste</a>
     <a href="{{ index_url(ansicht='kacheln') }}" class="{{ 'on' if ansicht == 'kacheln' }}">▦ Kacheln</a>
+    <a href="{{ index_url(ansicht='liste') }}" class="{{ 'on' if ansicht == 'liste' }}">☰ Liste</a>
   </div>
   {% if ansicht == 'liste' %}
   <details class="spw">

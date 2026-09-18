@@ -53,7 +53,7 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   langer Browser-Cache ok). `foto = ''` heisst „von Hand geloescht“: der Import laedt es
   dann nicht wieder (`bestellungen.anwenden` prueft `is None`). Vorschau 640 px unter
   `fotos/klein/`, erzeugt beim ersten Abruf von `/foto/<id>?g=klein`.
-- **Kachelansicht** (`?ansicht=kacheln`, gemerkt in der Session): Bild = eigenes Foto,
+- **Kachelansicht** (Standard; `?ansicht=kacheln|liste`, gemerkt in der Session): Bild = eigenes Foto,
   sonst Titelbild von foxtrail.ch (`bild_url`, vom Scraper aus `data-lazy-src`/`src`,
   im Seed hinterlegt). Titelbilder laedt der Server einmalig bei Bedarf nach
   `fotos/titel/<id>-<hash>.jpg` und liefert sie ueber `/titelbild/<id>` aus – der Browser

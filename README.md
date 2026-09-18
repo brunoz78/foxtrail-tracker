@@ -26,7 +26,7 @@ bleiben in der Liste, noch offene wandern in ein Archiv.
   (ein Eintrag je Trail, gemeinsam für alle Benutzer)
 * **Spalten wählbar** (Knopf „Spalten“ in der Liste, gespeichert pro Benutzer): zusätzlich
   Startort, Zielort, Start- und Zielzeit, Team-Code, Bestellnummer, „Neu ab“ und „Erfasst von“
-* **Kachelansicht** als zweite Ansicht der Liste: drei Kacheln pro Reihe (auf dem Handy
+* **Kachelansicht** als Standardansicht (umschaltbar auf die Tabelle): drei Kacheln pro Reihe (auf dem Handy
   eine) mit dem eigenen Foto oder dem Titelbild von foxtrail.ch, Klick öffnet den Trail;
   Sortierung und Filter wie in der Liste, die gewählte Ansicht bleibt in der Sitzung
 * **Fotos** pro Trail: hochladen, ersetzen, löschen (JPEG/PNG/WebP bis 15 MB). Beim

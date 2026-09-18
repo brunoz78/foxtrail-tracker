@@ -54,6 +54,8 @@ def test_sperre_nach_fehlversuchen(app):
 def test_bearbeiten_und_archiv(app):
     c = app.test_client()
     login(c, "gast")
+    assert 'class="kacheln"' in c.get("/").get_data(as_text=True)      # Standard: Kacheln
+    c.get("/?ansicht=liste")                                           # Wahl bleibt in der Session
     r = c.post("/trail/1", data={"gemacht": "1", "gemacht_datum": "2025-08-10", "mitspieler": "5",
                                  "bemerkung": "Regen", "next": "/"}, follow_redirects=True)
     html = r.get_data(as_text=True)
@@ -142,6 +144,7 @@ def test_sync_seite(app, monkeypatch):
 def test_liste_sortieren_filtern(app):
     c = app.test_client()
     login(c)
+    c.get("/?ansicht=liste")
     with db.session(app.config["DB_PATH"]) as conn:
         sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae", preis=32.0),
                           mk("wallis/simplon", ort="Brig", name="Simplon", preis=36.0,
