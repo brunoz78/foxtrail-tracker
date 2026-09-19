@@ -54,7 +54,14 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   wird aus Start/Ziel abgeleitet (`trails.spielzeit_min`), nicht gespeichert. Schlussfotos
   liegen als `<id>.jpg` in `config.foto_dir()` (LXC: `/var/lib/foxtrail-tracker/fotos`,
   lokal `data/fotos`, gitignored) und werden ueber `/foto/<id>` nur angemeldet ausgeliefert.
-  Kein Weg B (Tracker meldet sich selbst bei foxtrail.ch an) ohne neue Absprache.
+  **Konto-Link** (Weg B, mit Bruno am 2026-09-19 vereinbart): Auf der Import-Seite den Link aus der
+  Anmelde-Mail einfügen (`…/account/?foxtrail_magic=<JWT>`, laut Bruno ein Jahr gültig, mehrfach
+  nutzbar). `bestellungen.abrufen`: `api.foxtrail.ch/auth/magic/login?token=<JWT>` (ohne Redirect) setzt
+  `connect.sid`, dann `api.foxtrail.ch/account` → JSON. Der Umweg über `foxtrail.ch/wp-json/…/proxy`
+  funktioniert dafür nicht (verschluckt Cookie). Nur auf Klick, Link nie speichern/loggen/anzeigen
+  (Fehler ohne Exception-Kette, requests schreibt sonst die URL samt Token in die Meldung), Konto-
+  daten (`user`) sofort verwerfen, nur `orders` weiter. Kein automatischer/periodischer Abruf und
+  kein Speichern des Links ohne neue Absprache (der Link kann auch Buchungen ändern/stornieren).
   Bereits gemachte Trails ergänzt der Import (`_ergaenzungen`): leere Felder (Mitspieler, Start/Ziel,
   Team-Code, Bestellnummer, Foto) und ein **abweichendes Datum wird auf das Bestelldatum korrigiert**,
   sofern die Datei nur eine Bestellung für diesen Trail enthält (Wunsch von Bruno, 2026-09-19). Die
@@ -171,8 +178,8 @@ foxtrail/bestellungen.py  Import "Deine Bestellungen" (foxtrail.ch-Konto): parse
                        /wp-json/foxtrail/v1/proxy/account, HTML oder Seitentext), zuordnen
                        (Plan: setzen | ergaenzen | uebersprungen | unbekannt), anwenden (inkl.
                        Schlussfoto-Download nach config.foto_dir()). Zuordnung nur ueber
-                       exakten Namen. Die JSON-Adresse braucht das Session-Cookie des Browsers;
-                       der Tracker ruft sie nie selbst ab - Upload auf der Seite /import.
+                       exakten Namen. abrufen(link): Bestellungen mit dem Konto-Link aus der Mail
+                       holen (api.foxtrail.ch); sonst Upload/Text auf der Seite /import.
 foxtrail/trails.py:statistik()  Kennzahlen fuer /statistik (Hauptliste ohne Archiv; Jahre mit
                        Luecken als 0, Spielzeit nur aus importierten Zeiten)
 foxtrail/fotos.py      Fotos pruefen/verkleinern (Pillow), Vorschaubilder, Titelbild-Cache

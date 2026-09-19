@@ -583,5 +583,22 @@ def test_gemacht_nur_mit_datum(app):
     assert "Pflicht, wenn gemacht" in c.get("/trail/2").get_data(as_text=True)
 
 
+
+def test_import_mit_konto_link(app, monkeypatch):
+    from foxtrail import bestellungen
+    c = app.test_client()
+    login(c, "admin")
+    assert "Konto-Link aus der Mail" in c.get("/import").get_data(as_text=True)
+    monkeypatch.setattr(bestellungen, "abrufen", lambda link: {"orders": []})
+    html = c.post("/import", data={"link": "https://foxtrail.ch/account/?foxtrail_magic=a.b.c"}).get_data(as_text=True)
+    assert "Keine Bestellungen gefunden" in html and "foxtrail_magic=a.b.c" not in html
+
+    def fehler(link):
+        raise bestellungen.AbrufFehler("foxtrail.ch hat den Link nicht angenommen")
+    monkeypatch.setattr(bestellungen, "abrufen", fehler)
+    html = c.post("/import", data={"link": "x"}).get_data(as_text=True)
+    assert "hat den Link nicht angenommen" in html
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

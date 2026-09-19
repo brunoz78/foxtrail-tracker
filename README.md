@@ -260,12 +260,19 @@ die mit „Manuell ergänzte Trails“ beginnt, werden als manuelle Trails angel
 ### Eigene Bestellungen von foxtrail.ch übernehmen
 
 Auf foxtrail.ch unter **Account → Deine Bestellungen** stehen alle gebuchten
-Trails. Am einfachsten: im selben Browser, angemeldet, die Adresse
-`https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account` öffnen und mit Ctrl+S als
-`konto.json` speichern. Dann in der App unter ⚙ → **Import** hochladen (nur Administratoren): Die Seite
-zeigt einen Probelauf und trägt nach Bestätigung ein. Alternativ die Bestellseite
-als „Webseite, vollständig“ speichern oder den Seitentext einfügen (dann ohne
-Zeiten und Foto). Dasselbe auf der Kommandozeile:
+Trails. Am einfachsten: In der App unter ⚙ → **Import** (nur Administratoren) den
+**Konto-Link aus der Anmelde-Mail** von foxtrail.ch einfügen
+(`https://foxtrail.ch/account/?foxtrail_magic=…`) und „Bestellungen abrufen“. Die App meldet
+sich damit einmalig bei foxtrail.ch an, holt die Bestellungen und zeigt einen Probelauf; nach
+Bestätigung trägt sie ein. Der Link wird nicht gespeichert, von den Kontodaten (Name, Adresse
+usw.) behält die App nichts. Wer den Link hat, ist im foxtrail.ch-Konto angemeldet – nicht
+weitergeben.
+
+Ohne Link geht es auch: im Browser angemeldet die Adresse
+`https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account` öffnen, mit Ctrl+S als `konto.json`
+speichern und auf der Import-Seite hochladen, oder die Bestellseite als „Webseite, vollständig“
+speichern bzw. den Seitentext einfügen (dann ohne Zeiten und Foto). Dasselbe auf der
+Kommandozeile:
 
 ```bash
 foxtrailctl import-bestellungen konto.json              # Probelauf, zeigt nur an
@@ -275,9 +282,11 @@ foxtrailctl import-bestellungen konto.json --schreiben  # trägt ein (--ohne-fot
 Aus dem JSON kommen zusätzlich Start- und Zielzeit (daraus die **Spielzeit**,
 sortierbare Spalte „Zeit“), Team-Code und Bestellnummer. Das **Schlussfoto** wird
 einmalig heruntergeladen, unter `/var/lib/foxtrail-tracker/fotos` abgelegt und auf
-der Detailseite gezeigt. Bereits gemachte Trails werden nur um fehlende Angaben
-ergänzt, nie überschrieben. Ein von Hand gelöschtes Foto lädt der Import nicht wieder;
-auf der Detailseite lässt es sich mit „Schlussfoto von foxtrail.ch laden“ zurückholen.
+der Detailseite gezeigt. Bereits gemachte Trails werden um fehlende Angaben ergänzt, ein
+abweichendes Datum wird auf das Bestelldatum korrigiert (sofern es nur eine Bestellung für den
+Trail gibt); die Vorschau nennt jede Änderung. Ein von Hand gelöschtes oder durch ein eigenes
+ersetztes Foto lädt der Import nicht; auf der Detailseite lässt sich das Schlussfoto mit
+„Schlussfoto von foxtrail.ch laden“ holen.
 
 Zuordnung über den genauen Trail-Namen („Trail Columban“ → Columban, nicht
 Columban Mini). Eingetragen werden Datum (Startzeit) und Mitspieler (Erwachsene

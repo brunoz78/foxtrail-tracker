@@ -311,3 +311,48 @@ def test_spielzeit():
     assert trails.spielzeit_min("2026-09-17 12:02", None) is None
     assert trails.spielzeit_min("2026-09-17 12:02", "2026-09-17 11:00") is None
     assert trails.spielzeit_label(170) == "2:50 h" and trails.spielzeit_label(None) == ""
+
+
+
+class _JsonAntwort:
+    def __init__(self, status=200, daten=None):
+        self.status_code, self._daten = status, daten
+
+    def json(self):
+        return self._daten
+
+
+class _Sitzung:
+    """Nachgebildete requests.Session fuer abrufen(): Anmeldung setzt connect.sid."""
+    def __init__(self, login_status=302, konto=None):
+        self.headers, self.cookies, self.aufrufe = {}, {}, []
+        self.login_status, self.konto = login_status, konto
+
+    def get(self, url, params=None, **kw):
+        self.aufrufe.append((url, dict(params or {})))
+        if url.endswith("/auth/magic/login"):
+            if self.login_status == 302:
+                self.cookies["connect.sid"] = "s%3Aabc"
+            return _JsonAntwort(status=self.login_status)
+        return _JsonAntwort(daten=self.konto)
+
+
+LINK = "https://foxtrail.ch/account/?foxtrail_magic=eyJhbGciOiJIUzI1NiJ9.eyJkIjoiZSJ9.c2lnbmF0dXI"
+
+
+def test_abrufen_mit_konto_link():
+    s = _Sitzung(konto=dict(MUSTER_JSON, user={"first_name": "Geheim", "street": "Weg 1"}))
+    daten = bestellungen.abrufen(LINK, session=s)
+    assert set(daten) == {"orders"} and len(daten["orders"]) == len(MUSTER_JSON["orders"])  # ohne Kontodaten
+    assert s.aufrufe[0] == ("https://api.foxtrail.ch/auth/magic/login", {"token": LINK.split("=", 1)[1]})
+    assert s.aufrufe[1][0] == "https://api.foxtrail.ch/account"
+    assert bestellungen.parse(json.dumps(daten))                          # wie eine hochgeladene Datei
+    # abgelehnter Link / fremde Adresse: verstaendliche Meldung ohne Token
+    for link, sitzung in ((LINK, _Sitzung(login_status=401)),
+                          ("https://evil.example/account/?foxtrail_magic=eyJa.eyJb.c", _Sitzung()),
+                          ("https://foxtrail.ch/account/", _Sitzung())):
+        try:
+            bestellungen.abrufen(link, session=sitzung)
+            raise AssertionError("AbrufFehler erwartet")
+        except bestellungen.AbrufFehler as ex:
+            assert "eyJ" not in str(ex)

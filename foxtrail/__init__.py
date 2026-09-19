@@ -330,9 +330,17 @@ def create_app(test_config=None):
         zeilen, daten = None, ""
         if request.method == "POST":
             f = request.files.get("datei")
-            inhalt = f.read().decode("utf-8", "replace") if f and f.filename else (request.form.get("text") or "")
-            eintraege = bestellungen.parse(inhalt)
-            if not eintraege:
+            if request.form.get("link"):
+                # Konto-Link: nur fuer diesen Abruf, nie speichern oder anzeigen
+                try:
+                    inhalt = json.dumps(bestellungen.abrufen(request.form["link"]))
+                except bestellungen.AbrufFehler as ex:
+                    flash(str(ex))
+                    inhalt = ""
+            else:
+                inhalt = f.read().decode("utf-8", "replace") if f and f.filename else (request.form.get("text") or "")
+            eintraege = bestellungen.parse(inhalt) if inhalt else []
+            if inhalt and not eintraege:
                 flash("Keine Bestellungen gefunden. Erwartet wird die Datei konto.json oder der Text "
                       "der Seite „Deine Bestellungen“.")
             else:

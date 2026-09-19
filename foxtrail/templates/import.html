@@ -3,13 +3,30 @@
 {% block content %}
 <div class="card">
   <h1>Bestellungen von foxtrail.ch importieren</h1>
-  <p class="muted">Im Browser bei foxtrail.ch angemeldet die Adresse
-    <code>https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account</code> öffnen und mit Ctrl+S als
-    <b>konto.json</b> speichern, dann hier hochladen. Alternativ den Text der Seite „Deine Bestellungen“
-    einfügen (dann ohne Zeiten und Foto). Eingetragen werden Datum, Mitspieler, Start- und Zielzeit,
-    Team-Code, Bestellnummer und Schlussfoto. Bereits gemachte Trails werden nur ergänzt, nie überschrieben.</p>
+  <p class="muted">Eingetragen werden Datum, Mitspieler, Start- und Zielzeit, Team-Code, Bestellnummer und
+    Schlussfoto. Bei bereits gemachten Trails werden fehlende Angaben ergänzt und ein abweichendes Datum
+    korrigiert; die Vorschau zeigt vorher genau, was passiert.</p>
 
   {% if zeilen is none %}
+  <form method="post" autocomplete="off">
+    <label>Konto-Link aus der Mail von foxtrail.ch
+      <input type="password" name="link" required autocomplete="off" spellcheck="false"
+             placeholder="https://foxtrail.ch/account/?foxtrail_magic=…"></label>
+    <p class="muted small">Den Link aus der Anmelde-Mail von foxtrail.ch einfügen. Er wird nur für diesen
+      Abruf verwendet und nicht gespeichert. Achtung: Wer den Link hat, ist in eurem foxtrail.ch-Konto
+      angemeldet – nicht weitergeben.</p>
+    <div class="actions">
+      <button type="submit">Bestellungen abrufen</button>
+      <span class="muted small">Es wird noch nichts gespeichert.</span>
+    </div>
+  </form>
+
+  <details class="alternativ">
+    <summary>Stattdessen Datei hochladen oder Text einfügen</summary>
+  <p class="muted small">Im Browser bei foxtrail.ch angemeldet die Adresse
+    <code>https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account</code> öffnen und mit Ctrl+S als
+    <b>konto.json</b> speichern, dann hier hochladen. Oder den Text der Seite „Deine Bestellungen“
+    einfügen (dann ohne Zeiten und Foto).</p>
   <form method="post" enctype="multipart/form-data">
     <label>Datei (konto.json oder gespeicherte Seite)
       <input type="file" name="datei" accept=".json,.html,.htm,.txt"></label>
@@ -20,6 +37,7 @@
       <span class="muted small">Es wird noch nichts gespeichert.</span>
     </div>
   </form>
+  </details>
   {% else %}
   <p><b>{{ zeilen|length }}</b> Bestellungen gelesen:
     <b>{{ n_setzen }}</b> als gemacht eintragen, <b>{{ n_erg }}</b> ergänzen, {{ n_skip }} übersprungen, {{ n_unbekannt }} unbekannt.</p>

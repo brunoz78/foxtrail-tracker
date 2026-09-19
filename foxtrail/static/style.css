@@ -403,3 +403,7 @@ details.dd summary { position: relative; }
   .top nav .dd-menu a.dd-update:hover { background: #5c3c00; }
 }
 @media (max-width: 700px) { .upd-punkt { top: 8px; left: 20px; right: auto; } }
+
+/* Import: Datei/Text als Alternative zum Konto-Link, eingeklappt */
+details.alternativ { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 10px; }
+details.alternativ summary { cursor: pointer; color: var(--muted); }

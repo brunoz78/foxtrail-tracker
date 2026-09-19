@@ -2,7 +2,16 @@
 """
 Import der eigenen Bestellungen von foxtrail.ch ("Account -> Deine Bestellungen").
 
-Drei Eingabeformen, parse() erkennt sie selbst:
+Am bequemsten: abrufen(link) mit dem Konto-Link aus der Mail von foxtrail.ch
+(https://foxtrail.ch/account/?foxtrail_magic=<JWT>, gilt laut Bruno ein Jahr, mehrfach nutzbar).
+Ablauf wie im Browser: api.foxtrail.ch/auth/magic/login?token=<JWT> setzt das Session-Cookie
+connect.sid, danach liefert api.foxtrail.ch/account die Kontodaten als JSON (Form 1 unten).
+Der Link wird nur fuer diesen einen Abruf benutzt: nie gespeichert, nie geloggt, in keiner
+Fehlermeldung (Ausnahmen ohne Kette, weil requests die URL samt Token in die Meldung schreibt).
+Nur die Bestellungen werden weitergegeben, die Kontodaten (Name, Adresse, ...) verworfen.
+Mit Bruno am 2026-09-19 so vereinbart (vorher: Tracker meldet sich nie selbst an).
+
+Sonst drei Eingabeformen, parse() erkennt sie selbst:
 
 1. JSON der Kontodaten - die Seite holt sie von
    https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account (angemeldet im Browser
@@ -46,12 +55,66 @@ import datetime
 import json
 import os
 import re
+import time
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 from .db import now
 from . import config, trails
+
+API_URL = "https://api.foxtrail.ch"
+_JWT_RE = re.compile(r"[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
+
+
+class AbrufFehler(Exception):
+    """Abruf mit dem Konto-Link gescheitert; die Meldung ist fuer die Oberflaeche gedacht
+    und enthaelt nie den Link."""
+
+
+def token_aus_link(link):
+    u = urlparse((link or "").strip())
+    token = (parse_qs(u.query).get("foxtrail_magic") or [""])[0]
+    if u.scheme != "https" or u.netloc not in ("foxtrail.ch", "www.foxtrail.ch") or not _JWT_RE.fullmatch(token):
+        raise AbrufFehler("Das ist kein Konto-Link von foxtrail.ch. Erwartet wird der Link aus der Mail "
+                          "(https://foxtrail.ch/account/?foxtrail_magic=…).")
+    return token
+
+
+def abrufen(link, session=None):
+    """Bestellungen mit dem Konto-Link holen -> {"orders": [...]} (fuer parse())."""
+    token = token_aus_link(link)
+    s = session or requests.Session()
+    s.headers["User-Agent"] = config.USER_AGENT
+    fehler = None
+    try:
+        r = s.get(f"{API_URL}/auth/magic/login", params={"token": token}, allow_redirects=False, timeout=30)
+        if r.status_code in (400, 401, 403):
+            fehler = ("foxtrail.ch hat den Link nicht angenommen – vielleicht ist er abgelaufen. "
+                      "Auf foxtrail.ch unter „Konto“ einen neuen Link per Mail anfordern.")
+        elif "connect.sid" not in s.cookies:
+            fehler = "Die Anmeldung bei foxtrail.ch hat nicht geklappt (keine Sitzung erhalten)."
+        else:
+            r = s.get(f"{API_URL}/account", params={"_": int(time.time())}, timeout=30,
+                      headers={"Accept": "application/json"})
+            if r.status_code != 200:
+                fehler = f"foxtrail.ch hat die Bestellungen nicht geliefert (Status {r.status_code})."
+            else:
+                daten = r.json()
+                if not isinstance(daten, dict) or not isinstance(daten.get("orders"), list):
+                    fehler = "Unerwartete Antwort von foxtrail.ch – der Aufbau hat sich wohl geändert."
+                else:
+                    return {"orders": daten["orders"]}          # Kontodaten verwerfen
+    except requests.RequestException:
+        fehler = "foxtrail.ch ist gerade nicht erreichbar. Bitte später nochmals versuchen."
+    except ValueError:
+        fehler = "Unerwartete Antwort von foxtrail.ch (kein JSON)."
+    finally:
+        if session is None:
+            s.close()
+    raise AbrufFehler(fehler)
+
 
 _ORDER_RE = re.compile(r"Bestellung vom (\d{2}\.\d{2}\.\d{4}) \(#(\d+)\)")
 _TEAM_RE = re.compile(r"^Team \d+\s*$", re.M)
