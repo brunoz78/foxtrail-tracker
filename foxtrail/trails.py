@@ -160,7 +160,10 @@ SORTS = {
     "start": lambda t: t.get("start_zeit"),
     "ziel": lambda t: t.get("ziel_zeit"),
     "gesehen": lambda t: t.get("last_seen"),
+    "erfasst": lambda t: ((t["erfasst_von"].lower(), t["ort"].lower(), t["name"].lower())
+                          if t.get("erfasst_von") else None),
 }
+LEER = "-"         # Filterwert "ohne Angabe" (Grad, Region, Dauer, Erfasst von leer)
 ARCHIV_SORTS = ("ort", "name", "region", "gesehen")
 
 
@@ -179,10 +182,11 @@ def _liste(v):
     return [v] if isinstance(v, str) else [x for x in v if x]
 
 
-def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), grad=(), sort="ort",
+def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), grad=(), erfasst=(), sort="ort",
                 richtung="asc"):
     """Hauptliste: alles ausser Archiv. filter_: alle | offen | gemacht | neu.
-    typ/region/dauer/grad: Mehrfachauswahl (Liste oder einzelner Wert), leer = alle."""
+    typ/region/dauer/grad/erfasst: Mehrfachauswahl (Liste oder einzelner Wert), leer = alle;
+    der Wert LEER waehlt Trails ohne Angabe in dieser Spalte."""
     sql = f"SELECT * FROM trails WHERE NOT {ARCHIV_COND}"
     args = []
     if filter_ == "offen":
@@ -193,10 +197,15 @@ def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), grad=()
         sql += " AND neu_seit IS NOT NULL"
     for spalte, werte in (("typ", [t for t in _liste(typ) if t in TYPEN]),
                           ("region", _liste(region)), ("dauer", _liste(dauer)),
-                          ("schwierigkeit", [g for g in _liste(grad) if g in GRADE])):
+                          ("schwierigkeit", [g for g in _liste(grad) if g in GRADE or g == LEER]),
+                          ("erfasst_von", _liste(erfasst))):
         if werte:
-            sql += f" AND {spalte} IN ({','.join('?' * len(werte))})"
-            args += werte
+            namen = [w for w in werte if w != LEER]
+            teile = [f"{spalte} IN ({','.join('?' * len(namen))})"] if namen else []
+            if LEER in werte:
+                teile.append(f"COALESCE({spalte}, '') = ''")
+            sql += " AND (" + " OR ".join(teile) + ")"
+            args += namen
     if q:
         sql += " AND (ort LIKE ? OR name LIKE ? OR route LIKE ? OR bemerkung LIKE ?)"
         args += [f"%{q}%"] * 4
@@ -213,10 +222,22 @@ def filter_options(conn):
         f"SELECT DISTINCT dauer FROM trails WHERE NOT {ARCHIV_COND} AND dauer != ''")]
     dauern.sort(key=lambda s: (parse_dauer(s)[0] is None, parse_dauer(s)[0] or 0,
                                parse_dauer(s)[1] or 0, s))
-    return {"region": [(s, region_label(s)) for s in regs],
+    wer = [r[0] for r in conn.execute(
+        f"SELECT DISTINCT erfasst_von FROM trails WHERE NOT {ARCHIV_COND} AND COALESCE(erfasst_von, '') != ''")]
+    wer.sort(key=str.lower)
+
+    def ohne(spalte, text="– ohne Angabe"):
+        """Eintrag "ohne Angabe" am Ende - nur, wenn es solche Trails gibt."""
+        n = conn.execute(f"SELECT COUNT(*) FROM trails WHERE NOT {ARCHIV_COND} "
+                         f"AND COALESCE({spalte}, '') = ''").fetchone()[0]
+        return [(LEER, text)] if n else []
+
+    # typ ist nie leer (Default 'foxtrail'), deshalb dort kein "ohne Angabe"
+    return {"erfasst": [(w, w) for w in wer] + ohne("erfasst_von", "– nicht erfasst"),
+            "region": [(s, region_label(s)) for s in regs] + ohne("region"),
             "typ": [(t, TYP_LABEL[t]) for t in TYPEN],
-            "dauer": [(s, dauer_kurz(s)) for s in dauern],
-            "grad": [(g, GRAD_LABEL[g]) for g in GRADE]}
+            "dauer": [(s, dauer_kurz(s)) for s in dauern] + ohne("dauer"),
+            "grad": [(g, GRAD_LABEL[g]) for g in GRADE] + ohne("schwierigkeit")}
 
 
 def list_archiv(conn, q="", sort="ort", richtung="asc"):

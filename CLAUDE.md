@@ -43,6 +43,9 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   keine zusätzlichen Spalten. Anzeige „1.5–2.5 h“ über den Jinja-Filter `dauer`.
   Die Haken-Filter sitzen in den Spaltenköpfen (`_macros.html`, `<details>`, geht ohne JS;
   ein paar Zeilen Vanilla-JS wenden die Auswahl beim Schliessen des Menüs an).
+  Filter gibt es für Region, Typ, Grad, Dauer und „Erfasst von“ (auch sortierbar). Der Wert
+  `trails.LEER` ("-") wählt Trails ohne Angabe; die Auswahl „– ohne Angabe“ erscheint nur, wenn es
+  solche gibt (Typ ist nie leer). Wunsch von Bruno, 2026-09-19.
 - **Schwierigkeit** (`schwierigkeit`: `einfach | mittel | schwierig | NULL`) steht nicht in den
   Karten der Übersicht. Statt 97 Detailseiten liest der Scraper die Übersicht dreimal
   gefiltert (`?filters=difficulty[<id>]`, IDs aus dem Filter-Widget auf Seite 1, ~8 Seiten).

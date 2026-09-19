@@ -612,5 +612,46 @@ def test_fehlermeldungen_rot(app):
     assert 'class="flash message">Gespeichert.' in html                 # Bestaetigung bleibt gruen
 
 
+def test_erfasst_von_sortieren_und_filtern(app):
+    c = app.test_client()
+    login(c)
+    with db.session(app.config["DB_PATH"]) as conn:
+        trails.add_manual(conn, {"ort": "Thun", "name": "Dritter"}, "x")
+        ids = [r[0] for r in conn.execute("SELECT id FROM trails ORDER BY id")]
+        conn.execute("UPDATE trails SET erfasst_von = 'Import' WHERE id = ?", (ids[0],))
+        conn.execute("UPDATE trails SET erfasst_von = 'admin' WHERE id = ?", (ids[1],))
+        conn.execute("UPDATE trails SET erfasst_von = NULL WHERE id NOT IN (?, ?)", (ids[0], ids[1]))
+        namen = {i: trails.get(conn, i)["name"] for i in ids}
+    alle = [r["id"] for r in trails.list_active(db.connect(app.config["DB_PATH"]), sort="erfasst")]
+    assert alle[:2] == [ids[1], ids[0]]                          # admin vor Import, Leere am Ende
+    nur = trails.list_active(db.connect(app.config["DB_PATH"]), erfasst=["Import"])
+    assert [r["id"] for r in nur] == [ids[0]]
+    ohne = trails.list_active(db.connect(app.config["DB_PATH"]), erfasst=[trails.LEER])
+    assert [r["id"] for r in ohne] == [ids[2]]
+    beides = trails.list_active(db.connect(app.config["DB_PATH"]), erfasst=["admin", trails.LEER])
+    assert sorted(r["id"] for r in beides) == [ids[1], ids[2]]
+    html = c.get("/?ansicht=kacheln&erfasst=admin").get_data(as_text=True)
+    assert namen[ids[1]] in html and "– nicht erfasst" in html
+
+
+def test_filter_ohne_angabe(app):
+    c = app.test_client()
+    login(c)
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET schwierigkeit = 'mittel', region = 'aargau', dauer = '2 Stunden'")
+        trails.add_manual(conn, {"ort": "Thun", "name": "Ohne Angaben"}, "x")    # Grad/Region/Dauer leer
+        opts = trails.filter_options(conn)
+        assert opts["grad"][-1] == (trails.LEER, "– ohne Angabe") and opts["region"][-1][0] == trails.LEER
+        assert opts["dauer"][-1][0] == trails.LEER and all(v != trails.LEER for v, _ in opts["typ"])
+        for feld in ("grad", "region", "dauer"):
+            assert [r["name"] for r in trails.list_active(conn, **{feld: [trails.LEER]})] == ["Ohne Angaben"]
+        assert len(trails.list_active(conn, grad=["mittel", trails.LEER])) == 3
+    assert "Ohne Angaben" in c.get("/?ansicht=liste&grad=-").get_data(as_text=True)
+    # gibt es keine leeren mehr, erscheint auch "ohne Angabe" nicht
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET schwierigkeit = 'einfach'")
+        assert all(v != trails.LEER for v, _ in trails.filter_options(conn)["grad"])
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

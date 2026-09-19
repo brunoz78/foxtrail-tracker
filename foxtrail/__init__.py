@@ -191,7 +191,8 @@ def create_app(test_config=None):
         sel = {"typ": [t for t in request.args.getlist("typ") if t in trails.TYPEN],
                "region": [r[:60] for r in request.args.getlist("region") if r][:30],
                "dauer": [d[:50] for d in request.args.getlist("dauer") if d][:30],
-               "grad": [g for g in request.args.getlist("grad") if g in trails.GRADE]}
+               "grad": [g for g in request.args.getlist("grad") if g in trails.GRADE or g == trails.LEER],
+               "erfasst": [e[:60] for e in request.args.getlist("erfasst") if e][:30]}
         sort = request.args.get("sort", "ort")
         if sort not in trails.SORTS:
             sort = "ort"

@@ -22,7 +22,7 @@
 {%- elif k == 'team' %}<th class="k-aus">Team-Code</th>
 {%- elif k == 'bestellung' %}<th class="k-aus">Bestellung</th>
 {%- elif k == 'bemerkung' %}<th class="k-aus">Bemerkung</th>
-{%- elif k == 'erfasst' %}<th class="k-aus">Erfasst von</th>
+{%- elif k == 'erfasst' %}<th class="k-erfasst">{{ sortlink('erfasst', 'Erfasst von') }}{{ hfilter('erfasst', opts.erfasst) }}</th>
 {%- endif %}
 {%- endmacro %}
 {% macro zelle(t, k) -%}
@@ -76,8 +76,8 @@
   {% if richtung != 'asc' %}<input type="hidden" name="dir" value="{{ richtung }}">{% endif %}
   <input name="q" value="{{ q }}" placeholder="Suche Ort, Name, Route, Bemerkung">
   <button type="submit">Suchen</button>
-  {% if q or sel.typ or sel.region or sel.dauer or sel.grad %}
-  <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[]) }}">Filter zurücksetzen</a>
+  {% if q or sel.typ or sel.region or sel.dauer or sel.grad or sel.erfasst %}
+  <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[], erfasst=[]) }}">Filter zurücksetzen</a>
   {% endif %}
   <span class="muted small">{{ rows|length }} Trails</span>
   <div class="seg ansicht" title="Ansicht">
@@ -118,6 +118,7 @@
   <span class="kk">{{ sortlink('preis', 'CHF') }}</span>
   <span class="kk">{{ sortlink('datum', 'Datum', 'desc') }}</span>
   <span class="kk">{{ sortlink('spielzeit', 'Zeit', 'desc') }}</span>
+  <span class="kk">{{ sortlink('erfasst', 'Erfasst von') }}{{ hfilter('erfasst', opts.erfasst) }}</span>
 </div>
 <div class="kacheln">
   {% for t in rows %}
