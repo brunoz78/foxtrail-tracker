@@ -69,6 +69,18 @@ def create_app(test_config=None):
             return view(*a, **kw)
         return wrapped
 
+    def schreiben_required(view):
+        """Aendernde Aktionen: nicht fuer Benutzer mit der Rolle "Nur lesen"."""
+        @functools.wraps(view)
+        def wrapped(*a, **kw):
+            me = current_user()
+            if me is None:
+                return redirect(url_for("login", next=request.path))
+            if not users.darf_schreiben(me):
+                abort(403)
+            return view(*a, **kw)
+        return wrapped
+
     def admin_required(view):
         @functools.wraps(view)
         def wrapped(*a, **kw):
@@ -127,6 +139,7 @@ def create_app(test_config=None):
         update = (version.verfuegbar(version.datei(app.config["DB_PATH"]), app.config["UPDATE_CHECK"])
                   if me and me["is_admin"] else None)
         return {"me": me, "stats": trails.stats(get_conn()) if me else None,
+                "darf_schreiben": users.darf_schreiben(me), "rollen": users.ROLLEN, "rolle": users.rolle,
                 "typen": trails.TYP_LABEL, "grade": trails.GRAD_LABEL,
                 "regionen": trails.REGION_LABEL, "app_version": version.stand(config.REPO_ROOT),
                 "repo_url": version.REPO_URL, "update": update}
@@ -268,6 +281,8 @@ def create_app(test_config=None):
         if not t:
             abort(404)
         if request.method == "POST":
+            if not users.darf_schreiben(current_user()):
+                abort(403)
             try:
                 if t["quelle"] == "manual":
                     trails.update_manual(conn, tid, request.form)
@@ -288,7 +303,7 @@ def create_app(test_config=None):
                                request.form.get("next") or url_for("index"))
 
     @app.route("/trail/neu", methods=["GET", "POST"])
-    @login_required
+    @schreiben_required
     def trail_new():
         if request.method == "POST":
             try:
@@ -300,7 +315,7 @@ def create_app(test_config=None):
         return render_template("trail_new.html", form=request.form)
 
     @app.route("/trail/<int:tid>/loeschen", methods=["POST"])
-    @login_required
+    @schreiben_required
     def trail_delete(tid):
         try:
             trails.delete_manual(get_conn(), tid)
@@ -310,7 +325,7 @@ def create_app(test_config=None):
         return redirect(url_for("index"))
 
     @app.route("/trail/<int:tid>/zuruecksetzen", methods=["POST"])
-    @login_required
+    @schreiben_required
     def trail_zuruecksetzen(tid):
         conn = get_conn()
         try:
@@ -397,7 +412,7 @@ def create_app(test_config=None):
         return send_file(pfad, mimetype="image/jpeg", max_age=7 * 86400)
 
     @app.route("/trail/<int:tid>/foto", methods=["POST"])
-    @login_required
+    @schreiben_required
     def trail_foto(tid):
         """Schlussfoto hochladen/ersetzen, loeschen oder von foxtrail.ch neu laden."""
         conn = get_conn()
@@ -464,7 +479,7 @@ def create_app(test_config=None):
     def user_add():
         try:
             users.add(get_conn(), request.form.get("username", ""), request.form.get("password", ""),
-                      is_admin=bool(request.form.get("is_admin")))
+                      rolle=request.form.get("rolle") or "bearbeiten")
             flash("Benutzer angelegt.")
         except users.UserError as ex:
             flash(str(ex), "fehler")
@@ -479,8 +494,8 @@ def create_app(test_config=None):
             if action == "passwort":
                 users.set_password(conn, name, request.form.get("password", ""))
                 flash(f"Passwort für „{name}“ gesetzt.")
-            elif action == "admin":
-                users.update(conn, name, is_admin=bool(request.form.get("is_admin")))
+            elif action == "rolle":
+                users.update(conn, name, rolle=request.form.get("rolle", ""))
                 flash("Gespeichert.")
             elif action == "aktiv":
                 users.update(conn, name, active=bool(request.form.get("active")))

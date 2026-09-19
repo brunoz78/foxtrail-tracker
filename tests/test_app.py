@@ -112,7 +112,7 @@ def test_admin_rechte(app):
     r = c.post("/admin/benutzer/anlegen", data={"username": "neu", "password": "geheim123"},
                follow_redirects=True)
     assert "angelegt" in r.get_data(as_text=True)
-    r = c.post("/admin/benutzer/admin", data={"action": "admin", "is_admin": ""}, follow_redirects=True)
+    r = c.post("/admin/benutzer/admin", data={"action": "rolle", "rolle": "bearbeiten"}, follow_redirects=True)
     assert "mindestens ein aktiver Administrator" in r.get_data(as_text=True)
     r = c.post("/admin/benutzer/neu", data={"action": "loeschen"}, follow_redirects=True)
     assert "gelöscht" in r.get_data(as_text=True)
@@ -682,6 +682,46 @@ def test_trail_zuruecksetzen(app, tmp_path):
     assert t["foto"] is None and t["team_code"] is None and t["bestellung"] is None and t["start_zeit"] is None
     assert not (tmp_path / "fotos" / "2.jpg").exists()
     assert "Einträge zurücksetzen" not in c.get("/trail/2").get_data(as_text=True)   # nichts mehr da
+
+
+
+def test_rolle_nur_lesen(app, tmp_path):
+    app.config["FOTO_DIR"] = str(tmp_path / "fotos")
+    with db.session(app.config["DB_PATH"]) as conn:
+        users.add(conn, "leserin", "gast-passwort", rolle="lesen")
+        assert users.rolle(users.get(conn, "leserin")) == "lesen"
+    c = app.test_client()
+    c.post("/login", data={"username": "leserin", "password": "gast-passwort"})
+    # ansehen geht
+    assert c.get("/").status_code == 200 and c.get("/statistik").status_code == 200
+    seite = c.get("/trail/2").get_data(as_text=True)
+    assert "Speichern" not in seite and "Foto hinzufügen" not in seite and "Zurück" in seite
+    assert "manuell erfassen" not in c.get("/").get_data(as_text=True)
+    # aendern nicht
+    assert c.post("/trail/2", data={"gemacht": "1", "gemacht_datum": "2025-01-01"}).status_code == 403
+    assert c.get("/trail/neu").status_code == 403
+    assert c.post("/trail/2/zuruecksetzen").status_code == 403
+    assert c.post("/trail/2/foto", data={"aktion": "loeschen"}).status_code == 403
+    assert c.get("/import").status_code == 403 and c.get("/admin/benutzer").status_code == 403
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 2)["gemacht"] == 0
+
+
+def test_rolle_im_benutzer_admin(app):
+    c = app.test_client()
+    login(c)
+    c.post("/admin/benutzer/anlegen", data={"username": "leser", "password": "leser-passwort", "rolle": "lesen"})
+    with db.session(app.config["DB_PATH"]) as conn:
+        u = users.get(conn, "leser")
+    assert u["nur_lesen"] == 1 and u["is_admin"] == 0
+    assert "Nur lesen" in c.get("/admin/benutzer").get_data(as_text=True)
+    c.post("/admin/benutzer/leser", data={"action": "rolle", "rolle": "admin"})
+    with db.session(app.config["DB_PATH"]) as conn:
+        u = users.get(conn, "leser")
+    assert u["is_admin"] == 1 and u["nur_lesen"] == 0
+    c.post("/admin/benutzer/leser", data={"action": "rolle", "rolle": "bearbeiten"})
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert users.rolle(users.get(conn, "leser")) == "bearbeiten"
 
 
 def test_healthz(app):

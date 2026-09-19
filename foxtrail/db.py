@@ -67,7 +67,8 @@ CREATE TABLE IF NOT EXISTS users (
     active    INTEGER NOT NULL DEFAULT 1,
     created   TEXT NOT NULL,
     last_login TEXT,
-    spalten   TEXT                   -- sichtbare Spalten der Liste, 'route,typ,...'; NULL = Standard
+    spalten   TEXT,                  -- sichtbare Spalten der Liste, 'route,typ,...'; NULL = Standard
+    nur_lesen INTEGER NOT NULL DEFAULT 0   -- 1 = darf nichts aendern (nie zusammen mit is_admin)
 );
 
 CREATE TABLE IF NOT EXISTS sync_log (
@@ -108,9 +109,13 @@ def init_db(conn):
 
 def _migrate(conn):
     """Kleine, idempotente Migrationen fuer bestehende Datenbanken."""
-    if "spalten" not in {r[1] for r in conn.execute("PRAGMA table_info(users)")}:
+    u_spalten = {r[1] for r in conn.execute("PRAGMA table_info(users)")}
+    if "spalten" not in u_spalten:
         # 2026-09: Spaltenauswahl der Liste je Benutzer
         conn.execute("ALTER TABLE users ADD COLUMN spalten TEXT")
+    if "nur_lesen" not in u_spalten:
+        # 2026-09: Rolle "Nur lesen"
+        conn.execute("ALTER TABLE users ADD COLUMN nur_lesen INTEGER NOT NULL DEFAULT 0")
     spalten = {r[1] for r in conn.execute("PRAGMA table_info(trails)")}
     if "neu_seit" not in spalten:
         # 2026-09: "Neu ab MM/JJ" fuer Trails, die ein Abgleich neu angelegt hat. Rueckwirkend

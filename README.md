@@ -51,8 +51,10 @@ foxtrail.ch absichtlich unscharf.</sub>
 * Manuell erfasste Trails für früher gemachte Trails, die nicht mehr angeboten werden
 * Abgleich mit foxtrail.ch – wöchentlich per systemd-Timer und per Knopfdruck
 * Archiv: nicht mehr angebotene, noch nicht gemachte Trails, mit Suche und Sortierung (Ort, Trail, Region, zuletzt gesehen)
-* Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen),
-  Administratoren verwalten Benutzer, lösen den Abgleich aus und importieren Bestellungen
+* Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen) und drei Rollen:
+  **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),
+  **Bearbeiten** (Trails eintragen, Fotos, manuelle Trails) und **Nur lesen** (Liste, Statistik,
+  Archiv und Fotos ansehen, nichts ändern)
 * Keine externen Abhängigkeiten im Browser (kein CDN), hell/dunkel automatisch
 * **Auf dem Smartphone** bedienbar: Menü hinter ☰, Liste und Archiv als kompakte
   Karten statt breiter Tabelle, Sortier- und Filterleiste oben, grosse Tipp-Flächen
@@ -241,7 +243,7 @@ volumes:
 ## Verwaltung (CLI)
 
 ```bash
-foxtrailctl create-user NAME [--admin]   # Benutzer anlegen
+foxtrailctl create-user NAME [--admin | --nur-lesen]   # Benutzer anlegen
 foxtrailctl set-password NAME
 foxtrailctl list-users
 foxtrailctl sync                         # Abgleich jetzt (macht der Timer sonst wöchentlich)

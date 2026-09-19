@@ -29,7 +29,7 @@ Taucht er auf foxtrail.ch wieder auf, wird er beim nächsten Abgleich reaktivier
     <td class="nowrap m-dauer">{{ t.dauer|dauer }}</td>
     <td class="r m-preis">{{ t.preis|chf }}</td>
     <td class="nowrap m-gesehen">{{ (t.last_seen or '')[:10]|datum }}</td>
-    <td class="m-aktion"><a class="btn small" href="{{ url_for('trail_edit', tid=t.id, next=url_for('archiv')) }}">Doch gemacht?</a></td>
+    <td class="m-aktion">{% if darf_schreiben %}<a class="btn small" href="{{ url_for('trail_edit', tid=t.id, next=url_for('archiv')) }}">Doch gemacht?</a>{% endif %}</td>
   </tr>
   {% else %}
   <tr><td colspan="10" class="empty">{{ 'Keine Treffer.' if q else 'Das Archiv ist leer.' }}</td></tr>

@@ -73,10 +73,11 @@ def cmd_zeitplan(a):
 def cmd_create_user(a):
     with db.session() as conn:
         try:
-            users.add(conn, a.name, _pw(), is_admin=a.admin)
+            rolle = "admin" if a.admin else ("lesen" if a.nur_lesen else "bearbeiten")
+            users.add(conn, a.name, _pw(), rolle=rolle)
         except users.UserError as ex:
             sys.exit(str(ex))
-    print(f"Benutzer {a.name}{' (Admin)' if a.admin else ''} angelegt.")
+    print(f"Benutzer {a.name} ({users.ROLLEN[rolle]}) angelegt.")
 
 
 def cmd_set_password(a):
@@ -91,7 +92,7 @@ def cmd_set_password(a):
 def cmd_list_users(a):
     with db.session() as conn:
         for u in users.list_users(conn):
-            print(f"{u['username']:20} {'admin' if u['is_admin'] else '':6} "
+            print(f"{u['username']:20} {users.ROLLEN[users.rolle(u)]:14} "
                   f"{'aktiv' if u['active'] else 'inaktiv':8} letzte Anmeldung: {u['last_login'] or '-'}")
 
 
@@ -225,7 +226,9 @@ def main():
     s = sub.add_parser("seed"); s.add_argument("datei", nargs="?"); s.set_defaults(fn=cmd_seed)
     s = sub.add_parser("sync"); s.add_argument("--ausloeser", default="cli"); s.set_defaults(fn=cmd_sync)
     sub.add_parser("zeitplan").set_defaults(fn=cmd_zeitplan)
-    s = sub.add_parser("create-user"); s.add_argument("name"); s.add_argument("--admin", action="store_true")
+    s = sub.add_parser("create-user"); s.add_argument("name")
+    g = s.add_mutually_exclusive_group()
+    g.add_argument("--admin", action="store_true"); g.add_argument("--nur-lesen", action="store_true")
     s.set_defaults(fn=cmd_create_user)
     s = sub.add_parser("set-password"); s.add_argument("name"); s.set_defaults(fn=cmd_set_password)
     sub.add_parser("list-users").set_defaults(fn=cmd_list_users)

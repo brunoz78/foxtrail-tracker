@@ -13,6 +13,26 @@ from .db import now
 _NAME_RE = re.compile(r"^[a-z0-9._-]{2,32}$")
 MIN_PW_LEN = 8
 
+# Rollen: admin = alles, bearbeiten = Trails eintragen, lesen = nur ansehen
+ROLLEN = {"admin": "Administrator", "bearbeiten": "Bearbeiten", "lesen": "Nur lesen"}
+
+
+def rolle(u):
+    if u["is_admin"]:
+        return "admin"
+    return "lesen" if u.get("nur_lesen") else "bearbeiten"
+
+
+def darf_schreiben(u):
+    return bool(u) and not u.get("nur_lesen")
+
+
+def _flags(rolle_):
+    """(is_admin, nur_lesen) fuer eine Rolle."""
+    if rolle_ not in ROLLEN:
+        raise UserError("Unbekannte Rolle.")
+    return (1 if rolle_ == "admin" else 0), (1 if rolle_ == "lesen" else 0)
+
 
 class UserError(Exception):
     pass
@@ -49,15 +69,17 @@ def count(conn):
     return conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
 
 
-def add(conn, username, password, is_admin=False):
+def add(conn, username, password, is_admin=False, rolle=None):
+    """rolle: admin | bearbeiten | lesen; ohne Angabe entscheidet is_admin."""
     username = (username or "").strip().lower()
     _check_name(username)
     _check_pw(password)
+    admin, lesen = _flags(rolle or ("admin" if is_admin else "bearbeiten"))
     if get(conn, username):
         raise UserError(f"Benutzer „{username}“ existiert bereits.")
     conn.execute(
-        "INSERT INTO users (username, pw_hash, is_admin, active, created) VALUES (?,?,?,1,?)",
-        (username, generate_password_hash(password), 1 if is_admin else 0, now()))
+        "INSERT INTO users (username, pw_hash, is_admin, nur_lesen, active, created) VALUES (?,?,?,?,1,?)",
+        (username, generate_password_hash(password), admin, lesen, now()))
     return get(conn, username)
 
 
@@ -90,12 +112,15 @@ def change_own_password(conn, username, old, new, new2):
     set_password(conn, username, new)
 
 
-def update(conn, username, is_admin=None, active=None):
+def update(conn, username, is_admin=None, active=None, rolle=None):
     u = get(conn, username)
     if not u:
         raise UserError("Benutzer nicht gefunden.")
+    if rolle is not None:
+        admin, lesen = _flags(rolle)
+        conn.execute("UPDATE users SET is_admin = ?, nur_lesen = ? WHERE id = ?", (admin, lesen, u["id"]))
     if is_admin is not None:
-        conn.execute("UPDATE users SET is_admin = ? WHERE id = ?", (1 if is_admin else 0, u["id"]))
+        conn.execute("UPDATE users SET is_admin = ?, nur_lesen = 0 WHERE id = ?", (1 if is_admin else 0, u["id"]))
     if active is not None:
         conn.execute("UPDATE users SET active = ? WHERE id = ?", (1 if active else 0, u["id"]))
     _ensure_one_admin(conn)

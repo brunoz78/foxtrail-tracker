@@ -4,15 +4,18 @@
 <div class="head"><h1>Benutzer</h1></div>
 
 <div class="tablewrap"><table class="trails">
-  <thead><tr><th>Benutzer</th><th>Admin</th><th>Aktiv</th><th>Letzte Anmeldung</th><th>Aktionen</th></tr></thead>
+  <thead><tr><th>Benutzer</th><th>Rolle</th><th>Aktiv</th><th>Letzte Anmeldung</th><th>Aktionen</th></tr></thead>
   <tbody>
   {% for u in userlist %}
   <tr>
     <td><b>{{ u.username }}</b>{% if u.username == me.username %} <span class="tag">du</span>{% endif %}</td>
     <td>
       <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
-        <input type="hidden" name="action" value="admin">
-        <label class="chk"><input type="checkbox" name="is_admin" value="1" {{ 'checked' if u.is_admin }} onchange="this.form.submit()"></label>
+        <input type="hidden" name="action" value="rolle">
+        <select name="rolle" aria-label="Rolle von {{ u.username }}" onchange="this.form.submit()">
+          {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if rolle(u) == k }}>{{ label }}</option>{% endfor %}
+        </select>
+        <noscript><button type="submit" class="small">OK</button></noscript>
       </form>
     </td>
     <td>
@@ -46,7 +49,11 @@
   <form method="post" action="{{ url_for('user_add') }}">
     <label>Benutzername <input name="username" required pattern="[a-z0-9._-]{2,32}" title="a-z, 0-9, Punkt, Minus, Unterstrich"></label>
     <label>Passwort <input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
-    <label class="chk"><input type="checkbox" name="is_admin" value="1"> Administrator</label>
+    <label>Rolle <select name="rolle">
+      {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if k == 'bearbeiten' }}>{{ label }}</option>{% endfor %}
+    </select></label>
+    <p class="muted small">Administrator: alles, auch Import, Abgleich und Benutzer · Bearbeiten: Trails eintragen,
+      Fotos und manuelle Trails · Nur lesen: Liste, Statistik und Fotos ansehen, nichts ändern</p>
     <div class="actions"><button type="submit">Anlegen</button></div>
   </form>
 </div>

@@ -19,9 +19,13 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Login schlank**, nach dem Muster des Lohn-Dashboards: Flask-Session-Cookie
   (HttpOnly, SameSite=Lax, kein permanentes Cookie), Passwörter gehasht mit
   `werkzeug.security`, Sperre nach 5 Fehlversuchen für 5 Minuten (In-Memory).
-  Bewusst **kein** 2FA, **kein** Rollen-/Rechte-System, **kein** Audit-Log – nur
-  das Flag `is_admin` (Benutzerverwaltung, Abgleich auslösen, Bestellungs-Import – Import
-  seit 2026-09-18 nur Admin, Wunsch von Bruno).
+  Bewusst **kein** 2FA, **kein** feingranulares Rechte-System, **kein** Audit-Log. Drei feste
+  Rollen (`users.ROLLEN`), gespeichert als zwei Flags: `is_admin` (Benutzerverwaltung, Abgleich
+  auslösen, Bestellungs-Import – Import seit 2026-09-18 nur Admin, Wunsch von Bruno) und
+  `nur_lesen` (seit 2026-09-19, Wunsch von Bruno: darf alles ansehen, nichts ändern; nie zusammen mit
+  `is_admin`). Ändernde Routen tragen `@schreiben_required` (bzw. prüfen im POST-Zweig
+  `users.darf_schreiben`), Templates blenden Knöpfe über `darf_schreiben` aus. Eigenes Passwort und
+  die eigene Spaltenauswahl darf auch „Nur lesen“ ändern.
 - **Eine gemeinsame Liste** für alle Benutzer, **ein Eintrag pro Trail** (kein
   Mehrfach-Tracking). `erfasst_von` hält fest, wer zuletzt gespeichert hat.
 - **Mitspieler** = einfaches Zahlenfeld, keine Namen.

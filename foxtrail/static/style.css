@@ -415,3 +415,9 @@ details.dd summary { position: relative; }
 /* Import: Datei/Text als Alternative zum Konto-Link, eingeklappt */
 details.alternativ { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 10px; }
 details.alternativ summary { cursor: pointer; color: var(--muted); }
+
+/* Trail-Seite fuer Benutzer mit der Rolle "Nur lesen" */
+dl.lesen { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 16px 0; }
+dl.lesen dt { color: var(--muted, #666); }
+dl.lesen dd { margin: 0; }
+dl.lesen .umbruch { white-space: pre-wrap; }

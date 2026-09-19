@@ -25,6 +25,7 @@
     {% if t.foto %}
     <a href="{{ url_for('foto', tid=t.id, v=t.foto) }}" target="_blank" title="In voller Grösse öffnen"><img class="foto" src="{{ url_for('foto', tid=t.id, v=t.foto) }}" alt="Schlussfoto {{ t.name }}"></a>
     {% endif %}
+    {% if darf_schreiben %}
     <div class="foto-actions">
       <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" enctype="multipart/form-data">
         <input type="hidden" name="next" value="{{ next }}">
@@ -46,8 +47,18 @@
       {% endif %}
       <span class="muted small">JPEG, PNG oder WebP, höchstens 15 MB</span>
     </div>
+    {% endif %}
   </section>
 
+  {% if not darf_schreiben %}
+  <dl class="lesen">
+    <dt>Gemacht</dt><dd>{% if t.gemacht %}ja{% if t.gemacht_datum %}, am {{ t.gemacht_datum|datum }}{% endif %}{% else %}nein{% endif %}</dd>
+    {% if t.mitspieler %}<dt>Mitspieler</dt><dd>{{ t.mitspieler }}</dd>{% endif %}
+    {% if t.bemerkung %}<dt>Bemerkung</dt><dd class="umbruch">{{ t.bemerkung }}</dd>{% endif %}
+    {% if t.erfasst_von %}<dt>Erfasst von</dt><dd>{{ t.erfasst_von }}{% if t.erfasst_am %} am {{ t.erfasst_am }}{% endif %}</dd>{% endif %}
+  </dl>
+  <div class="actions"><a class="btn-link" href="{{ next }}">Zurück</a></div>
+  {% else %}
   <form method="post">
     <input type="hidden" name="next" value="{{ next }}">
     {% if t.quelle == 'manual' %}
@@ -80,7 +91,7 @@
         <label>Anzahl Mitspieler <input type="number" name="mitspieler" min="1" max="999" value="{{ t.mitspieler or '' }}"></label>
       </div>
       <label>Bemerkung <textarea name="bemerkung" rows="3" maxlength="2000">{{ t.bemerkung }}</textarea></label>
-      {% if t.erfasst_von %}<p class="muted small">Zuletzt erfasst von {{ t.erfasst_von }} am {{ t.erfasst_am }}</p>{% endif %}
+      {% if t.erfasst_von %}<p class="muted small">Zuletzt erfasst von {{ t.erfasst_von }}{% if t.erfasst_am %} am {{ t.erfasst_am }}{% endif %}</p>{% endif %}
     </fieldset>
     <div class="actions">
       <button type="submit">Speichern</button>
@@ -101,6 +112,7 @@
         onsubmit="return confirm('Diesen manuell erfassten Trail wirklich löschen?')">
     <button type="submit" class="secondary">Manuellen Trail löschen</button>
   </form>
+  {% endif %}
   {% endif %}
 </div>
 <script>
