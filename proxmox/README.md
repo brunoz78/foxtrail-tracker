@@ -73,8 +73,8 @@ cp proxmox/json/foxtrail-tracker.json        ../ProxmoxVED/json/
 Verfügbare Framework-Funktionen immer im `core`-Repo prüfen
 (`grep -n "^funktionsname() {" lib/*.func`), nicht in ProxmoxVE – die
 Bibliotheken unterscheiden sich. Hintergründe zum Fork-Mechanismus und zu den
-Aufnahmekriterien von community-scripts stehen ausführlich in
-[wol-passkey/proxmox/README.md](https://github.com/brunoz78/wol-passkey/blob/main/proxmox/README.md).
+Aufnahmekriterien stehen im Wiki von
+[community-scripts/ProxmoxVE](https://github.com/community-scripts/ProxmoxVE/wiki).
 
 ## Bekannte Einschränkungen
 

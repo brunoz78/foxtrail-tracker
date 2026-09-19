@@ -15,7 +15,7 @@ from jinja2 import Environment, nodes
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from foxtrail import bestellungen, db, i18n, trails, users, zeitplan  # noqa: E402
+from foxtrail import authlog, bestellungen, db, i18n, trails, users, zeitplan  # noqa: E402
 from tests.test_app import app  # noqa: E402,F401  (Fixture)
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +41,7 @@ def texte():
     gefunden |= set(trails.REGION_LABEL.values()) | {label for _, label, _ in trails.SPALTEN}
     gefunden |= set(users.ROLLEN.values()) | set(zeitplan.ZYKLEN.values()) | set(i18n.WOCHENTAGE)
     gefunden |= set(bestellungen._STATUS_LABEL.values()) | {"ohne Angabe", "nicht erfasst"}   # trails.filter_options
+    gefunden |= set(authlog.EREIGNISSE.values()) | {g for g, _ in authlog.GRUPPEN}
     return gefunden
 
 
@@ -92,7 +93,8 @@ def test_sprache_waehlen(app):
     assert "Please enter the date you did the trail." in r.get_data(as_text=True)
     assert "Page not found." in c2.get("/gibt-es-nicht").get_data(as_text=True)
     # Admin stellt die Sprache eines Benutzers auf "automatisch" zurueck
-    c2.post("/admin/benutzer/admin", data={"action": "sprache", "sprache": ""})
+    c2.post("/admin/benutzer/speichern", data={"modus": "bearbeiten", "username": "admin", "rolle": "admin",
+                                               "pw_modus": "frei", "aktiv": "1", "sprache": ""})
     with db.session(app.config["DB_PATH"]) as conn:
         assert users.get(conn, "admin")["sprache"] is None
     c2.post("/sprache", data={"sprache": "xx"})                           # Unsinn wird ignoriert

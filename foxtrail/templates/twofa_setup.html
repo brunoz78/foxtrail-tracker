@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Zweitfaktor einrichten') }} – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>{{ _('Zweitfaktor einrichten') }}</h1>
+  {% if pflicht %}<p class="muted">{{ _('Für {name} ist ein zweiter Faktor Pflicht.', name=anzeigename(u)) }}</p>{% endif %}
+
+  <h2>{{ _('Authenticator-App') }}</h2>
+  <p class="muted small">{{ _('QR-Code mit einer Authenticator-App scannen (z. B. Google Authenticator, Microsoft Authenticator, Aegis) oder den Schlüssel von Hand eintippen. Danach den 6-stelligen Code zur Bestätigung eingeben.') }}</p>
+  <div class="totp">
+    <div class="qr">{{ qr|safe }}</div>
+    <div>
+      <p class="muted small">{{ _('Schlüssel zum Eintippen:') }}</p>
+      <code class="schluessel">{{ secret }}</code>
+      <form method="post" autocomplete="off">
+        <label>{{ _('Bestätigungscode') }}
+          <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="8" required></label>
+        <button type="submit">{{ _('Authenticator-App aktivieren') }}</button>
+      </form>
+    </div>
+  </div>
+
+  <h2>{{ _('Passkey') }}</h2>
+  {% if passkey_ok %}
+  <p class="muted small">{{ _('Passkey dieses Geräts (Fingerabdruck, Gesicht, PIN) oder einen Sicherheitsschlüssel registrieren.') }}</p>
+  <p><button type="button" id="pk-add" class="secondary">{{ _('Passkey registrieren') }}</button></p>
+  <p class="pkmsg" id="pk-msg"></p>
+  {% else %}
+  <p class="muted small">{{ _('Passkeys gehen erst über HTTPS mit einem Hostnamen (aktuell {host}). Bis dahin genügt die Authenticator-App.', host=request.host) }}</p>
+  {% endif %}
+  <p>{% if pflicht %}<a href="{{ url_for('logout') }}">{{ _('Abbrechen') }}</a>{% else %}<a href="{{ url_for('profil') }}">{{ _('Zurück zum Profil') }}</a>{% endif %}</p>
+</div>
+{% endblock %}
+{% block scripts %}
+{% if passkey_ok %}
+{% include "_webauthn.html" %}
+<script>
+document.getElementById('pk-add').addEventListener('click', function () {
+  var name = prompt({{ _('Name für diesen Passkey:')|tojson }}, {{ _('Mein Gerät')|tojson }}) || 'Passkey';
+  webauthnRegister({{ url_for('wa_register_options')|tojson }},
+    {{ url_for('wa_register_verify')|tojson }} + '?name=' + encodeURIComponent(name), document.getElementById('pk-msg'));
+});
+</script>
+{% endif %}
+{% endblock %}

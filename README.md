@@ -52,13 +52,17 @@ foxtrail.ch absichtlich unscharf.</sub>
 * Abgleich mit foxtrail.ch – automatisch (auf der Seite Abgleich wählbar: wöchentlich, monatlich
   oder aus) und per Knopfdruck
 * Archiv: nicht mehr angebotene, noch nicht gemachte Trails, mit Suche und Sortierung (Ort, Trail, Region, zuletzt gesehen)
+* **Benutzerverwaltung:** Anzeigename, Sprache, „Passwort beim nächsten Login ändern“ oder „Passwort
+  darf nicht geändert werden“, **Zweitfaktor** mit Authenticator-App oder Passkey (optional als
+  Pflicht), Anmelde-Protokoll für Admins
+* **Darstellung** automatisch, hell oder dunkel (Knopf ◐ oben rechts)
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen) und drei Rollen:
   **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),
   **Bearbeiten** (Trails eintragen, Fotos, manuelle Trails) und **Nur lesen** (Liste, Statistik und
   Fotos ansehen, nichts ändern; ohne Archiv, Team-Code, Bestellnummer und Rechnung)
 * **Sprachen:** Deutsch, Français, Italiano, English – automatisch nach Browser, umschaltbar im ⚙-Menü
   (pro Benutzer gespeichert)
-* Keine externen Abhängigkeiten im Browser (kein CDN), hell/dunkel automatisch
+* Keine externen Abhängigkeiten im Browser (kein CDN)
 * **Auf dem Smartphone** bedienbar: Menü hinter ☰, Liste und Archiv als kompakte
   Karten statt breiter Tabelle, Sortier- und Filterleiste oben, grosse Tipp-Flächen
 
@@ -163,6 +167,11 @@ Einstellungen. Zwei optionale Absicherungen in `/etc/foxtrail-tracker.env`, dana
   sinnvoll, wenn der Proxy **im selben Container** läuft. Läuft er woanders (eigener LXC,
   Nginx Proxy Manager, …), `BIND=0.0.0.0:8080` lassen und den direkten Zugriff bei Bedarf
   per Firewall auf die IP des Proxys beschränken (z. B. Proxmox-Firewall des LXC).
+
+**Passkeys** (Zweitfaktor) verlangt der Browser über HTTPS mit einem Hostnamen – über
+`http://<IP>:8080` bietet die App nur die Authenticator-App an. Der Proxy muss dafür
+`X-Forwarded-Host` und `X-Forwarded-Proto` weitergeben (Nginx Proxy Manager, Caddy und Traefik
+tun das von sich aus).
 
 **Backup:** Die Datei `/var/lib/foxtrail-tracker/foxtrail.db` sichern (oder
 `foxtrailctl export-json backup.json`).
@@ -337,7 +346,9 @@ foxtrail/
   __init__.py   Flask-App: Login, Trail-Liste, Archiv, Bearbeiten, Admin
   config.py     Umgebungsvariablen
   db.py         SQLite-Schema (trails, users, sync_log)
-  users.py      Benutzer, Passwort-Hashing (werkzeug)
+  users.py      Benutzer, Passwort-Hashing (werkzeug), Rollen, Zweitfaktor-Daten
+  twofa.py      Zweitfaktor: Authenticator-App (TOTP) und Passkeys
+  authlog.py    Anmelde-Protokoll
   scraper.py    foxtrail.ch abrufen und parsen (parse_page ist offline testbar)
   sync.py       Abgleich-Regeln
   trails.py     Lesen/Schreiben der Trail-Liste

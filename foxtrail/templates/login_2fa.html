@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Zweiter Faktor') }} – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>{{ _('Zweiter Faktor') }}</h1>
+  <p class="muted">{{ _('Anmeldung als {name}', name=anzeigename(u)) }}</p>
+  {% if hat_totp %}
+  <form method="post" autocomplete="off">
+    <label>{{ _('Code aus der Authenticator-App') }}
+      <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="8" autofocus required></label>
+    <button type="submit">{{ _('Anmelden') }}</button>
+  </form>
+  {% endif %}
+  {% if hat_passkey and passkey_ok %}
+  <p><button type="button" id="pk-login" class="{{ 'secondary' if hat_totp }}">{{ _('Mit Passkey anmelden') }}</button></p>
+  <p class="pkmsg" id="pk-msg"></p>
+  {% elif hat_passkey %}
+  <p class="muted small">{{ _('Die Anmeldung mit Passkey geht nur über HTTPS mit einem Hostnamen.') }}</p>
+  {% endif %}
+  <p><a href="{{ url_for('logout') }}">{{ _('Abbrechen') }}</a></p>
+</div>
+{% endblock %}
+{% block scripts %}
+{% if hat_passkey and passkey_ok %}
+{% include "_webauthn.html" %}
+<script>
+document.getElementById('pk-login').addEventListener('click', function () {
+  webauthnLogin({{ url_for('wa_auth_options')|tojson }}, {{ url_for('wa_auth_verify')|tojson }}, document.getElementById('pk-msg'));
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -109,23 +109,29 @@ def test_admin_rechte(app):
     assert c.get("/admin/sync").status_code == 403
     login(c)
     assert c.get("/admin/benutzer").status_code == 200
-    r = c.post("/admin/benutzer/anlegen", data={"username": "neu", "password": "geheim123"},
-               follow_redirects=True)
+    r = c.post("/admin/benutzer/speichern", data={"modus": "neu", "username": "neu", "password": "geheim123", "rolle": "bearbeiten",
+                                                  "pw_modus": "frei", "aktiv": "1"}, follow_redirects=True)
     assert "angelegt" in r.get_data(as_text=True)
-    r = c.post("/admin/benutzer/admin", data={"action": "rolle", "rolle": "bearbeiten"}, follow_redirects=True)
+    r = c.post("/admin/benutzer/speichern", data={"modus": "bearbeiten", "username": "admin", "rolle": "bearbeiten",
+                                                  "pw_modus": "frei", "aktiv": "1"}, follow_redirects=True)
     assert "mindestens ein aktiver Administrator" in r.get_data(as_text=True)
-    r = c.post("/admin/benutzer/neu", data={"action": "loeschen"}, follow_redirects=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert users.get(conn, "admin")["is_admin"] == 1                  # nichts halb gespeichert
+    r = c.post("/admin/benutzer/neu/loeschen", follow_redirects=True)
     assert "gelöscht" in r.get_data(as_text=True)
 
 
 def test_passwort_aendern(app):
     c = app.test_client()
     login(c, "gast")
-    r = c.post("/profil", data={"old": "geheim123", "new": "neuesPw123", "new2": "neuesPw123"},
+    r = c.post("/passwort", data={"old": "geheim123", "new": "neuesPw123", "new2": "neuesPw123"},
                follow_redirects=True)
-    assert "geaendert" in r.get_data(as_text=True)
+    assert "Sonderzeichen" in r.get_data(as_text=True)                       # Regeln der Selbstbedienung
+    r = c.post("/passwort", data={"old": "geheim123", "new": "neues-Pw123", "new2": "neues-Pw123"},
+               follow_redirects=True)
+    assert "Passwort geändert." in r.get_data(as_text=True)
     c.get("/logout")
-    assert "Aquae" in login(c, "gast", "neuesPw123").get_data(as_text=True)
+    assert "Aquae" in login(c, "gast", "neues-Pw123").get_data(as_text=True)
 
 
 def test_sync_seite(app, monkeypatch):
@@ -375,7 +381,7 @@ def test_menue(app):
     login(c, "gast")
     html = c.get("/").get_data(as_text=True)
     assert 'class="dd"' in html and "Archiv" in html and "Trail manuell erfassen" in html
-    assert "Passwort ändern" in html and "Abmelden" in html
+    assert "Profil" in html and "Abmelden" in html
     assert "/import" not in html and "/admin/sync" not in html and "/admin/benutzer" not in html  # nur Admins
     c.get("/logout")
     login(c, "admin")
@@ -723,16 +729,19 @@ def test_rolle_nur_lesen(app, tmp_path):
 def test_rolle_im_benutzer_admin(app):
     c = app.test_client()
     login(c)
-    c.post("/admin/benutzer/anlegen", data={"username": "leser", "password": "leser-passwort", "rolle": "lesen"})
+    c.post("/admin/benutzer/speichern", data={"modus": "neu", "username": "leser", "password": "leser-passwort",
+                                              "rolle": "lesen", "pw_modus": "frei", "aktiv": "1"})
     with db.session(app.config["DB_PATH"]) as conn:
         u = users.get(conn, "leser")
     assert u["nur_lesen"] == 1 and u["is_admin"] == 0
     assert "Nur lesen" in c.get("/admin/benutzer").get_data(as_text=True)
-    c.post("/admin/benutzer/leser", data={"action": "rolle", "rolle": "admin"})
+    c.post("/admin/benutzer/speichern", data={"modus": "bearbeiten", "username": "leser", "rolle": "admin",
+                                              "pw_modus": "frei", "aktiv": "1"})
     with db.session(app.config["DB_PATH"]) as conn:
         u = users.get(conn, "leser")
     assert u["is_admin"] == 1 and u["nur_lesen"] == 0
-    c.post("/admin/benutzer/leser", data={"action": "rolle", "rolle": "bearbeiten"})
+    c.post("/admin/benutzer/speichern", data={"modus": "bearbeiten", "username": "leser", "rolle": "bearbeiten",
+                                              "pw_modus": "frei", "aktiv": "1"})
     with db.session(app.config["DB_PATH"]) as conn:
         assert users.rolle(users.get(conn, "leser")) == "bearbeiten"
 

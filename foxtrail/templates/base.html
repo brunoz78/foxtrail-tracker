@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="{{ sprache }}">
+<html lang="{{ sprache }}" data-theme="auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#2e5b3e">
-<script>document.documentElement.classList.add('js')</script>
+<script>document.documentElement.classList.add('js');
+/* Darstellung (auto/hell/dunkel) vor dem ersten Zeichnen setzen, sonst blitzt die falsche auf */
+try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.documentElement.setAttribute('data-theme', t); } } catch (e) {}</script>
 <title>{% block title %}Foxtrail-Tracker{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%232e5b3e'/%3E%3C/svg%3E">
@@ -17,6 +19,11 @@
   {% for code, name in sprachen.items() %}<button type="submit" name="sprache" value="{{ code }}" title="{{ name }}"
     class="{{ 'on' if code == sprache }}" lang="{{ code }}" {{ 'aria-current="true"'|safe if code == sprache }}>{{ code|upper }}</button>{% endfor %}
 </form>
+{%- endmacro %}
+{# Darstellung: Auto -> Hell -> Dunkel, gemerkt im Browser (localStorage) #}
+{% macro themeknopf() -%}
+<button type="button" class="themebtn" id="themebtn" data-auto="{{ _('Darstellung: automatisch') }}"
+        data-light="{{ _('Darstellung: hell') }}" data-dark="{{ _('Darstellung: dunkel') }}">◐</button>
 {%- endmacro %}
 <header class="top" id="top">
   <a class="brand" href="{{ url_for('index') }}">🦊 Foxtrail-Tracker</a>
@@ -44,11 +51,12 @@
       </div>
     </details>
     {% endif %}
+    {{ themeknopf() }}
     <details class="dd">
-      <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'profil') }}"
+      <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'auth_protokoll', 'profil', 'pw_aendern') }}"
                title="{{ _('Einstellungen') }}{% if update %} – {{ _('neue Version {version} verfügbar', version=update.version) }}{% endif %}" aria-label="{{ _('Einstellungen') }}"><span class="zahnrad" aria-hidden="true">⚙</span>{% if update %}<span class="upd-punkt" aria-hidden="true"></span>{% endif %}<span class="dd-text">{{ _('Einstellungen') }}</span></summary>
       <div class="dd-menu">
-        <div class="dd-kopf">{{ _('Angemeldet als') }} <b>{{ me.username }}</b>{% if me.is_admin %} ({{ _('Admin') }}){% elif not darf_schreiben %} ({{ _('nur lesen') }}){% endif %}</div>
+        <div class="dd-kopf">{{ _('Angemeldet als') }} <b>{{ anzeigename(me) }}</b>{% if me.is_admin %} ({{ _('Admin') }}){% elif not darf_schreiben %} ({{ _('nur lesen') }}){% endif %}</div>
         {% if update %}
         <a href="{{ update.url }}" class="dd-update" target="_blank" rel="noopener">{{ _('Neue Version {version} verfügbar', version=update.version) }} ↗
           <small>{{ _('Update: im Proxmox-LXC') }} <code>update</code>, {{ _('mit Docker') }} <code>docker compose pull</code></small></a>
@@ -60,8 +68,11 @@
           <small>{{ _('Trail-Liste mit foxtrail.ch abgleichen') }}</small></a>
         <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}">{{ _('Benutzer') }}
           <small>{{ _('Benutzer anlegen und verwalten') }}</small></a>
+        <a href="{{ url_for('auth_protokoll') }}" class="{{ 'on' if ep == 'auth_protokoll' }}">{{ _('Anmelde-Protokoll') }}
+          <small>{{ _('Anmeldungen, Fehlversuche, Änderungen an Konten') }}</small></a>
         {% endif %}
-        <a href="{{ url_for('profil') }}" class="{{ 'on' if ep == 'profil' }}">{{ _('Passwort ändern') }}</a>
+        <a href="{{ url_for('profil') }}" class="{{ 'on' if ep in ('profil', 'pw_aendern') }}">{{ _('Profil') }}
+          <small>{{ _('Passwort und Zweitfaktor') }}</small></a>
         <div class="dd-sprache"><span>{{ _('Sprache') }}</span>{{ sprachwahl() }}</div>
         <a href="{{ repo_url }}" class="dd-trenner" target="_blank" rel="noopener">{{ _('Über Foxtrail-Tracker') }} ↗
           <small>{{ _('Version') }} {{ app_version }} · GitHub</small></a>
@@ -86,7 +97,7 @@
   })();
   </script>
   {% else %}
-  {{ sprachwahl() }}
+  <div class="kopf-rechts">{{ themeknopf() }}{{ sprachwahl() }}</div>
   {% endif %}
 </header>
 <main class="{% block main_class %}{% endblock %}">
@@ -100,6 +111,24 @@
   {{ _('Dieses Projekt ist privat und nicht mit der Foxtrail AG verbunden.') }}
 </footer>
 <script>
+// Darstellung umschalten: auto -> hell -> dunkel
+(function () {
+  var root = document.documentElement, b = document.getElementById('themebtn');
+  if (!b) { return; }
+  var zeigen = function () {
+    var t = root.getAttribute('data-theme') || 'auto';
+    b.title = b.getAttribute('data-' + t) || '';
+    b.setAttribute('aria-label', b.title);
+  };
+  b.addEventListener('click', function () {
+    var reihe = ['auto', 'light', 'dark'];
+    var t = reihe[(reihe.indexOf(root.getAttribute('data-theme') || 'auto') + 1) % 3];
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem('foxtrail-theme', t); } catch (e) {}
+    zeigen();
+  });
+  zeigen();
+})();
 // Passwortfelder: Auge zum kurzen Anzeigen (Kontrolle beim Tippen). Vor dem Absenden wird
 // das Feld wieder verdeckt, damit der Browser den Wert nicht als normalen Text merkt.
 (function () {
@@ -134,5 +163,6 @@
   });
 })();
 </script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

@@ -2,13 +2,73 @@
 {% block title %}{{ _('Profil') }} – Foxtrail-Tracker{% endblock %}
 {% block content %}
 <div class="card narrow">
-  <h1>{{ _('Passwort ändern') }}</h1>
-  <p class="muted">{{ _('Angemeldet als') }} <b>{{ me.username }}</b>{% if me.is_admin %} ({{ _('Administrator') }}){% endif %}.</p>
-  <form method="post">
-    <label>{{ _('Altes Passwort') }} <input type="password" name="old" autocomplete="current-password" required></label>
-    <label>{{ _('Neues Passwort') }} <input type="password" name="new" autocomplete="new-password" required minlength="8"></label>
-    <label>{{ _('Neues Passwort wiederholen') }} <input type="password" name="new2" autocomplete="new-password" required minlength="8"></label>
-    <div class="actions"><button type="submit">{{ _('Speichern') }}</button></div>
-  </form>
+  <h1>{{ _('Mein Profil') }}</h1>
+  <p class="muted">{{ _('Angemeldet als') }} <b>{{ anzeigename(u) }}</b> ({{ u.username }}) · {{ _(rollen[rolle(u)]) }}</p>
+
+  <h2>{{ _('Passwort') }}</h2>
+  {% if u.pw_fest %}
+  <p class="muted">{{ _('Für dieses Konto kann das Passwort nicht geändert werden.') }}</p>
+  {% else %}
+  <p><a class="btn small" href="{{ url_for('pw_aendern') }}">{{ _('Passwort ändern') }}</a></p>
+  {% endif %}
+
+  <h2>{{ _('Zweitfaktor') }}</h2>
+  {% if u.twofa_pflicht and not (u.totp_secret or passkeys) %}
+  <div class="flash hinweis">{{ _('Für dieses Konto ist ein zweiter Faktor Pflicht – bitte mindestens einen einrichten.') }}</div>
+  {% endif %}
+  <table class="trails">
+    <tbody>
+      <tr>
+        <td>{{ _('Authenticator-App') }}</td>
+        <td>{{ _('aktiv') if u.totp_secret else '–' }}</td>
+        <td class="r">
+          {% if u.totp_secret %}
+          <form method="post" action="{{ url_for('profil_totp_entfernen') }}" class="inline"
+                onsubmit='return confirm({{ _("Authenticator-App entfernen?")|tojson }})'>
+            <button type="submit" class="small secondary">{{ _('Entfernen') }}</button>
+          </form>
+          {% else %}
+          <a class="btn small" href="{{ url_for('twofa_setup') }}">{{ _('Einrichten') }}</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% for p in passkeys %}
+      <tr>
+        <td>{{ _('Passkey') }}: {{ p.name }} <span class="muted small">({{ _('seit {datum}', datum=p.created|datum) }})</span></td>
+        <td>{{ _('aktiv') }}</td>
+        <td class="r">
+          <form method="post" action="{{ url_for('profil_passkey_entfernen') }}" class="inline"
+                onsubmit='return confirm({{ _("Passkey entfernen?")|tojson }})'>
+            <input type="hidden" name="id" value="{{ p.id }}">
+            <button type="submit" class="small secondary">{{ _('Entfernen') }}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td>{{ _('Neuer Passkey') }}</td>
+        <td colspan="2">
+          {% if passkey_ok %}
+          <button type="button" id="pk-add" class="small">{{ _('Passkey registrieren') }}</button>
+          <span class="pkmsg" id="pk-msg"></span>
+          {% else %}
+          <span class="muted small">{{ _('nur über HTTPS mit einem Hostnamen möglich') }}</span>
+          {% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
+{% endblock %}
+{% block scripts %}
+{% if passkey_ok %}
+{% include "_webauthn.html" %}
+<script>
+document.getElementById('pk-add').addEventListener('click', function () {
+  var name = prompt({{ _('Name für diesen Passkey:')|tojson }}, {{ _('Mein Gerät')|tojson }}) || 'Passkey';
+  webauthnRegister({{ url_for('wa_register_options')|tojson }},
+    {{ url_for('wa_register_verify')|tojson }} + '?name=' + encodeURIComponent(name), document.getElementById('pk-msg'));
+});
+</script>
+{% endif %}
 {% endblock %}

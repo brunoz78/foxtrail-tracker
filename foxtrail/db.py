@@ -69,7 +69,24 @@ CREATE TABLE IF NOT EXISTS users (
     last_login TEXT,
     spalten   TEXT,                  -- sichtbare Spalten der Liste, 'route,typ,...'; NULL = Standard
     nur_lesen INTEGER NOT NULL DEFAULT 0,  -- 1 = darf nichts aendern (nie zusammen mit is_admin)
-    sprache   TEXT                   -- de | fr | it | en; NULL = automatisch (Browser)
+    sprache   TEXT,                  -- de | fr | it | en; NULL = automatisch (Browser)
+    anzeigename   TEXT,
+    pw_wechsel    INTEGER NOT NULL DEFAULT 0,  -- Passwort beim naechsten Login aendern
+    pw_fest       INTEGER NOT NULL DEFAULT 0,  -- Passwort darf nicht selbst geaendert werden
+    twofa_pflicht INTEGER NOT NULL DEFAULT 0,  -- Zweitfaktor muss eingerichtet sein
+    totp_secret   TEXT,                        -- Authenticator-App (base32), NULL = keine
+    passkeys      TEXT NOT NULL DEFAULT '[]'   -- WebAuthn: [{id, public_key, sign_count, name, created}]
+);
+
+-- Anmelde-Protokoll (foxtrail/authlog.py)
+CREATE TABLE IF NOT EXISTS authlog (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts       TEXT NOT NULL,
+    benutzer TEXT NOT NULL DEFAULT '',
+    ereignis TEXT NOT NULL,
+    detail   TEXT NOT NULL DEFAULT '',
+    ip       TEXT NOT NULL DEFAULT '',
+    ua       TEXT NOT NULL DEFAULT ''
 );
 
 -- einfache Einstellungen der App (z. B. 'abgleich' = woechentlich | monatlich | aus)
@@ -126,6 +143,10 @@ def _migrate(conn):
     if "sprache" not in u_spalten:
         # 2026-09: Oberflaeche auf Deutsch, Franzoesisch, Italienisch, Englisch
         conn.execute("ALTER TABLE users ADD COLUMN sprache TEXT")
+    # 2026-09: erweiterte Benutzerverwaltung (Passwort-Optionen, 2FA)
+    for spalte, typ in (('anzeigename', 'TEXT'), ('pw_wechsel', 'INTEGER NOT NULL DEFAULT 0'), ('pw_fest', 'INTEGER NOT NULL DEFAULT 0'), ('twofa_pflicht', 'INTEGER NOT NULL DEFAULT 0'), ('totp_secret', 'TEXT'), ('passkeys', "TEXT NOT NULL DEFAULT '[]'")):
+        if spalte not in u_spalten:
+            conn.execute(f"ALTER TABLE users ADD COLUMN {spalte} {typ}")
     spalten = {r[1] for r in conn.execute("PRAGMA table_info(trails)")}
     if "neu_seit" not in spalten:
         # 2026-09: "Neu ab MM/JJ" fuer Trails, die ein Abgleich neu angelegt hat. Rueckwirkend

@@ -16,10 +16,24 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 
 ## Getroffene Entscheidungen (nicht ohne Rücksprache ändern)
 
-- **Login schlank**, nach dem Muster des Lohn-Dashboards: Flask-Session-Cookie
-  (HttpOnly, SameSite=Lax, kein permanentes Cookie), Passwörter gehasht mit
-  `werkzeug.security`, Sperre nach 5 Fehlversuchen für 5 Minuten (In-Memory).
-  Bewusst **kein** 2FA, **kein** feingranulares Rechte-System, **kein** Audit-Log. Drei feste
+- **Login und Benutzerverwaltung** (seit 2026-09-19 auf Wunsch von Bruno ausgebaut, vorher bewusst
+  schlank): Flask-Session-Cookie (HttpOnly,
+  SameSite=Lax, kein permanentes Cookie, neue Sitzung nach dem Login), Passwörter gehasht mit
+  `werkzeug.security`, Sperre nach 5 Fehlversuchen für 5 Minuten (In-Memory, auch für 2FA-Codes).
+  Je Benutzer: Anzeigename, Rolle, Sprache, aktiv, Passwort-Option (`pw_wechsel` = beim nächsten
+  Login ändern, erzwungen per `before_request`; `pw_fest` = darf nicht selbst ändern; beides zugleich
+  verboten), `twofa_pflicht`. **Zweitfaktor** (`foxtrail/twofa.py`, Pakete pyotp, qrcode, webauthn):
+  Authenticator-App (TOTP, `totp_secret`) und Passkeys (`passkeys` als JSON). Passkeys nur in einem
+  sicheren Kontext (HTTPS mit Hostname oder localhost), sonst nur TOTP. Mit 2FA-Pflicht und ohne
+  Faktor führt der Login direkt zur Einrichtung. Admin kann 2FA zurücksetzen. Selbst gewählte
+  Passwörter: mind. 8 Zeichen, Gross-/Kleinbuchstabe, Zahl, Sonderzeichen (`users.passwort_fehler`);
+  der Admin setzt frei (mind. 8). **Anmelde-Protokoll** (`foxtrail/authlog.py`, Tabelle `authlog`,
+  Seite `/admin/protokoll`): Anmeldungen, Fehlversuche, Sperren, verweigerte Zugriffe, Änderungen an
+  Konten, Passwörtern und 2FA – keine Seitenaufrufe; behält die neuesten 20 000 Einträge.
+  **Darstellung** Auto/Hell/Dunkel: Knopf ◐ in der Kopfzeile, gemerkt im Browser (`localStorage`
+  `foxtrail-theme`, gesetzt im `<head>` vor dem Zeichnen); CSS-Regeln für dunkel stehen doppelt:
+  `@media (prefers-color-scheme: dark) { :root[data-theme="auto"] … }` und `:root[data-theme="dark"] …`.
+  Kein feingranulares Rechte-System. Drei feste
   Rollen (`users.ROLLEN`), gespeichert als zwei Flags: `is_admin` (Benutzerverwaltung, Abgleich
   auslösen, Bestellungs-Import – Import seit 2026-09-18 nur Admin, Wunsch von Bruno) und
   `nur_lesen` (seit 2026-09-19, Wunsch von Bruno: darf alles ansehen, nichts ändern; nie zusammen mit
@@ -206,7 +220,10 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 foxtrail/__init__.py   create_app(): Routen, Login, Filter (chf, datum)
 foxtrail/config.py     Env-Variablen (FOXTRAIL_DB, SECRET_KEY, FORCE_HTTPS, ...)
 foxtrail/db.py         Schema trails / users / sync_log, ARCHIV_COND
-foxtrail/users.py      Benutzer, Hashing, UserError
+foxtrail/users.py      Benutzer, Hashing, Rollen, Passwort-Optionen, 2FA-Daten, UserError
+foxtrail/twofa.py      Zweitfaktor: TOTP und Passkeys (WebAuthn)
+foxtrail/authlog.py    Anmelde-Protokoll (Tabelle authlog)
+foxtrail/i18n.py       Übersetzungen (foxtrail/i18n/*.json)
 foxtrail/scraper.py    parse_page(html) rein + offline testbar, fetch_all() mit Netz
 foxtrail/sync.py       apply(conn, scraped, ausloeser) – die Regeln oben
 foxtrail/trails.py     Lesen/Schreiben, manuelle Trails, seed_from_file (insert-only)

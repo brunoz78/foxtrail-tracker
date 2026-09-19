@@ -3,5 +3,8 @@ gunicorn>=21
 requests>=2.31
 beautifulsoup4>=4.12
 Pillow>=10          # Fotos drehen/verkleinern, Vorschaubilder
+pyotp>=2.9          # 2FA: Authenticator-App (TOTP)
+qrcode>=7.4         # 2FA: QR-Code zum Einrichten (SVG, ohne Pillow-Zwang)
+webauthn>=2.0,<4    # 2FA: Passkeys
 # optional, nur fuer "manage.py import-excel":
 openpyxl>=3.1

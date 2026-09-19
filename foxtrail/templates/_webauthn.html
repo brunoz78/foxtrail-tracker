@@ -1,0 +1,3 @@
+{# WebAuthn-Client mit uebersetzten Meldungen einbinden #}
+<script>window.WA_TEXT = {{ {"warten": _("Warte auf das Gerät …"), "gespeichert": _("Passkey gespeichert."), "angemeldet": _("Angemeldet."), "fehler": _("Fehlgeschlagen:")}|tojson }};</script>
+<script src="{{ url_for('static', filename='webauthn.js') }}"></script>

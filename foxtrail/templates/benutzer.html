@@ -2,49 +2,39 @@
 {% block title %}{{ _('Benutzer') }} – Foxtrail-Tracker{% endblock %}
 {% block content %}
 <div class="head"><h1>{{ _('Benutzer') }}</h1></div>
+<p class="muted small">{{ _('Wer sich wann angemeldet hat und was an den Konten geändert wurde, steht im') }}
+  <a href="{{ url_for('auth_protokoll') }}">{{ _('Anmelde-Protokoll') }}</a>.</p>
 
 <div class="tablewrap"><table class="trails">
-  <thead><tr><th>{{ _('Benutzer') }}</th><th>{{ _('Rolle') }}</th><th>{{ _('Sprache') }}</th><th>{{ _('Aktiv') }}</th><th>{{ _('Letzte Anmeldung') }}</th><th>{{ _('Aktionen') }}</th></tr></thead>
+  <thead><tr><th>{{ _('Benutzer') }}</th><th>{{ _('Rolle') }}</th><th>{{ _('Zweitfaktor') }}</th><th>{{ _('Passwort') }}</th>
+    <th>{{ _('Sprache') }}</th><th>{{ _('Aktiv') }}</th><th>{{ _('Letzte Anmeldung') }}</th><th></th></tr></thead>
   <tbody>
   {% for u in userlist %}
-  <tr>
-    <td><b>{{ u.username }}</b>{% if u.username == me.username %} <span class="tag">{{ _('du') }}</span>{% endif %}</td>
-    <td>
-      <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
-        <input type="hidden" name="action" value="rolle">
-        <select name="rolle" aria-label="{{ _('Rolle von {name}', name=u.username) }}" onchange="this.form.submit()">
-          {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if rolle(u) == k }}>{{ _(label) }}</option>{% endfor %}
-        </select>
-        <noscript><button type="submit" class="small">OK</button></noscript>
+  <tr class="{{ '' if u.active else 'gone' }}">
+    <td><b>{{ anzeigename(u) }}</b>{% if u.anzeigename %} <span class="muted small">({{ u.username }})</span>{% endif %}
+      {% if u.username == me.username %} <span class="tag">{{ _('du') }}</span>{% endif %}</td>
+    <td>{{ _(rollen[rolle(u)]) }}</td>
+    <td class="small">
+      {%- set f = [] -%}
+      {%- if u.totp_secret %}{% set _x = f.append(_('App')) %}{% endif -%}
+      {%- if passkeys(u) %}{% set _x = f.append(_('Passkey') ~ ' ×' ~ passkeys(u)|length) %}{% endif -%}
+      {% if f %}{{ f|join(' + ') }}{% elif u.twofa_pflicht %}<span class="tag warn">{{ _('Pflicht, noch nicht eingerichtet') }}</span>{% else %}–{% endif %}
+      {% if u.twofa_pflicht and f %} <span class="muted">({{ _('Pflicht') }})</span>{% endif %}</td>
+    <td class="small">{% if u.pw_fest %}{{ _('gesperrt') }}{% elif u.pw_wechsel %}<span class="tag warn">{{ _('Wechsel offen') }}</span>{% else %}–{% endif %}</td>
+    <td class="small">{{ sprachen[u.sprache] if u.sprache else _('automatisch') }}</td>
+    <td class="c">{{ '✓' if u.active else '–' }}</td>
+    <td class="muted small nowrap">{{ u.last_login|datum_zeit if u.last_login else '–' }}</td>
+    <td class="actions-cell nowrap">
+      <a class="btn small" href="{{ url_for('user_admin', edit=u.username) }}#formular">{{ _('Bearbeiten') }}</a>
+      {% if has_2fa(u) %}
+      <form method="post" action="{{ url_for('user_2fa_reset', name=u.username) }}" class="inline"
+            onsubmit='return confirm({{ _("Zweitfaktor von {name} zurücksetzen?", name=u.username)|tojson }})'>
+        <button type="submit" class="small secondary">{{ _('2FA zurücksetzen') }}</button>
       </form>
-    </td>
-    <td>
-      <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
-        <input type="hidden" name="action" value="sprache">
-        <select name="sprache" aria-label="{{ _('Sprache von {name}', name=u.username) }}" onchange="this.form.submit()">
-          <option value="">{{ _('automatisch') }}</option>
-          {% for code, name in sprachen.items() %}<option value="{{ code }}" {{ 'selected' if u.sprache == code }}>{{ name }}</option>{% endfor %}
-        </select>
-        <noscript><button type="submit" class="small">OK</button></noscript>
-      </form>
-    </td>
-    <td>
-      <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
-        <input type="hidden" name="action" value="aktiv">
-        <label class="chk"><input type="checkbox" name="active" value="1" {{ 'checked' if u.active }} onchange="this.form.submit()"></label>
-      </form>
-    </td>
-    <td class="muted">{{ u.last_login or '–' }}</td>
-    <td class="actions-cell">
-      <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
-        <input type="hidden" name="action" value="passwort">
-        <input type="password" name="password" placeholder="{{ _('neues Passwort') }}" minlength="8" required autocomplete="new-password">
-        <button type="submit" class="small">{{ _('Setzen') }}</button>
-      </form>
+      {% endif %}
       {% if u.username != me.username %}
-      <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline"
+      <form method="post" action="{{ url_for('user_delete', name=u.username) }}" class="inline"
             onsubmit='return confirm({{ _("Benutzer {name} wirklich löschen?", name=u.username)|tojson }})'>
-        <input type="hidden" name="action" value="loeschen">
         <button type="submit" class="small secondary">{{ _('Löschen') }}</button>
       </form>
       {% endif %}
@@ -54,16 +44,42 @@
   </tbody>
 </table></div>
 
-<div class="card narrow">
-  <h2>{{ _('Neuer Benutzer') }}</h2>
-  <form method="post" action="{{ url_for('user_add') }}">
-    <label>{{ _('Benutzername') }} <input name="username" required pattern="[a-z0-9._-]{2,32}" title="{{ _('a-z, 0-9, Punkt, Minus, Unterstrich') }}"></label>
-    <label>{{ _('Passwort') }} <input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
-    <label>{{ _('Rolle') }} <select name="rolle">
-      {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if k == 'bearbeiten' }}>{{ _(label) }}</option>{% endfor %}
-    </select></label>
+<div class="card narrow" id="formular">
+  <h2>{{ _('Benutzer bearbeiten: {name}', name=edit.username) if edit else _('Neuer Benutzer') }}</h2>
+  <form method="post" action="{{ url_for('user_save') }}" autocomplete="off">
+    <input type="hidden" name="modus" value="{{ 'bearbeiten' if edit else 'neu' }}">
+    <div class="row">
+      <label>{{ _('Benutzername') }} <input name="username" value="{{ edit.username if edit else '' }}" required
+             pattern="[a-z0-9._\-]{2,32}" title="{{ _('a-z, 0-9, Punkt, Minus, Unterstrich') }}" {{ 'readonly' if edit }}></label>
+      <label>{{ _('Anzeigename') }} <input name="anzeigename" value="{{ (edit.anzeigename or '') if edit else '' }}" maxlength="60"></label>
+    </div>
+    <label>{{ _('Passwort') }}
+      <input type="password" name="password" minlength="8" autocomplete="new-password" {{ '' if edit else 'required' }}
+             placeholder="{{ _('leer lassen = unverändert') if edit else '' }}"></label>
+    <p class="muted small">{{ _('Als Admin wählst du das Passwort frei (mindestens 8 Zeichen). Die strengeren Regeln gelten, wenn der Benutzer es selbst ändert.') }}</p>
+    <div class="row">
+      <label>{{ _('Rolle') }} <select name="rolle">
+        {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if (rolle(edit) if edit else 'bearbeiten') == k }}>{{ _(label) }}</option>{% endfor %}
+      </select></label>
+      <label>{{ _('Sprache') }} <select name="sprache">
+        <option value="">{{ _('automatisch') }}</option>
+        {% for code, name in sprachen.items() %}<option value="{{ code }}" {{ 'selected' if edit and edit.sprache == code }}>{{ name }}</option>{% endfor %}
+      </select></label>
+    </div>
     <p class="muted small">{{ _('Administrator: alles, auch Import, Abgleich und Benutzer') }} · {{ _('Bearbeiten: Trails eintragen, Fotos und manuelle Trails') }} · {{ _('Nur lesen: Liste, Statistik und Fotos ansehen, nichts ändern (ohne Archiv und Bestelldaten)') }}</p>
-    <div class="actions"><button type="submit">{{ _('Anlegen') }}</button></div>
+    <fieldset><legend>{{ _('Passwort') }}</legend>
+      <label class="chk"><input type="radio" name="pw_modus" value="frei" {{ 'checked' if edit and not edit.pw_wechsel and not edit.pw_fest }}> {{ _('Benutzer darf sein Passwort ändern') }}</label>
+      <label class="chk"><input type="radio" name="pw_modus" value="wechsel" {{ 'checked' if (edit.pw_wechsel if edit else True) }}> {{ _('Passwort beim nächsten Login ändern (Pflicht)') }}</label>
+      <label class="chk"><input type="radio" name="pw_modus" value="fest" {{ 'checked' if edit and edit.pw_fest }}> {{ _('Passwort darf nicht geändert werden') }}</label>
+    </fieldset>
+    <fieldset><legend>{{ _('Konto') }}</legend>
+      <label class="chk"><input type="checkbox" name="aktiv" value="1" {{ 'checked' if (edit.active if edit else True) }}> {{ _('aktiv (darf sich anmelden)') }}</label>
+      <label class="chk"><input type="checkbox" name="twofa_pflicht" value="1" {{ 'checked' if edit and edit.twofa_pflicht }}> {{ _('Zweitfaktor erforderlich (Authenticator-App oder Passkey)') }}</label>
+    </fieldset>
+    <div class="actions">
+      <button type="submit">{{ _('Speichern') if edit else _('Anlegen') }}</button>
+      {% if edit %}<a class="btn-link" href="{{ url_for('user_admin') }}">{{ _('Abbrechen') }}</a>{% endif %}
+    </div>
   </form>
 </div>
 {% endblock %}

@@ -2,20 +2,23 @@
 """
 Foxtrail-Tracker - Flask-App.
 
-Login nach dem Muster eines Session-Logins: Benutzer in SQLite mit gehashtem
-Passwort, serverseitig signierte Session (reines Sitzungscookie), Sperre nach
-zu vielen Fehlversuchen (In-Memory). Kein 2FA, keine Rollen ausser dem Flag
-"Administrator" (Benutzerverwaltung + Abgleich ausloesen).
+Login: Benutzer in SQLite mit gehashtem Passwort, signierte
+Session (reines Sitzungscookie), Sperre nach zu vielen Fehlversuchen (In-Memory), optional
+Zweitfaktor (Authenticator-App oder Passkey), Anmelde-Protokoll. Rollen: Administrator,
+Bearbeiten, Nur lesen.
 """
 
+import base64
+import datetime
 import functools
 import json
 import time
 
-from flask import (Flask, abort, flash, g, redirect, render_template, request,
+from flask import (Flask, Response, abort, flash, g, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, session, url_for)
 
-from . import bestellungen, config, db, fotos, i18n, sync, trails, users, version, zeitplan
+from . import (authlog, bestellungen, config, db, fotos, i18n, sync, trails, twofa, users, version,
+               zeitplan)
 from .i18n import tr
 
 _ATTEMPTS = {}   # username -> [fails, lock_until_ts]
@@ -112,16 +115,58 @@ def create_app(test_config=None):
             return view(*a, **kw)
         return wrapped
 
+    def _ip():
+        xff = request.headers.get("X-Forwarded-For", "")
+        return (xff.split(",")[0].strip() if xff else request.remote_addr) or ""
+
+    def _log(ereignis, benutzer, detail=""):
+        """Anmelde-Protokoll: benutzer = wer handelt, detail = wen/was es betraf."""
+        authlog.schreiben(get_conn(), ereignis, benutzer, _ip(), request.user_agent.string, detail)
+
     def _locked(name):
         rec = _ATTEMPTS.get(name)
         return bool(rec and rec[1] > time.time())
 
-    def _fail(name):
+    def _fail(name, ereignis="fail"):
         rec = _ATTEMPTS.setdefault(name, [0, 0])
         rec[0] += 1
+        _log(ereignis, name)
         if rec[0] >= config.LOGIN_MAX_FAILS:
             rec[1] = time.time() + config.LOGIN_LOCK_SECONDS
             rec[0] = 0
+            _log("lock", name)
+
+    def _neue_sitzung(**werte):
+        """Sitzung neu beginnen (gegen Session-Fixation), die gewaehlte Sprache behalten."""
+        sprache = session.get("sprache")
+        session.clear()
+        if sprache:
+            session["sprache"] = sprache
+        session.update(werte)
+        session.permanent = False
+
+    def _fertig_anmelden(username):
+        nxt = session.get("login_next") or ""
+        _neue_sitzung(user=username)
+        _ATTEMPTS.pop(username, None)
+        users.angemeldet(get_conn(), username)
+        _log("login", username)
+        return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
+
+    def _offen():
+        """Benutzer im 2FA-Zwischenschritt (Passwort stimmt, zweiter Faktor fehlt noch)."""
+        u = users.get(get_conn(), session.get("2fa_user"))
+        return u if (u and u["active"]) else None
+
+    @app.before_request
+    def _passwortwechsel_erzwingen():
+        """Wer sein Passwort aendern muss, kommt nur noch auf diese Seite (oder raus)."""
+        if request.endpoint in (None, "static", "pw_aendern", "logout", "sprache_setzen", "healthz"):
+            return None
+        me = current_user()
+        if me and me.get("pw_wechsel") and not me.get("pw_fest"):
+            return redirect(url_for("pw_aendern"))
+        return None
 
     @app.template_filter("chf")
     def _chf(v):
@@ -161,6 +206,7 @@ def create_app(test_config=None):
         return {"me": me, "stats": trails.stats(get_conn()) if me else None,
                 "sprache": g.get("sprache", i18n.STANDARD), "sprachen": i18n.SPRACHEN,
                 "darf_schreiben": users.darf_schreiben(me), "rollen": users.ROLLEN, "rolle": users.rolle,
+                "anzeigename": users.anzeigename,
                 "typen": trails.TYP_LABEL, "grade": trails.GRAD_LABEL,
                 "regionen": trails.REGION_LABEL, "app_version": version.stand(config.REPO_ROOT),
                 "repo_url": version.REPO_URL, "update": update}
@@ -176,6 +222,9 @@ def create_app(test_config=None):
 
     @app.errorhandler(403)
     def _forbidden(_):
+        me = current_user()
+        if me:
+            _log("denied", me["username"], request.path)
         return render_template("fehler.html", fehler=tr("Dafür fehlt dir die Berechtigung.")), 403
 
     @app.errorhandler(404)
@@ -191,6 +240,8 @@ def create_app(test_config=None):
     def login():
         if users.count(get_conn()) == 0:
             return render_template("login.html", kein_benutzer=True)
+        if session.get("2fa_user") and request.method == "GET":
+            return redirect(url_for("login_2fa"))
         if request.method == "POST":
             name = (request.form.get("username") or "").strip().lower()
             if _locked(name):
@@ -199,26 +250,136 @@ def create_app(test_config=None):
                 return render_template("login.html")
             u = users.authenticate(get_conn(), name, request.form.get("password", ""))
             if u:
-                nxt = request.args.get("next") or ""
-                sprache = session.get("sprache")           # Wahl auf der Anmeldeseite behalten
-                session.clear()
-                session["user"] = u["username"]
-                if sprache:
-                    session["sprache"] = sprache
-                session.permanent = False
-                _ATTEMPTS.pop(name, None)
-                return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
+                _neue_sitzung(login_next=request.args.get("next") or "")
+                if users.has_2fa(u):
+                    session["2fa_user"] = u["username"]
+                    return redirect(url_for("login_2fa"))
+                if u["twofa_pflicht"]:
+                    session["2fa_user"] = u["username"]
+                    session["2fa_einrichten"] = True
+                    flash(tr("Für dieses Konto ist ein zweiter Faktor Pflicht – bitte jetzt einrichten."), "hinweis")
+                    return redirect(url_for("twofa_setup"))
+                return _fertig_anmelden(u["username"])
             _fail(name)
             flash(tr("Benutzername oder Passwort falsch."), "fehler")
         return render_template("login.html")
 
+    @app.route("/login/2fa", methods=["GET", "POST"])
+    def login_2fa():
+        u = _offen()
+        if u is None:
+            return redirect(url_for("login"))
+        if not users.has_2fa(u):
+            session["2fa_einrichten"] = True
+            return redirect(url_for("twofa_setup"))
+        if request.method == "POST":
+            if _locked(u["username"]):
+                flash(tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.", n=config.LOGIN_LOCK_SECONDS // 60),
+                      "fehler")
+            elif twofa.verify_totp(u.get("totp_secret"), request.form.get("code", "")):
+                return _fertig_anmelden(u["username"])
+            else:
+                _fail(u["username"], "fail2fa")
+                flash(tr("Der Code stimmt nicht."), "fehler")
+        return render_template("login_2fa.html", u=u, hat_totp=bool(u.get("totp_secret")),
+                               hat_passkey=bool(users.passkeys(u)), passkey_ok=twofa.passkey_possible(request))
+
     @app.route("/logout")
     def logout():
+        if session.get("user"):
+            _log("logout", session["user"])
         sprache = g.get("sprache")
         session.clear()
         if sprache:
             session["sprache"] = sprache
         return redirect(url_for("login"))
+
+    # ---- Zweitfaktor: Einrichten und Passkeys -------------------------- #
+    def _twofa_person():
+        """Wer richtet gerade 2FA ein: Pflicht-Einrichtung beim Login oder angemeldet (Profil)."""
+        if session.get("2fa_einrichten") and _offen() is not None:
+            return _offen(), True
+        me = current_user()
+        return (me, False) if me else (None, False)
+
+    @app.route("/2fa/einrichten", methods=["GET", "POST"])
+    def twofa_setup():
+        u, pflicht = _twofa_person()
+        if u is None:
+            return redirect(url_for("login"))
+        if not session.get("totp_neu"):
+            session["totp_neu"] = twofa.new_secret()
+        secret = session["totp_neu"]
+        if request.method == "POST":
+            if twofa.verify_totp(secret, request.form.get("code", "")):
+                users.set_totp(get_conn(), u["username"], secret)
+                session.pop("totp_neu", None)
+                _log("twofa_on", u["username"], "TOTP")
+                flash(tr("Authenticator-App eingerichtet."))
+                if pflicht:
+                    return _fertig_anmelden(u["username"])
+                return redirect(url_for("profil"))
+            flash(tr("Der Code stimmt nicht – bitte nochmals versuchen."), "fehler")
+        uri = twofa.totp_uri(u["username"], secret)
+        return render_template("twofa_setup.html", u=u, pflicht=pflicht, secret=secret, qr=twofa.qr_svg(uri),
+                               passkey_ok=twofa.passkey_possible(request))
+
+    @app.route("/2fa/passkey/register-options")
+    def wa_register_options():
+        u, _ = _twofa_person()
+        if u is None:
+            return jsonify({"error": tr("Nicht angemeldet.")}), 403
+        opts_json, challenge = twofa.reg_options(u, users.passkeys(u), request)
+        session["wa_challenge"] = base64.urlsafe_b64encode(challenge).decode()
+        return Response(opts_json, mimetype="application/json")
+
+    @app.route("/2fa/passkey/register-verify", methods=["POST"])
+    def wa_register_verify():
+        u, pflicht = _twofa_person()
+        if u is None or "wa_challenge" not in session:
+            return jsonify({"error": tr("Sitzung abgelaufen – bitte neu laden.")}), 400
+        challenge = base64.urlsafe_b64decode(session.pop("wa_challenge"))
+        try:
+            cred = twofa.reg_verify(request, challenge, request.get_data(as_text=True))
+        except Exception as ex:                              # noqa: BLE001 - Meldung an den Browser
+            return jsonify({"error": str(ex)[:200]}), 400
+        cred["name"] = (request.args.get("name") or "Passkey").strip()[:40]
+        cred["created"] = datetime.date.today().isoformat()
+        users.add_passkey(get_conn(), u["username"], cred)
+        _log("twofa_on", u["username"], f"Passkey „{cred['name']}“")
+        weiter = _fertig_anmelden(u["username"]).location if pflicht else url_for("profil")
+        return jsonify({"ok": True, "weiter": weiter})
+
+    @app.route("/2fa/passkey/auth-options")
+    def wa_auth_options():
+        u = _offen()
+        if u is None:
+            return jsonify({"error": tr("Keine Anmeldung offen.")}), 403
+        opts_json, challenge = twofa.auth_options(users.passkeys(u), request)
+        session["wa_challenge"] = base64.urlsafe_b64encode(challenge).decode()
+        return Response(opts_json, mimetype="application/json")
+
+    @app.route("/2fa/passkey/auth-verify", methods=["POST"])
+    def wa_auth_verify():
+        u = _offen()
+        if u is None or "wa_challenge" not in session:
+            return jsonify({"error": tr("Sitzung abgelaufen – bitte neu laden.")}), 400
+        if _locked(u["username"]):
+            return jsonify({"error": tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.",
+                                        n=config.LOGIN_LOCK_SECONDS // 60)}), 429
+        body = request.get_data(as_text=True)
+        cid = twofa.credential_id_of(body)
+        stored = next((p for p in users.passkeys(u) if p["id"] == cid), None)
+        challenge = base64.urlsafe_b64decode(session.pop("wa_challenge"))
+        try:
+            if stored is None:
+                raise ValueError(tr("Unbekannter Passkey."))
+            neu = twofa.auth_verify(request, challenge, body, stored)
+        except Exception as ex:                              # noqa: BLE001
+            _fail(u["username"], "fail2fa")
+            return jsonify({"error": str(ex)[:200]}), 400
+        users.update_passkey_counter(get_conn(), u["username"], cid, neu)
+        return jsonify({"ok": True, "weiter": _fertig_anmelden(u["username"]).location})
 
     # ---- Trail-Liste --------------------------------------------------- #
     @app.route("/")
@@ -487,66 +648,130 @@ def create_app(test_config=None):
         return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None) + "#foto")
 
     # ---- Profil -------------------------------------------------------- #
-    @app.route("/profil", methods=["GET", "POST"])
+    @app.route("/profil")
     @login_required
     def profil():
+        me = current_user()
+        return render_template("profil.html", u=me, passkeys=users.passkeys(me),
+                               passkey_ok=twofa.passkey_possible(request))
+
+    @app.route("/passwort", methods=["GET", "POST"])
+    @login_required
+    def pw_aendern():
+        me = current_user()
+        if me.get("pw_fest"):
+            flash(tr("Für dieses Konto kann das Passwort nicht geändert werden."), "fehler")
+            return redirect(url_for("profil"))
+        erzwungen = bool(me.get("pw_wechsel"))
         if request.method == "POST":
             try:
-                users.change_own_password(get_conn(), current_user()["username"],
-                                          request.form.get("old", ""), request.form.get("new", ""),
-                                          request.form.get("new2", ""))
+                users.change_own_password(get_conn(), me["username"], request.form.get("old", ""),
+                                          request.form.get("new", ""), request.form.get("new2", ""))
+                _log("pw_self", me["username"], "erzwungen" if erzwungen else "freiwillig")
                 flash(tr("Passwort geändert."))
-                return redirect(url_for("index"))
+                return redirect(url_for("index") if erzwungen else url_for("profil"))
             except users.UserError as ex:
                 flash(str(ex), "fehler")
-        return render_template("profil.html")
+        return render_template("passwort.html", erzwungen=erzwungen)
+
+    @app.route("/profil/totp-entfernen", methods=["POST"])
+    @login_required
+    def profil_totp_entfernen():
+        users.clear_totp(get_conn(), current_user()["username"])
+        _log("twofa_off", current_user()["username"], "TOTP")
+        flash(tr("Authenticator-App entfernt."))
+        return redirect(url_for("profil"))
+
+    @app.route("/profil/passkey-entfernen", methods=["POST"])
+    @login_required
+    def profil_passkey_entfernen():
+        users.remove_passkey(get_conn(), current_user()["username"], request.form.get("id", ""))
+        _log("twofa_off", current_user()["username"], "Passkey")
+        flash(tr("Passkey entfernt."))
+        return redirect(url_for("profil"))
 
     # ---- Admin: Benutzer ----------------------------------------------- #
     @app.route("/admin/benutzer")
     @admin_required
     def user_admin():
-        return render_template("benutzer.html", userlist=users.list_users(get_conn()))
+        conn = get_conn()
+        edit = users.get(conn, request.args.get("edit")) if request.args.get("edit") else None
+        return render_template("benutzer.html", userlist=users.list_users(conn), edit=edit,
+                               has_2fa=users.has_2fa, passkeys=users.passkeys)
 
-    @app.route("/admin/benutzer/anlegen", methods=["POST"])
+    @app.route("/admin/benutzer/speichern", methods=["POST"])
     @admin_required
-    def user_add():
+    def user_save():
+        conn = get_conn()
+        f = request.form
+        name = (f.get("username") or "").strip().lower()
+        ich = current_user()["username"]
+        pw_modus = f.get("pw_modus") or "frei"        # frei | wechsel (Pflicht) | fest (gesperrt)
+        werte = dict(rolle=f.get("rolle") or "bearbeiten", anzeigename=f.get("anzeigename", ""),
+                     aktiv=bool(f.get("aktiv")), pw_wechsel=pw_modus == "wechsel", pw_fest=pw_modus == "fest",
+                     twofa_pflicht=bool(f.get("twofa_pflicht")), sprache=f.get("sprache") or None)
         try:
-            users.add(get_conn(), request.form.get("username", ""), request.form.get("password", ""),
-                      rolle=request.form.get("rolle") or "bearbeiten")
-            flash(tr("Benutzer angelegt."))
+            if f.get("modus") == "bearbeiten":
+                alt = users.get(conn, name)
+                if name == ich and not werte["aktiv"]:
+                    raise users.UserError(tr("Du kannst dich nicht selbst deaktivieren."))
+                neu = users.aendern(conn, name, passwort=f.get("password") or None, **werte)
+                _log("user_edit", ich, f"{name}: {users.aenderung_text(alt or {}, neu)}")
+                if f.get("password"):
+                    _log("pw_admin", ich, f"für Benutzer {name}")
+                flash(tr("Benutzer „{name}“ gespeichert.", name=name))
+            else:
+                neu = users.add(conn, name, f.get("password", ""), **werte)
+                _log("user_add", ich, f"{name}: {users.ROLLEN[users.rolle(neu)]}")
+                flash(tr("Benutzer „{name}“ angelegt.", name=name))
         except users.UserError as ex:
+            conn.rollback()
             flash(str(ex), "fehler")
+            return redirect(url_for("user_admin", edit=name if f.get("modus") == "bearbeiten" else None))
         return redirect(url_for("user_admin"))
 
-    @app.route("/admin/benutzer/<name>", methods=["POST"])
+    @app.route("/admin/benutzer/<name>/loeschen", methods=["POST"])
     @admin_required
-    def user_update(name):
+    def user_delete(name):
         conn = get_conn()
-        action = request.form.get("action")
         try:
-            if action == "passwort":
-                users.set_password(conn, name, request.form.get("password", ""))
-                flash(tr("Passwort für „{name}“ gesetzt.", name=name))
-            elif action == "rolle":
-                users.update(conn, name, rolle=request.form.get("rolle", ""))
-                flash(tr("Gespeichert."))
-            elif action == "sprache":
-                if not users.get(conn, name):
-                    raise users.UserError(tr("Benutzer nicht gefunden."))
-                users.set_sprache(conn, name, request.form.get("sprache") or None)
-                flash(tr("Gespeichert."))
-            elif action == "aktiv":
-                users.update(conn, name, active=bool(request.form.get("active")))
-                flash(tr("Gespeichert."))
-            elif action == "loeschen":
-                if name == current_user()["username"]:
-                    raise users.UserError(tr("Du kannst dich nicht selbst löschen."))
-                users.delete(conn, name)
-                flash(tr("Benutzer „{name}“ gelöscht.", name=name))
+            if name == current_user()["username"]:
+                raise users.UserError(tr("Du kannst dich nicht selbst löschen."))
+            users.delete(conn, name)
+            _log("user_del", current_user()["username"], name)
+            flash(tr("Benutzer „{name}“ gelöscht.", name=name))
         except users.UserError as ex:
             conn.rollback()
             flash(str(ex), "fehler")
         return redirect(url_for("user_admin"))
+
+    @app.route("/admin/benutzer/<name>/2fa-zuruecksetzen", methods=["POST"])
+    @admin_required
+    def user_2fa_reset(name):
+        try:
+            users.clear_2fa(get_conn(), name)
+            _log("twofa_reset", current_user()["username"], f"für Benutzer {name}")
+            flash(tr("Zweitfaktor von „{name}“ zurückgesetzt.", name=name))
+        except users.UserError as ex:
+            flash(str(ex), "fehler")
+        return redirect(url_for("user_admin"))
+
+    @app.route("/admin/protokoll")
+    @admin_required
+    def auth_protokoll():
+        conn = get_conn()
+        wer = (request.args.get("benutzer") or "").strip() or None
+        was = request.args.get("ereignis") or None
+        if was not in authlog.EREIGNISSE:
+            was = None
+        try:
+            limit = max(50, min(int(request.args.get("n", 500)), 5000))
+        except ValueError:
+            limit = 500
+        namen = sorted({u["username"] for u in users.list_users(conn)} | set(authlog.benutzer_im_protokoll(conn)))
+        return render_template("protokoll.html", rows=authlog.lesen(conn, limit, wer, was),
+                               ereignisse=authlog.EREIGNISSE, gruppen=authlog.GRUPPEN, f_wer=wer or "",
+                               f_was=was or "", limit=limit, namen=namen)
 
     # ---- Admin: Abgleich ----------------------------------------------- #
     @app.route("/admin/sync", methods=["GET", "POST"])
