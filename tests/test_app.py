@@ -423,6 +423,7 @@ def test_timer_status():
                "RandomizedDelayUSec=30min\n")
     t = sync.timer_status(ausgabe)
     assert t == {"aktiv": True, "plan": "jeden Montag um 04:30", "naechster": "Montag, 21.09.2026, 04:30",
+                 "naechster_dt": datetime.datetime(2026, 9, 21, 4, 30),
                  "letzter": "Montag, 14.09.2026, 04:41", "verzoegerung": "30 Min."}
     assert sync.timer_status("LoadState=not-found\nActiveState=inactive\n") is None
     assert sync.timer_status("")  is None
@@ -722,6 +723,46 @@ def test_rolle_im_benutzer_admin(app):
     c.post("/admin/benutzer/leser", data={"action": "rolle", "rolle": "bearbeiten"})
     with db.session(app.config["DB_PATH"]) as conn:
         assert users.rolle(users.get(conn, "leser")) == "bearbeiten"
+
+
+
+def test_abgleich_zyklus(app, monkeypatch):
+    from foxtrail import zeitplan
+    dt = datetime.datetime
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert zeitplan.zyklus(conn) == "woechentlich"
+        assert zeitplan.termin_faellig(conn, dt(2026, 10, 12, 4, 30))
+        zeitplan.set_zyklus(conn, "aus")
+        assert not zeitplan.termin_faellig(conn, dt(2026, 10, 12, 4, 30))
+        assert zeitplan.naechster_lauf(conn, dt(2026, 10, 12, 4, 30)) is None
+        zeitplan.set_zyklus(conn, "monatlich")
+        # im Oktober noch kein Timer-Lauf -> faellig; nach einem erfolgreichen Lauf nicht mehr
+        assert zeitplan.termin_faellig(conn, dt(2026, 10, 5, 4, 30))
+        conn.execute("INSERT INTO sync_log (ts, ausloeser, ok) VALUES ('2026-10-05 04:41:00', 'timer', 0)")
+        assert zeitplan.termin_faellig(conn, dt(2026, 10, 12, 4, 30))       # Fehler zaehlt nicht
+        conn.execute("INSERT INTO sync_log (ts, ausloeser, ok) VALUES ('2026-10-12 04:41:00', 'timer', 1)")
+        conn.execute("INSERT INTO sync_log (ts, ausloeser, ok) VALUES ('2026-10-13 09:00:00', 'web:admin', 1)")
+        assert not zeitplan.termin_faellig(conn, dt(2026, 10, 19, 4, 30))
+        assert zeitplan.naechster_lauf(conn, dt(2026, 10, 19, 4, 30)) == dt(2026, 11, 2, 4, 30)
+        st = zeitplan.mit_zyklus(conn, {"aktiv": True, "plan": "jeden Montag um 04:30", "naechster": "x",
+                                        "naechster_dt": dt(2026, 10, 19, 4, 30)})
+        assert st["plan"] == "am ersten Montag im Monat um 04:30" and st["naechster"] == "Montag, 02.11.2026, 04:30"
+        with pytest.raises(ValueError):
+            zeitplan.set_zyklus(conn, "taeglich")
+    # Seite Abgleich: Auswahl speichern, "aus" wird angezeigt
+    c = app.test_client()
+    login(c, "admin")
+    monkeypatch.setattr(sync, "timer_status", lambda: {"aktiv": True, "plan": "jeden Montag um 04:30",
+                        "naechster": "Montag, 21.09.2026, 04:30", "naechster_dt": dt(2026, 9, 21, 4, 30),
+                        "letzter": "", "verzoegerung": "30 Min."})
+    r = c.post("/admin/sync", data={"aktion": "zyklus", "zyklus": "aus"}, follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert "Automatischer Abgleich: Aus." in html and "ausgeschaltet" in html and "Nächster Lauf" not in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert zeitplan.zyklus(conn) == "aus"
+        assert conn.execute("SELECT COUNT(*) FROM sync_log WHERE ausloeser LIKE 'web:%'").fetchone()[0] == 1
+    c.post("/admin/sync", data={"aktion": "zyklus", "zyklus": "woechentlich"})
+    assert "eingeschaltet" in c.get("/admin/sync").get_data(as_text=True)
 
 
 def test_healthz(app):

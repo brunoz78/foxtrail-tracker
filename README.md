@@ -49,7 +49,8 @@ foxtrail.ch absichtlich unscharf.</sub>
   schnellster und längster Trail, Trails pro Jahr sowie Fortschritt je Region, Typ und
   Schwierigkeit (ein Klick auf einen Balken öffnet die passende Liste)
 * Manuell erfasste Trails für früher gemachte Trails, die nicht mehr angeboten werden
-* Abgleich mit foxtrail.ch – wöchentlich per systemd-Timer und per Knopfdruck
+* Abgleich mit foxtrail.ch – automatisch (auf der Seite Abgleich wählbar: wöchentlich, monatlich
+  oder aus) und per Knopfdruck
 * Archiv: nicht mehr angebotene, noch nicht gemachte Trails, mit Suche und Sortierung (Ort, Trail, Region, zuletzt gesehen)
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen) und drei Rollen:
   **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),
@@ -188,7 +189,8 @@ docker run -d --name foxtrail --restart unless-stopped -p 8080:8080 \
 * **Abgleich:** Ein Hintergrundprozess im Container gleicht wie der systemd-Timer jeden
   Montag um 04:30 ab (bis zu 30 Min. später) und holt verpasste Termine nach dem Start nach
   (nicht bei einer Neuinstallation – dann ist der erste Lauf der nächste Montag).
-  Die Seite Abgleich zeigt den nächsten Lauf. Abschalten mit `FOXTRAIL_ZEITPLAN=0`.
+  Die Seite Abgleich zeigt den nächsten Lauf; dort lässt sich die Häufigkeit auf monatlich
+  oder aus stellen. Den Hintergrundprozess ganz abschalten: `FOXTRAIL_ZEITPLAN=0`.
 * **Administrator beim ersten Start:** statt `docker exec` geht auch
   `FOXTRAIL_ADMIN_PASSWORD` (legt `admin` an, solange es keinen Administrator gibt; danach
   die Variable wieder entfernen).

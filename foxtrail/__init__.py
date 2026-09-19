@@ -515,6 +515,13 @@ def create_app(test_config=None):
     @admin_required
     def sync_admin():
         conn = get_conn()
+        if request.method == "POST" and request.form.get("aktion") == "zyklus":
+            try:
+                zeitplan.set_zyklus(conn, request.form.get("zyklus", ""))
+                flash("Automatischer Abgleich: " + zeitplan.ZYKLEN[request.form["zyklus"]] + ".")
+            except ValueError:
+                flash("Unbekannte Einstellung.", "fehler")
+            return redirect(url_for("sync_admin"))
         if request.method == "POST":
             res = sync.run(conn, ausloeser=f"web:{current_user()['username']}")
             if res["ok"]:
@@ -528,9 +535,9 @@ def create_app(test_config=None):
         letzter_auto = conn.execute("SELECT ts, ok FROM sync_log WHERE ausloeser = 'timer' "
                                     "ORDER BY id DESC LIMIT 1").fetchone()
         return render_template("sync.html", runs=sync.last_runs(conn), list_url=config.LIST_URL,
-                               timer=sync.timer_status()
-                               or zeitplan.status(zeitplan.datei(app.config["DB_PATH"])),
-                               letzter_auto=letzter_auto)
+                               timer=zeitplan.mit_zyklus(conn, sync.timer_status()
+                                                         or zeitplan.status(zeitplan.datei(app.config["DB_PATH"]))),
+                               letzter_auto=letzter_auto, zyklus=zeitplan.zyklus(conn), zyklen=zeitplan.ZYKLEN)
 
     @app.route("/healthz")
     def healthz():

@@ -421,3 +421,8 @@ dl.lesen { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px;
 dl.lesen dt { color: var(--muted, #666); }
 dl.lesen dd { margin: 0; }
 dl.lesen .umbruch { white-space: pre-wrap; }
+
+/* Seite Abgleich: Auswahl der Haeufigkeit */
+form.zyklus { margin-top: 10px; }
+form.zyklus label { display: inline-flex; align-items: center; gap: 8px; }
+form.zyklus select { width: auto; }

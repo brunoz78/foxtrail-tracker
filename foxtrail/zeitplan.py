@@ -12,12 +12,19 @@ verhaelt wie der Timer:
 
 Der Prozess schreibt seinen naechsten Termin und einen Herzschlag nach
 <Datenordner>/zeitplan.json; die Seite Abgleich liest daraus den Status (status()).
+
+Zyklus (Einstellung auf der Seite Abgleich, Tabelle einstellungen): woechentlich | monatlich | aus.
+Timer bzw. Zeitplan-Prozess feuern immer montags; termin_faellig() entscheidet, ob wirklich
+abgeglichen wird. Monatlich = der erste erfolgreiche Timer-Lauf im Kalendermonat (normalerweise
+der erste Montag), die weiteren Montage des Monats fallen aus. So braucht es keinen haeufigeren
+Timer und bestehende Installationen muessen nichts umstellen.
 """
 
 import datetime
 import json
 import os
 import random
+import re
 import sys
 import time
 
@@ -31,6 +38,64 @@ HERZSCHLAG = 15 * 60         # so oft wird zeitplan.json aufgefrischt
 VERALTET = 2 * HERZSCHLAG    # aelter -> Prozess laeuft nicht mehr
 
 PLAN_TEXT = "jeden Montag um 04:30"
+
+ZYKLEN = {"woechentlich": "Wöchentlich", "monatlich": "Monatlich", "aus": "Aus"}
+STANDARD_ZYKLUS = "woechentlich"
+
+
+def zyklus(conn):
+    r = conn.execute("SELECT wert FROM einstellungen WHERE schluessel = 'abgleich'").fetchone()
+    return r[0] if r and r[0] in ZYKLEN else STANDARD_ZYKLUS
+
+
+def set_zyklus(conn, wert):
+    if wert not in ZYKLEN:
+        raise ValueError(wert)
+    conn.execute("INSERT OR REPLACE INTO einstellungen (schluessel, wert) VALUES ('abgleich', ?)", (wert,))
+
+
+def termin_faellig(conn, termin, zyklus_=None):
+    """Soll der Timer-Termin `termin` (datetime) wirklich abgleichen?"""
+    z = zyklus_ or zyklus(conn)
+    if z == "aus":
+        return False
+    if z == "monatlich":
+        # in diesem Monat schon erfolgreich automatisch abgeglichen -> auslassen
+        return not conn.execute("SELECT 1 FROM sync_log WHERE ausloeser = 'timer' AND ok = 1 "
+                                "AND substr(ts, 1, 7) = ?", (termin.strftime("%Y-%m"),)).fetchone()
+    return True
+
+
+def naechster_lauf(conn, kandidat):
+    """Erster Montagstermin ab `kandidat`, an dem laut Zyklus abgeglichen wird; None bei "aus"."""
+    z = zyklus(conn)
+    if z == "aus":
+        return None
+    for _ in range(6):
+        if termin_faellig(conn, kandidat, z):
+            break
+        kandidat += datetime.timedelta(days=7)
+    return kandidat
+
+
+def plan_text(z, plan):
+    """'jeden Montag um 04:30' je nach Zyklus anpassen."""
+    if z == "monatlich":
+        return re.sub(r"^jeden (\S+) um", r"am ersten \1 im Monat um", plan or "")
+    return plan
+
+
+def mit_zyklus(conn, st):
+    """Status von sync.timer_status() bzw. status() um die Einstellung ergaenzen."""
+    if st is None:
+        return None
+    z = zyklus(conn)
+    st = dict(st, zyklus=z, plan=plan_text(z, st.get("plan")))
+    if z == "aus":
+        st["naechster"] = ""
+    elif z == "monatlich" and st.get("naechster_dt") and not st.get("nachholen"):
+        st["naechster"] = sync.zeitpunkt_text(naechster_lauf(conn, st["naechster_dt"]))
+    return st
 
 
 def datei(db_path):
@@ -83,6 +148,8 @@ def status(pfad, jetzt=None):
     return {
         "aktiv": (jetzt - herzschlag).total_seconds() <= VERALTET,
         "plan": PLAN_TEXT,
+        "naechster_dt": naechster,
+        "nachholen": bool(d.get("nachholen")),
         "naechster": sync.zeitpunkt_text(naechster)
                      + (" (verpasster Termin wird nachgeholt)" if d.get("nachholen") else ""),
         "letzter": "",
@@ -101,7 +168,16 @@ def _letzter_lauf(db_path):
     return r["ts"] if r else None
 
 
-def _abgleichen(db_path):
+def _termin_faellig(db_path, termin):
+    with db.session(db_path) as conn:
+        return termin_faellig(conn, termin)
+
+
+def _abgleichen(db_path, termin):
+    if not _termin_faellig(db_path, termin):
+        _log("Abgleich ausgelassen (Einstellung: " + ("aus" if _zyklus(db_path) == "aus"
+                                                      else "monatlich, diesen Monat schon gelaufen") + ")")
+        return
     try:
         with db.session(db_path) as conn:
             res = sync.run(conn, ausloeser="timer")
@@ -111,11 +187,16 @@ def _abgleichen(db_path):
         _log(f"Abgleich abgebrochen: {ex!r}")
 
 
+def _zyklus(db_path):
+    with db.session(db_path) as conn:
+        return zyklus(conn)
+
+
 def laufen(db_path):
     """Endlosschleife (manage.py zeitplan)."""
     pfad = datei(db_path)
     jetzt = datetime.datetime.now()
-    nachholen = faellig(_letzter_lauf(db_path), jetzt)
+    nachholen = faellig(_letzter_lauf(db_path), jetzt) and _termin_faellig(db_path, letzter_termin(jetzt))
     if nachholen:
         ziel = jetzt + datetime.timedelta(seconds=START_PAUSE)
         _log("Termin verpasst, Abgleich wird nachgeholt")
@@ -124,7 +205,7 @@ def laufen(db_path):
     while True:
         jetzt = datetime.datetime.now()
         if jetzt >= ziel:
-            _abgleichen(db_path)
+            _abgleichen(db_path, letzter_termin(jetzt))
             nachholen = False
             jetzt = datetime.datetime.now()
             ziel = naechster_termin(jetzt) + datetime.timedelta(seconds=random.randint(0, MAX_VERZOEGERUNG))

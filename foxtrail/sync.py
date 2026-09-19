@@ -188,10 +188,12 @@ def timer_status(ausgabe=None):
     # systemd schreibt '30min', '1h', '1h 30min' -> '30 Min.', '1 Std.', '1 Std. 30 Min.'
     verzoegerung = re.sub(r"(\d+)min", r"\1 Min.", werte.get("RandomizedDelayUSec", ""))
     verzoegerung = re.sub(r"(\d+)h\b", r"\1 Std.", verzoegerung)
+    naechster = _zeitpunkt(werte.get("NextElapseUSecRealtime"))
     return {
         "aktiv": werte.get("ActiveState") == "active",
         "plan": plan_text(oncal.group(1)) if oncal else "",
-        "naechster": zeitpunkt_text(_zeitpunkt(werte.get("NextElapseUSecRealtime"))),
+        "naechster": zeitpunkt_text(naechster),
+        "naechster_dt": naechster,
         "letzter": zeitpunkt_text(_zeitpunkt(werte.get("LastTriggerUSec"))),
         "verzoegerung": verzoegerung if verzoegerung not in ("", "0") else "",
     }

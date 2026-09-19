@@ -22,6 +22,7 @@ Die Datenbank wird ueber $FOXTRAIL_DB gewaehlt (siehe foxtrail/config.py).
 """
 
 import argparse
+import datetime
 import getpass
 import json
 import os
@@ -56,6 +57,12 @@ def cmd_seed(a):
 
 def cmd_sync(a):
     with db.session() as conn:
+        if a.ausloeser == "timer" and not zeitplan.termin_faellig(
+                conn, zeitplan.letzter_termin(datetime.datetime.now())):
+            z = zeitplan.zyklus(conn)
+            print("Abgleich ausgelassen (Einstellung: "
+                  + ("aus" if z == "aus" else "monatlich, diesen Monat schon gelaufen") + ")")
+            return
         res = sync.run(conn, ausloeser=a.ausloeser)
     if res["ok"]:
         print(f"ok: {res['gefunden']} gefunden, {res['neu']} neu, {res['aktualisiert']} aktualisiert, "

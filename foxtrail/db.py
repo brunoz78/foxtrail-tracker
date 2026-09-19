@@ -71,6 +71,12 @@ CREATE TABLE IF NOT EXISTS users (
     nur_lesen INTEGER NOT NULL DEFAULT 0   -- 1 = darf nichts aendern (nie zusammen mit is_admin)
 );
 
+-- einfache Einstellungen der App (z. B. 'abgleich' = woechentlich | monatlich | aus)
+CREATE TABLE IF NOT EXISTS einstellungen (
+    schluessel TEXT PRIMARY KEY,
+    wert       TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS sync_log (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     ts                   TEXT NOT NULL,

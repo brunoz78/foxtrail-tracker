@@ -98,6 +98,13 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Gemachte Kacheln: Ring und hellgrüner Textbereich im MINI-Grün (`--gemacht*` in style.css).
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
+  **Häufigkeit** (2026-09-19, Wunsch von Bruno): Auswahl auf der Seite Abgleich, nur
+  `woechentlich | monatlich | aus` (Tabelle `einstellungen`, Schlüssel `abgleich`, Standard
+  wöchentlich) – bewusst **kein täglich** (unnötiger Verkehr bei foxtrail.ch). Timer bzw. Docker-
+  Zeitplan feuern unverändert montags; `zeitplan.termin_faellig` entscheidet (in `manage.py sync
+  --ausloeser timer` und im Docker-Zeitplan), ob abgeglichen wird. Monatlich = erster erfolgreicher
+  Timer-Lauf im Kalendermonat, Fehlläufe zählen nicht (nächster Montag versucht es wieder).
+  Ausgelassene Termine landen nicht im `sync_log`. „Jetzt abgleichen“ geht immer.
   Die Seite Abgleich zeigt Zeitplan und nächsten Lauf (`sync.timer_status`: liest
   `systemctl show foxtrail-sync.timer`, ohne Rechte; ohne systemd → Hinweis auf den Standardplan).
 - **Docker** (seit 2026-09-18, Wunsch von Bruno): `Dockerfile`, `docker/entrypoint.sh`,
