@@ -234,7 +234,21 @@ def create_app(test_config=None):
     @app.route("/archiv")
     @login_required
     def archiv():
-        return render_template("archiv.html", rows=trails.list_archiv(get_conn()))
+        q = (request.args.get("q") or "").strip()[:80]
+        sort = request.args.get("sort", "ort")
+        if sort not in trails.ARCHIV_SORTS:
+            sort = "ort"
+        richtung = "desc" if request.args.get("dir") == "desc" else "asc"
+
+        def archiv_url(**over):
+            params = {"q": q or None, "sort": sort if sort != "ort" else None,
+                      "dir": richtung if richtung != "asc" else None}
+            params.update(over)
+            return url_for("archiv", **{k: v for k, v in params.items() if v not in (None, "")})
+
+        # index_url: Name, den das Makro sortlink erwartet
+        return render_template("archiv.html", rows=trails.list_archiv(get_conn(), q, sort, richtung),
+                               q=q, sort=sort, richtung=richtung, index_url=archiv_url)
 
     @app.route("/trail/<int:tid>", methods=["GET", "POST"])
     @login_required

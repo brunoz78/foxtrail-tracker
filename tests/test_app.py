@@ -498,5 +498,33 @@ def test_ueber_und_update_hinweis(app, tmp_path):
     assert "upd-punkt" not in html and f"Version {version.VERSION}" in html
 
 
+def test_archiv_suche_und_sortierung(app):
+    c = app.test_client()
+    login(c)
+    with db.session(app.config["DB_PATH"]) as conn:
+        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae")])
+        for slug, ort, name, region, gesehen in (("bern/zett", "Bern", "Zett", "bern-und-umgebung", "2024-01-01"),
+                                                 ("wallis/alpha", "Zinal", "Alpha", "wallis", "2025-06-01"),
+                                                 ("aargau/mitte", "Aarau", "Mitte", "aargau", "2023-05-01")):
+            conn.execute("INSERT INTO trails (slug, quelle, ort, name, route, region, im_angebot, first_seen, "
+                         "last_seen) VALUES (?, 'foxtrail', ?, ?, 'Altstadt - See', ?, 0, ?, ?)",
+                         (slug, ort, name, region, gesehen, gesehen))
+
+    def namen(url):
+        """Reihenfolge der Test-Trails auf der Seite."""
+        html = c.get(url).get_data(as_text=True)
+        return [n for _, n in sorted((html.index(f"<b>{n}</b>"), n) for n in ("Zett", "Alpha", "Mitte")
+                                     if f"<b>{n}</b>" in html)]
+
+    assert namen("/archiv") == ["Mitte", "Zett", "Alpha"]                                  # nach Ort
+    assert namen("/archiv?sort=name") == ["Alpha", "Mitte", "Zett"]
+    assert namen("/archiv?sort=region&dir=desc") == ["Alpha", "Zett", "Mitte"]
+    assert namen("/archiv?sort=gesehen&dir=desc") == ["Alpha", "Zett", "Mitte"]
+    assert namen("/archiv?q=zin") == ["Alpha"]
+    html = c.get("/archiv?q=xyz").get_data(as_text=True)
+    assert "Keine Treffer." in html and "Suche zurücksetzen" in html
+    assert "sort=name" in c.get("/archiv").get_data(as_text=True)                          # Sortier-Links
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

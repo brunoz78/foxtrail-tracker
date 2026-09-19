@@ -50,7 +50,7 @@ foxtrail.ch absichtlich unscharf.</sub>
   Schwierigkeit (ein Klick auf einen Balken öffnet die passende Liste)
 * Manuell erfasste Trails für früher gemachte Trails, die nicht mehr angeboten werden
 * Abgleich mit foxtrail.ch – wöchentlich per systemd-Timer und per Knopfdruck
-* Archiv: nicht mehr angebotene, noch nicht gemachte Trails
+* Archiv: nicht mehr angebotene, noch nicht gemachte Trails, mit Suche und Sortierung (Ort, Trail, Region, zuletzt gesehen)
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen),
   Administratoren verwalten Benutzer, lösen den Abgleich aus und importieren Bestellungen
 * Keine externen Abhängigkeiten im Browser (kein CDN), hell/dunkel automatisch

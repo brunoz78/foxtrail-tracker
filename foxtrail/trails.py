@@ -159,7 +159,9 @@ SORTS = {
     "zielort": lambda t: (t["zielort"].lower(), t["ort"].lower()) if t["zielort"] else None,
     "start": lambda t: t.get("start_zeit"),
     "ziel": lambda t: t.get("ziel_zeit"),
+    "gesehen": lambda t: t.get("last_seen"),
 }
+ARCHIV_SORTS = ("ort", "name", "region", "gesehen")
 
 
 def sortiert(rows, sort="ort", richtung="asc"):
@@ -217,9 +219,15 @@ def filter_options(conn):
             "grad": [(g, GRAD_LABEL[g]) for g in GRADE]}
 
 
-def list_archiv(conn):
-    return [_row(r) for r in conn.execute(
-        f"SELECT * FROM trails WHERE {ARCHIV_COND} ORDER BY ort COLLATE NOCASE, name COLLATE NOCASE")]
+def list_archiv(conn, q="", sort="ort", richtung="asc"):
+    """Archiv mit Suche (Ort, Name, Route) und Sortierung (ARCHIV_SORTS)."""
+    sql, args = f"SELECT * FROM trails WHERE {ARCHIV_COND}", []
+    if q:
+        sql += " AND (ort LIKE ? OR name LIKE ? OR route LIKE ?)"
+        args += [f"%{q}%"] * 3
+    sql += " ORDER BY ort COLLATE NOCASE, name COLLATE NOCASE"
+    return sortiert([_row(r) for r in conn.execute(sql, args)],
+                    sort if sort in ARCHIV_SORTS else "ort", richtung)
 
 
 def stats(conn):
