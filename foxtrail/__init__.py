@@ -131,6 +131,15 @@ def create_app(test_config=None):
                 "regionen": trails.REGION_LABEL, "app_version": version.stand(config.REPO_ROOT),
                 "repo_url": version.REPO_URL, "update": update}
 
+    @app.after_request
+    def _kein_seitencache(resp):
+        # Seiten zeigen den aktuellen Stand der Liste: nicht zwischenspeichern, auch nicht fuer
+        # "Zurueck" im Browser (sonst steht ein eben gemachter Trail scheinbar noch im Archiv).
+        # Bilder, CSS usw. behalten ihre eigenen Cache-Zeiten.
+        if resp.mimetype == "text/html":
+            resp.headers["Cache-Control"] = "no-store"
+        return resp
+
     @app.errorhandler(403)
     def _forbidden(_):
         return render_template("fehler.html", fehler="Dafür fehlt dir die Berechtigung."), 403

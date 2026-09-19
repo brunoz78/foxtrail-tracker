@@ -526,5 +526,13 @@ def test_archiv_suche_und_sortierung(app):
     assert "sort=name" in c.get("/archiv").get_data(as_text=True)                          # Sortier-Links
 
 
+def test_seiten_nicht_zwischengespeichert(app):
+    c = app.test_client()
+    login(c)
+    assert c.get("/archiv").headers["Cache-Control"] == "no-store"
+    assert c.get("/login").headers["Cache-Control"] == "no-store"
+    assert "no-store" not in (c.get("/static/style.css").headers.get("Cache-Control") or "")
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"
