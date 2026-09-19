@@ -33,6 +33,13 @@ h2 { font-size: 17px; margin: 24px 0 8px; }
 .kpis b { color: var(--text); font-size: 18px; }
 
 .flash { background: var(--green-light); border-left: 4px solid var(--green); padding: 8px 12px; margin: 0 0 12px; border-radius: 4px; }
+/* Fehler rot, Hinweise orange - gut sichtbar, auch im Dunkelmodus */
+.flash.fehler { background: #fde7e7; border-left: 6px solid #c62828; color: #8e1616; font-weight: bold; }
+.flash.hinweis { background: #fff3e0; border-left: 6px solid #ef8f00; color: #7a4300; }
+@media (prefers-color-scheme: dark) {
+  .flash.fehler { background: #4a1414; border-left-color: #ef5350; color: #ffcdd2; }
+  .flash.hinweis { background: #4a3000; border-left-color: #ffa726; color: #ffe0b2; }
+}
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
 .tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--line); color: var(--muted); margin-left: 4px; vertical-align: middle; }

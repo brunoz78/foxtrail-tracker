@@ -160,7 +160,7 @@ def create_app(test_config=None):
         if request.method == "POST":
             name = (request.form.get("username") or "").strip().lower()
             if _locked(name):
-                flash(f"Zu viele Fehlversuche – bitte in {config.LOGIN_LOCK_SECONDS // 60} Minuten erneut.")
+                flash(f"Zu viele Fehlversuche – bitte in {config.LOGIN_LOCK_SECONDS // 60} Minuten erneut.", "fehler")
                 return render_template("login.html")
             u = users.authenticate(get_conn(), name, request.form.get("password", ""))
             if u:
@@ -171,7 +171,7 @@ def create_app(test_config=None):
                 _ATTEMPTS.pop(name, None)
                 return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
             _fail(name)
-            flash("Benutzername oder Passwort falsch.")
+            flash("Benutzername oder Passwort falsch.", "fehler")
         return render_template("login.html")
 
     @app.route("/logout")
@@ -279,7 +279,7 @@ def create_app(test_config=None):
                 return redirect(request.form.get("next") or url_for("index"))
             except trails.TrailError as ex:
                 conn.rollback()                     # nichts halb speichern (manuelle Felder)
-                flash(str(ex))
+                flash(str(ex), "fehler")
                 t = dict(t, **{k: request.form.get(k, "") for k in
                                ("gemacht_datum", "mitspieler", "bemerkung")})
                 t["gemacht"] = 1 if request.form.get("gemacht") else 0
@@ -295,7 +295,7 @@ def create_app(test_config=None):
                 flash("Trail manuell erfasst.")
                 return redirect(url_for("trail_edit", tid=tid))
             except trails.TrailError as ex:
-                flash(str(ex))
+                flash(str(ex), "fehler")
         return render_template("trail_new.html", form=request.form)
 
     @app.route("/trail/<int:tid>/loeschen", methods=["POST"])
@@ -305,7 +305,7 @@ def create_app(test_config=None):
             trails.delete_manual(get_conn(), tid)
             flash("Manuell erfasster Trail gelöscht.")
         except trails.TrailError as ex:
-            flash(str(ex))
+            flash(str(ex), "fehler")
         return redirect(url_for("index"))
 
     # ---- Import der eigenen Bestellungen (foxtrail.ch-Konto) ------------ #
@@ -317,7 +317,7 @@ def create_app(test_config=None):
             try:
                 eintraege = bestellungen.eintraege_aus_json(request.form.get("daten", ""))
             except ValueError:
-                flash("Ungültige Daten – bitte die Datei nochmals prüfen.")
+                flash("Ungültige Daten – bitte die Datei nochmals prüfen.", "fehler")
                 return redirect(url_for("import_bestellungen"))
             plan = bestellungen.zuordnen(conn, eintraege, benutzer=current_user()["username"])
             res = bestellungen.anwenden(conn, plan, current_user()["username"], app.config["FOTO_DIR"])
@@ -335,7 +335,7 @@ def create_app(test_config=None):
                 try:
                     inhalt = json.dumps(bestellungen.abrufen(request.form["link"]))
                 except bestellungen.AbrufFehler as ex:
-                    flash(str(ex))
+                    flash(str(ex), "fehler")
                     inhalt = ""
             else:
                 inhalt = f.read().decode("utf-8", "replace") if f and f.filename else (request.form.get("text") or "")
@@ -344,7 +344,7 @@ def create_app(test_config=None):
                 pass                                   # Abruf gescheitert, Meldung steht schon da
             elif not eintraege:
                 flash("Keine Bestellungen gefunden. Erwartet wird die Datei konto.json oder der Text "
-                      "der Seite „Deine Bestellungen“.")
+                      "der Seite „Deine Bestellungen“.", "fehler")
             else:
                 zeilen = [{"e": e, "t": t, "aktion": aktion, "grund": grund,
                            "spielzeit": trails.spielzeit_label(trails.spielzeit_min(e["start"], e["ziel"]))}
@@ -396,7 +396,7 @@ def create_app(test_config=None):
             try:
                 name = fotos.speichern(ordner, tid, f.read() if f and f.filename else b"")
             except fotos.FotoError as ex:
-                flash(str(ex))
+                flash(str(ex), "fehler")
             else:
                 fotos.entfernen(ordner, t.get("foto"))
                 trails.set_foto(conn, tid, name)
@@ -405,7 +405,7 @@ def create_app(test_config=None):
                 else:
                     # Ein Schlussfoto heisst: dort gewesen - "gemacht" braucht aber ein Datum
                     flash("Foto gespeichert. Bitte noch das Datum eintragen und speichern, "
-                          "dann ist der Trail als gemacht markiert.")
+                          "dann ist der Trail als gemacht markiert.", "hinweis")
                     return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None,
                                             gemacht=1) + "#eintraege")
         elif aktion == "loeschen" and t.get("foto"):
@@ -421,7 +421,7 @@ def create_app(test_config=None):
                 trails.set_foto(conn, tid, name)
                 flash("Schlussfoto von foxtrail.ch geladen.")
             else:
-                flash("Das Schlussfoto ist auf foxtrail.ch nicht mehr abrufbar.")
+                flash("Das Schlussfoto ist auf foxtrail.ch nicht mehr abrufbar.", "fehler")
         return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None) + "#foto")
 
     # ---- Profil -------------------------------------------------------- #
@@ -436,7 +436,7 @@ def create_app(test_config=None):
                 flash("Passwort geändert.")
                 return redirect(url_for("index"))
             except users.UserError as ex:
-                flash(str(ex))
+                flash(str(ex), "fehler")
         return render_template("profil.html")
 
     # ---- Admin: Benutzer ----------------------------------------------- #
@@ -453,7 +453,7 @@ def create_app(test_config=None):
                       is_admin=bool(request.form.get("is_admin")))
             flash("Benutzer angelegt.")
         except users.UserError as ex:
-            flash(str(ex))
+            flash(str(ex), "fehler")
         return redirect(url_for("user_admin"))
 
     @app.route("/admin/benutzer/<name>", methods=["POST"])
@@ -478,7 +478,7 @@ def create_app(test_config=None):
                 flash(f"Benutzer „{name}“ gelöscht.")
         except users.UserError as ex:
             conn.rollback()
-            flash(str(ex))
+            flash(str(ex), "fehler")
         return redirect(url_for("user_admin"))
 
     # ---- Admin: Abgleich ----------------------------------------------- #
@@ -494,7 +494,7 @@ def create_app(test_config=None):
                       f"{res['archiviert']} ins Archiv, {res['nicht_mehr_im_angebot']} gemachte "
                       f"nicht mehr im Angebot.")
             else:
-                flash("Abgleich fehlgeschlagen: " + res["meldung"])
+                flash("Abgleich fehlgeschlagen: " + res["meldung"], "fehler")
             return redirect(url_for("sync_admin"))
         letzter_auto = conn.execute("SELECT ts, ok FROM sync_log WHERE ausloeser = 'timer' "
                                     "ORDER BY id DESC LIMIT 1").fetchone()

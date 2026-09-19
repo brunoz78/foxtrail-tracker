@@ -601,5 +601,16 @@ def test_import_mit_konto_link(app, monkeypatch):
     assert "Bestellungen gelesen" not in html and "Konto-Link aus der Mail" in html   # wieder das Formular
 
 
+def test_fehlermeldungen_rot(app):
+    c = app.test_client()
+    login(c, "admin")
+    html = c.post("/import", data={"link": "https://example.org/x"}).get_data(as_text=True)
+    assert 'class="flash fehler" role="alert">Das ist kein Konto-Link von foxtrail.ch' in html
+    html = c.post("/trail/2", data={"gemacht": "1", "next": "/"}, follow_redirects=True).get_data(as_text=True)
+    assert 'class="flash fehler"' in html and "Bitte das Datum eintragen" in html
+    html = c.post("/trail/2", data={"bemerkung": "ok", "next": "/"}, follow_redirects=True).get_data(as_text=True)
+    assert 'class="flash message">Gespeichert.' in html                 # Bestaetigung bleibt gruen
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"
