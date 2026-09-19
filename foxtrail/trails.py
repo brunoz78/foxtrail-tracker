@@ -304,11 +304,28 @@ def update_done(conn, trail_id, form, username, datum_pflicht=False):
     if not t["gemacht"] and ((form.get("gemacht_datum") or "").strip() or (form.get("mitspieler") or "").strip()):
         form = dict(form.items(), gemacht="1")
     gemacht, datum, mit, bemerkung = _clean_done(form, username, datum_pflicht)
+    # offen und ohne Bemerkung: es gibt keine eigenen Eintraege mehr -> "nicht erfasst"
+    leer = not gemacht and not bemerkung
     conn.execute(
         "UPDATE trails SET gemacht=?, gemacht_datum=?, mitspieler=?, bemerkung=?, "
         "erfasst_von=?, erfasst_am=? WHERE id=?",
-        (gemacht, datum, mit, bemerkung, username, now(), trail_id))
+        (gemacht, datum, mit, bemerkung, None if leer else username, None if leer else now(), trail_id))
     return get(conn, trail_id)
+
+
+def zuruecksetzen(conn, trail_id):
+    """Alle eigenen Eintraege eines Trails entfernen (gemacht, Datum, Mitspieler, Bemerkung,
+    Erfasst von, Importdaten, Foto) - die Trail-Daten von foxtrail.ch bleiben. foto = NULL (nicht
+    ''), ein spaeterer Import darf das Schlussfoto also wieder laden. Gibt den alten Foto-Namen
+    zurueck, damit der Aufrufer die Datei loescht."""
+    t = get(conn, trail_id)
+    if not t:
+        raise TrailError("Trail nicht gefunden.")
+    conn.execute(
+        "UPDATE trails SET gemacht=0, gemacht_datum=NULL, mitspieler=NULL, bemerkung='', erfasst_von=NULL, "
+        "erfasst_am=NULL, start_zeit=NULL, ziel_zeit=NULL, team_code=NULL, bestellung=NULL, foto_url=NULL, "
+        "foto=NULL WHERE id=?", (trail_id,))
+    return t.get("foto")
 
 
 def set_import(conn, trail_id, start=None, ziel=None, code=None, bestellung=None, foto_url=None):

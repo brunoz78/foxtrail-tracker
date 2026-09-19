@@ -653,5 +653,36 @@ def test_filter_ohne_angabe(app):
         assert all(v != trails.LEER for v, _ in trails.filter_options(conn)["grad"])
 
 
+def test_trail_zuruecksetzen(app, tmp_path):
+    app.config["FOTO_DIR"] = str(tmp_path / "fotos")
+    c = app.test_client()
+    login(c)
+    # Haken wieder weg und keine Bemerkung -> auch "Erfasst von" leer
+    c.post("/trail/2", data={"gemacht": "1", "gemacht_datum": "2025-01-01", "next": "/"})
+    c.post("/trail/2", data={"gemacht_datum": "2025-01-01", "next": "/"})
+    with db.session(app.config["DB_PATH"]) as conn:
+        t = trails.get(conn, 2)
+    assert t["gemacht"] == 0 and t["erfasst_von"] is None and t["erfasst_am"] is None
+    # mit Bemerkung bleibt "Erfasst von"
+    c.post("/trail/2", data={"bemerkung": "irgendwann", "next": "/"})
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 2)["erfasst_von"] == "admin"
+    # Zuruecksetzen: alles weg, Foto-Datei geloescht
+    (tmp_path / "fotos").mkdir()
+    (tmp_path / "fotos" / "2.jpg").write_bytes(b"x")
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET gemacht=1, gemacht_datum='2024-01-01', mitspieler=2, foto='2.jpg', "
+                     "team_code='ABC', bestellung='1', start_zeit='2024-01-01 10:00' WHERE id = 2")
+    assert "Einträge zurücksetzen" in c.get("/trail/2").get_data(as_text=True)
+    r = c.post("/trail/2/zuruecksetzen", data={"next": "/"}, follow_redirects=True)
+    assert "Einträge zurückgesetzt" in r.get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        t = trails.get(conn, 2)
+    assert (t["gemacht"], t["gemacht_datum"], t["mitspieler"], t["bemerkung"], t["erfasst_von"]) == (0, None, None, "", None)
+    assert t["foto"] is None and t["team_code"] is None and t["bestellung"] is None and t["start_zeit"] is None
+    assert not (tmp_path / "fotos" / "2.jpg").exists()
+    assert "Einträge zurücksetzen" not in c.get("/trail/2").get_data(as_text=True)   # nichts mehr da
+
+
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"

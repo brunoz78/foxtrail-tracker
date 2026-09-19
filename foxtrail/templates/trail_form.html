@@ -87,6 +87,15 @@
       <a class="btn-link" href="{{ next }}">Abbrechen</a>
     </div>
   </form>
+  {% if t.quelle != 'manual' and (t.gemacht or t.bemerkung or t.erfasst_von or t.foto or t.bestellung
+                                  or t.team_code or t.start_zeit or t.foto_url) %}
+  <form method="post" action="{{ url_for('trail_zuruecksetzen', tid=t.id) }}" class="danger"
+        onsubmit="return confirm('Alle eigenen Einträge zu diesem Trail entfernen? Gemacht, Datum, Mitspieler, Bemerkung, Importdaten und Foto werden gelöscht.')">
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="secondary">Einträge zurücksetzen</button>
+    <span class="muted small">Trail wieder auf „offen“ und ohne eigene Angaben</span>
+  </form>
+  {% endif %}
   {% if t.quelle == 'manual' %}
   <form method="post" action="{{ url_for('trail_delete', tid=t.id) }}" class="danger"
         onsubmit="return confirm('Diesen manuell erfassten Trail wirklich löschen?')">

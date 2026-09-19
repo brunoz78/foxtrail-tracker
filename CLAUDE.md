@@ -33,6 +33,10 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   auch ohne Haken als „gemacht“. Ein Foto-Upload bei einem offenen Trail speichert nur das Foto und
   öffnet das Formular mit vorgesetztem Haken (`?gemacht=1`) und der Bitte ums Datum. Ein schon
   gemachter Trail lässt sich per Haken zurücksetzen. Nur Bemerkung ändert nichts.
+  Offen und ohne Bemerkung → `erfasst_von`/`erfasst_am` werden geleert („nicht erfasst“). Knopf
+  „Einträge zurücksetzen“ (`POST /trail/<id>/zuruecksetzen`, `trails.zuruecksetzen`, nur Website-Trails;
+  manuelle werden gelöscht): gemacht, Datum, Mitspieler, Bemerkung, Erfasst von, Importdaten und Foto
+  weg (Datei gelöscht, `foto = NULL`, ein späterer Import darf es wieder laden).
 - **Typ** ist `foxtrail | mini | maxi | go` und wird aus dem Namen abgeleitet
   (`trails.typ_aus_name`: Wort „Mini“/„Maxi“ im Namen, GO vom Badge „Digitale
   Schnitzeljagd“). foxtrail.ch zeigt MINI/MAXI nur als Badge im Titelbild, im HTML gibt

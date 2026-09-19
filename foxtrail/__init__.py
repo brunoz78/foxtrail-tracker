@@ -309,6 +309,19 @@ def create_app(test_config=None):
             flash(str(ex), "fehler")
         return redirect(url_for("index"))
 
+    @app.route("/trail/<int:tid>/zuruecksetzen", methods=["POST"])
+    @login_required
+    def trail_zuruecksetzen(tid):
+        conn = get_conn()
+        try:
+            alt = trails.zuruecksetzen(conn, tid)
+        except trails.TrailError as ex:
+            flash(str(ex), "fehler")
+            return redirect(url_for("index"))
+        fotos.entfernen(app.config["FOTO_DIR"], alt)
+        flash("Einträge zurückgesetzt – der Trail ist wieder offen.")
+        return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None))
+
     # ---- Import der eigenen Bestellungen (foxtrail.ch-Konto) ------------ #
     @app.route("/import", methods=["GET", "POST"])
     @admin_required                     # schreibt viele Trails auf einmal - nur Admins
