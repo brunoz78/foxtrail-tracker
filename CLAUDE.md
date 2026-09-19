@@ -70,6 +70,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   nicht, sagt das aber ausdrücklich.
   Eingetragene und ergänzte Trails bekommen `erfasst_von = "Import (<benutzer>)"` (Kommandozeile:
   "Import"), damit man sie von Eingaben von Hand unterscheiden kann (Wunsch von Bruno, 2026-09-19).
+  Auch übersprungene, schon gemachte Trails aus der Bestellliste werden so gekennzeichnet, wenn sie
+  es noch nicht sind (`zuordnen(..., benutzer=)` → `e["_kennzeichnen"]`, Vorschau sagt es).
 - **Fotos** (`foxtrail/fotos.py`): Upload auf der Detailseite (`POST /trail/<id>/foto`,
   aktion `hochladen | loeschen | foxtrail`). Pillow dreht nach EXIF, verkleinert auf 2560 px
   und speichert als JPEG `<id>-<zeit>.jpg` (entfernt EXIF/GPS; neuer Name = neue URL, daher

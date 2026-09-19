@@ -308,11 +308,14 @@ def _ergaenzungen(t, e, eindeutig):
     return was, hinweis
 
 
-def zuordnen(conn, eintraege, heute=None):
+def zuordnen(conn, eintraege, heute=None, benutzer=None):
     """Jeden Eintrag einem Trail zuordnen und entscheiden, was passieren wuerde.
     Ergibt Liste von (eintrag, trail_oder_None, aktion, grund) mit aktion in
-    'setzen' | 'ergaenzen' | 'uebersprungen' | 'unbekannt'."""
+    'setzen' | 'ergaenzen' | 'uebersprungen' | 'unbekannt'.
+    benutzer (wer importiert): bereits gemachte Trails ohne sonstige Aenderung werden dann als
+    "Import (benutzer)" gekennzeichnet (e["_kennzeichnen"], erfasst_von), wenn sie es noch nicht sind."""
     heute = heute or datetime.date.today().isoformat()
+    marke = erfasst_durch_import(benutzer) if benutzer else None
     alle = [dict(r) for r in conn.execute("SELECT * FROM trails")]
     by_name = {}
     for t in alle:
@@ -345,8 +348,10 @@ def zuordnen(conn, eintraege, heute=None):
             plan.append((e, t, "ergaenzen", "bereits gemacht – wird ergänzt: " + ", ".join(was)
                          + "".join(f". {h}" for h in hinweis)))
         elif t["gemacht"]:
+            e["_kennzeichnen"] = bool(marke and t.get("erfasst_von") != marke)
             plan.append((e, t, "uebersprungen",
                          f"bereits als gemacht erfasst ({_datum_de(t['gemacht_datum'])})"
+                         + (f" – „Erfasst von“ wird auf „{marke}“ gesetzt" if e["_kennzeichnen"] else "")
                          + "".join(f". {h}" for h in hinweis)))
         else:
             plan.append((e, t, "setzen", _foto_hinweis(t, e) or ""))
@@ -382,8 +387,12 @@ def anwenden(conn, plan, benutzer="import", foto_dir=None):
     erfasst_von wird bei jedem eingetragenen oder ergaenzten Trail auf "Import (...)" gesetzt.
     Gibt {'gesetzt', 'ergaenzt', 'fotos', 'foto_fehler'} zurueck."""
     benutzer = erfasst_durch_import(benutzer)
-    res = {"gesetzt": 0, "ergaenzt": 0, "fotos": 0, "foto_fehler": 0}
+    res = {"gesetzt": 0, "ergaenzt": 0, "gekennzeichnet": 0, "fotos": 0, "foto_fehler": 0}
     for e, t, aktion, _ in plan:
+        if aktion == "uebersprungen" and e.get("_kennzeichnen"):
+            conn.execute("UPDATE trails SET erfasst_von = ? WHERE id = ?", (benutzer, t["id"]))
+            res["gekennzeichnet"] += 1
+            continue
         if aktion == "setzen":
             trails.update_done(conn, t["id"], {
                 "gemacht": "1", "gemacht_datum": e["datum"],

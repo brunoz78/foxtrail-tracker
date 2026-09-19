@@ -125,7 +125,7 @@ def cmd_import_bestellungen(a):
     if not eintraege:
         sys.exit("Keine Bestellungen gefunden - ist das die Seite 'Deine Bestellungen'?")
     with db.session() as conn:
-        plan = bestellungen.zuordnen(conn, eintraege)
+        plan = bestellungen.zuordnen(conn, eintraege, benutzer=a.benutzer)
         breite = max(len(e["name"]) for e, *_ in plan) + 2
         for e, t, aktion, grund in plan:
             ziel = f"{t['ort']} | {t['name']}" if t else "-"
@@ -141,6 +141,7 @@ def cmd_import_bestellungen(a):
             return
         res = bestellungen.anwenden(conn, plan, a.benutzer, None if a.ohne_fotos else config.foto_dir())
     print(f"\n{res['gesetzt']} Trail(s) als gemacht eingetragen, {res['ergaenzt']} ergaenzt, "
+          f"{res['gekennzeichnet']} als Import gekennzeichnet, "
           f"{res['fotos']} Schlussfoto(s) geladen, {res['foto_fehler']} nicht ladbar.")
 
 

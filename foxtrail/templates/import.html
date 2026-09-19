@@ -40,7 +40,8 @@
   </details>
   {% else %}
   <p><b>{{ zeilen|length }}</b> Bestellungen gelesen:
-    <b>{{ n_setzen }}</b> als gemacht eintragen, <b>{{ n_erg }}</b> ergänzen, {{ n_skip }} übersprungen, {{ n_unbekannt }} unbekannt.</p>
+    <b>{{ n_setzen }}</b> als gemacht eintragen, <b>{{ n_erg }}</b> ergänzen, {{ n_skip }} übersprungen{% if n_kenn %}
+    (davon <b>{{ n_kenn }}</b> als Import kennzeichnen){% endif %}, {{ n_unbekannt }} unbekannt.</p>
   <div class="tablewrap"><table class="trails">
     <thead><tr><th>Datum</th><th>Trail</th><th class="r">Pers.</th><th class="r">Spielzeit</th><th>Foto</th><th>Aktion</th><th>Zuordnung</th></tr></thead>
     <tbody>
@@ -64,7 +65,7 @@
     <input type="hidden" name="schritt" value="schreiben">
     <input type="hidden" name="daten" value="{{ daten }}">
     <div class="actions">
-      {% if n_setzen or n_erg %}
+      {% if n_setzen or n_erg or n_kenn %}
       <button type="submit">Jetzt eintragen</button>
       {% endif %}
       <a class="btn-link" href="{{ url_for('import_bestellungen') }}">Abbrechen</a>

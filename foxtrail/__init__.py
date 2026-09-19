@@ -319,10 +319,10 @@ def create_app(test_config=None):
             except ValueError:
                 flash("Ungültige Daten – bitte die Datei nochmals prüfen.")
                 return redirect(url_for("import_bestellungen"))
-            plan = bestellungen.zuordnen(conn, eintraege)
+            plan = bestellungen.zuordnen(conn, eintraege, benutzer=current_user()["username"])
             res = bestellungen.anwenden(conn, plan, current_user()["username"], app.config["FOTO_DIR"])
             msg = (f"Import: {res['gesetzt']} als gemacht eingetragen, {res['ergaenzt']} ergänzt, "
-                   f"{res['fotos']} Schlussfoto(s) geladen")
+                   f"{res['gekennzeichnet']} als Import gekennzeichnet, {res['fotos']} Schlussfoto(s) geladen")
             if res["foto_fehler"]:
                 msg += f", {res['foto_fehler']} Foto(s) nicht ladbar"
             flash(msg + ".")
@@ -340,18 +340,23 @@ def create_app(test_config=None):
             else:
                 inhalt = f.read().decode("utf-8", "replace") if f and f.filename else (request.form.get("text") or "")
             eintraege = bestellungen.parse(inhalt) if inhalt else []
-            if inhalt and not eintraege:
+            if not inhalt:
+                pass                                   # Abruf gescheitert, Meldung steht schon da
+            elif not eintraege:
                 flash("Keine Bestellungen gefunden. Erwartet wird die Datei konto.json oder der Text "
                       "der Seite „Deine Bestellungen“.")
             else:
                 zeilen = [{"e": e, "t": t, "aktion": aktion, "grund": grund,
                            "spielzeit": trails.spielzeit_label(trails.spielzeit_min(e["start"], e["ziel"]))}
-                          for e, t, aktion, grund in bestellungen.zuordnen(conn, eintraege)]
+                          for e, t, aktion, grund in bestellungen.zuordnen(
+                              conn, eintraege, benutzer=current_user()["username"])]
                 daten = json.dumps(eintraege, ensure_ascii=False)
         n = {a: sum(1 for z in (zeilen or []) if z["aktion"] == a)
              for a in ("setzen", "ergaenzen", "uebersprungen", "unbekannt")}
+        n_kenn = sum(1 for z in (zeilen or []) if z["e"].get("_kennzeichnen"))
         return render_template("import.html", zeilen=zeilen, daten=daten, n_setzen=n["setzen"],
-                               n_erg=n["ergaenzen"], n_skip=n["uebersprungen"], n_unbekannt=n["unbekannt"])
+                               n_erg=n["ergaenzen"], n_skip=n["uebersprungen"], n_unbekannt=n["unbekannt"],
+                               n_kenn=n_kenn)
 
     # ---- Bilder ------------------------------------------------------- #
     # Die URLs tragen den Dateinamen als ?v=..., ein ersetztes Foto hat also eine neue URL

@@ -598,6 +598,7 @@ def test_import_mit_konto_link(app, monkeypatch):
     monkeypatch.setattr(bestellungen, "abrufen", fehler)
     html = c.post("/import", data={"link": "x"}).get_data(as_text=True)
     assert "hat den Link nicht angenommen" in html
+    assert "Bestellungen gelesen" not in html and "Konto-Link aus der Mail" in html   # wieder das Formular
 
 
 def test_healthz(app):
