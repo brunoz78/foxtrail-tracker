@@ -1370,7 +1370,7 @@
   }
  ],
  "neu_seit_quelle": "https://foxtrail.ch/thema/neuigkeiten/ (Datum des Beitrags), Stand 2026-09-17",
- "ehemalig_quelle": "Trails, die foxtrail.ch frueher angeboten hat: archivierte Kategorie-Seiten im Internet Archive (web.archive.org, Staende 2023-11 bis 2026-06, 91 Seiten), abgeglichen am 2026-09-19. zuletzt_gesehen = juengster Archivstand, der den Trail listet. Schwierigkeit ist dort nicht archiviert.",
+ "ehemalig_quelle": "Trails, die foxtrail.ch frueher angeboten hat: archivierte Kategorie-Seiten im Internet Archive (web.archive.org, Staende 2023-11 bis 2026-06, 91 Seiten), abgeglichen am 2026-09-19. zuletzt_gesehen = juengster Archivstand, der den Trail listet. ehemalig_entfernt = versehentlich aufgenommen (Castello Maxi: nur einmal ohne Angaben gelistet, 2026-09-19 entfernt). Schwierigkeit ist dort nicht archiviert.",
  "ehemalig": [
   {
    "slug": "bern-und-umgebung/ballenberg",
@@ -1542,19 +1542,6 @@
    "url": ""
   },
   {
-   "slug": "bern-und-umgebung/castello-maxi",
-   "ort": "Thun",
-   "name": "Castello Maxi",
-   "route": "",
-   "typ": "maxi",
-   "region": "bern-und-umgebung",
-   "bewertung": null,
-   "dauer": "",
-   "preis": null,
-   "zuletzt_gesehen": "2025-02-08",
-   "url": ""
-  },
-  {
    "slug": "zuerich-und-umgebung/alban",
    "ort": "Winterthur",
    "name": "Alban",
@@ -1606,5 +1593,8 @@
    "zuletzt_gesehen": "2025-07-18",
    "url": ""
   }
+ ],
+ "ehemalig_entfernt": [
+  "bern-und-umgebung/castello-maxi"
  ]
 }

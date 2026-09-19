@@ -320,3 +320,19 @@ def test_umzug_neue_adresse(tmp_path):
     p.write_text(json.dumps({"trails": [{"slug": "ostschweiz/baccara", "ort": "Rapperswil", "name": "Baccara"}]}),
                  encoding="utf-8")
     assert trails.seed_from_file(c, str(p)) == 0
+
+
+def test_seed_ehemalig_entfernt(tmp_path):
+    c = db.connect(str(tmp_path / "x.db"))
+    db.init_db(c)
+    p = tmp_path / "seed.json"
+    e = {"slug": "bern/castello-maxi", "ort": "Thun", "name": "Castello Maxi", "region": "bern-und-umgebung",
+         "zuletzt_gesehen": "2025-02-08"}
+    p.write_text(json.dumps({"trails": [], "ehemalig": [e, dict(e, slug="bern/y", name="Y")]}), encoding="utf-8")
+    assert trails.seed_from_file(c, str(p)) == 2
+    c.execute("UPDATE trails SET bemerkung = 'war da' WHERE slug = 'bern/y'")
+    p.write_text(json.dumps({"trails": [], "ehemalig": [],
+                             "ehemalig_entfernt": ["bern/castello-maxi", "bern/y"]}), encoding="utf-8")
+    trails.seed_from_file(c, str(p))
+    # unberuehrter wird entfernt, einer mit eigener Eintragung bleibt
+    assert [r[0] for r in c.execute("SELECT slug FROM trails")] == ["bern/y"]

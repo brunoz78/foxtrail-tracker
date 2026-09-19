@@ -105,7 +105,7 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   - taucht wieder auf → reaktiviert
   - manuell erfasste Trails (`quelle='manual'`) fasst der Abgleich nie an
   - Sicherung: < 50 % der bekannten Trails gefunden → Abbruch ohne Änderung
-- **Ehemalige Trails** (2026-09-19, Wunsch von Bruno): `trails_seed.json` → `"ehemalig"` hält 18
+- **Ehemalige Trails** (2026-09-19, Wunsch von Bruno): `trails_seed.json` → `"ehemalig"` hält 17
   Trails, die foxtrail.ch früher angeboten hat, ermittelt aus 91 archivierten Kategorie-Seiten im
   Internet Archive (Stände 2023-11 bis 2026-06, einmalig abgerufen, nur web.archive.org).
   `seed_from_file` fügt sie mit `im_angebot = 0` und `last_seen = zuletzt_gesehen` ein (offene →
@@ -113,7 +113,9 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Aristoteles und Ballenberg von Hand erfasst) bleiben manuell, bekommen aber leere Felder (Route,
   Dauer, Region, Bewertung, Preis) ergänzt – nie überschrieben. Keine Links ins Archiv (`url` leer,
   Wunsch von Bruno). Schwierigkeit ist nicht archiviert. 7 weitere Archiv-Slugs waren nur
-  umgezogen (anderer Regionspfad, gleicher Trail) und sind nicht dabei.
+  umgezogen (anderer Regionspfad, gleicher Trail) und sind nicht dabei. `"ehemalig_entfernt"`: Slugs, die
+  der Seed wieder löscht, solange unberührt (offen, kein Foto, keine Bemerkung) – bisher nur
+  Castello Maxi (nur einmal ohne Angaben gelistet, Bruno 2026-09-19). Einzige Ausnahme von „nie löschen“.
 - **Umzug** (`sync.umzug_von`): foxtrail.ch ändert manchmal nur den Regionsteil des Slugs. Neuer
   Slug + gleicher letzter Adressteil + gleicher Name (casefold) wie ein bekannter, nicht mehr
   gelisteter foxtrail-Trail → dessen Eintrag bekommt den neuen Slug (Meldung „Neue Adresse: …“ im

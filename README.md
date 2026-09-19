@@ -59,7 +59,7 @@ foxtrail.ch absichtlich unscharf.</sub>
 
 ## Abgleich-Regeln
 
-Die mitgelieferte Trail-Liste enthält auch 18 Trails, die foxtrail.ch früher angeboten hat
+Die mitgelieferte Trail-Liste enthält auch 17 Trails, die foxtrail.ch früher angeboten hat
 (ermittelt aus archivierten Seiten im Internet Archive, 2023–2025). Noch nicht gemachte stehen
 im Archiv; wer einen davon gemacht hat, markiert ihn dort als „gemacht“. Ist einer davon
 schon von Hand erfasst, wird er nicht doppelt angelegt; leere Felder (Route, Dauer, Region,

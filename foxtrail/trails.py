@@ -385,6 +385,12 @@ def seed_from_file(conn, path=None):
         data = json.load(fh)
     items = data["trails"] if isinstance(data, dict) else data
     ehemalig = data.get("ehemalig", []) if isinstance(data, dict) else []
+    # Irrtuemlich aufgenommene ehemalige Trails wieder entfernen - nur solange niemand etwas
+    # eingetragen hat (offen, kein Foto, keine Bemerkung) und foxtrail.ch ihn nicht anbietet.
+    for slug in (data.get("ehemalig_entfernt", []) if isinstance(data, dict) else []):
+        conn.execute("DELETE FROM trails WHERE slug = ? AND quelle = 'foxtrail' AND im_angebot = 0 "
+                     "AND gemacht = 0 AND COALESCE(foto, '') = '' AND COALESCE(bemerkung, '') = ''",
+                     (slug,))
     ts = now()
     n = 0
     namen = {}
