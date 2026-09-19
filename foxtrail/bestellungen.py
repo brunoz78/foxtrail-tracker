@@ -371,9 +371,17 @@ def lade_foto(url, foto_dir, trail_id):
         return None
 
 
+def erfasst_durch_import(benutzer):
+    """'erfasst_von' fuer Eintraege aus dem Import: 'Import (admin)', auf der Kommandozeile 'Import'.
+    So ist in der Liste (Spalte "Erfasst von") und auf der Trail-Seite erkennbar, woher sie stammen."""
+    return "Import" if not benutzer or benutzer == "import" else f"Import ({benutzer})"
+
+
 def anwenden(conn, plan, benutzer="import", foto_dir=None):
     """setzen/ergaenzen ausfuehren; Bemerkung bleibt erhalten. foto_dir=None: keine Fotos laden.
+    erfasst_von wird bei jedem eingetragenen oder ergaenzten Trail auf "Import (...)" gesetzt.
     Gibt {'gesetzt', 'ergaenzt', 'fotos', 'foto_fehler'} zurueck."""
+    benutzer = erfasst_durch_import(benutzer)
     res = {"gesetzt": 0, "ergaenzt": 0, "fotos": 0, "foto_fehler": 0}
     for e, t, aktion, _ in plan:
         if aktion == "setzen":

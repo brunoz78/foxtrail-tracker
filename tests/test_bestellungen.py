@@ -228,8 +228,10 @@ def test_zuordnen_und_anwenden_text():
     assert res == {"gesetzt": 1, "ergaenzt": 1, "fotos": 0, "foto_fehler": 0}
     col = trails.get(c, _id(c, "ostschweiz/columban"))
     assert col["gemacht"] == 1 and col["gemacht_datum"] == "2026-09-17" and col["mitspieler"] == 2
-    assert col["erfasst_von"] == "bruno" and col["team_code"] == "AAAAAA" and col["bestellung"] == "418324"
+    assert col["erfasst_von"] == "Import (bruno)" and col["team_code"] == "AAAAAA" and col["bestellung"] == "418324"
     h = trails.get(c, hera)
+    assert h["erfasst_von"] == "Import (bruno)"                                  # auch beim Ergaenzen
+    assert bestellungen.erfasst_durch_import("import") == "Import"               # Kommandozeile
     datum_bestellung = next(e["datum"] for e, _, _, _ in plan if e["name"] == "Hera")
     assert "Datum 01.01.2020 → " in aktionen["Hera"][2] and "Team-Code" in aktionen["Hera"][2]
     assert h["gemacht_datum"] == datum_bestellung and h["bemerkung"] == "alt"   # Datum korrigiert

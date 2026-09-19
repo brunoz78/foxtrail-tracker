@@ -68,6 +68,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Vorschau nennt jede Änderung einzeln; ein von Hand gelöschtes (`foto = ''`) oder durch ein eigenes
   ersetztes Foto (Name `<id>-<zeit>.jpg` statt `<id>.jpg`, `_foto_hinweis`) lädt der Import
   nicht, sagt das aber ausdrücklich.
+  Eingetragene und ergänzte Trails bekommen `erfasst_von = "Import (<benutzer>)"` (Kommandozeile:
+  "Import"), damit man sie von Eingaben von Hand unterscheiden kann (Wunsch von Bruno, 2026-09-19).
 - **Fotos** (`foxtrail/fotos.py`): Upload auf der Detailseite (`POST /trail/<id>/foto`,
   aktion `hochladen | loeschen | foxtrail`). Pillow dreht nach EXIF, verkleinert auf 2560 px
   und speichert als JPEG `<id>-<zeit>.jpg` (entfernt EXIF/GPS; neuer Name = neue URL, daher
