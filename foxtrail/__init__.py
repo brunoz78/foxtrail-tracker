@@ -270,8 +270,11 @@ def create_app(test_config=None):
             try:
                 if t["quelle"] == "manual":
                     trails.update_manual(conn, tid, request.form)
-                trails.update_done(conn, tid, request.form, current_user()["username"])
-                flash("Gespeichert.")
+                neu = trails.update_done(conn, tid, request.form, current_user()["username"])
+                if neu["gemacht"] and not t["gemacht"] and not request.form.get("gemacht"):
+                    flash("Gespeichert – als gemacht markiert (Datum bzw. Mitspieler eingetragen).")
+                else:
+                    flash("Gespeichert.")
                 return redirect(request.form.get("next") or url_for("index"))
             except trails.TrailError as ex:
                 flash(str(ex))
@@ -382,7 +385,11 @@ def create_app(test_config=None):
             else:
                 fotos.entfernen(ordner, t.get("foto"))
                 trails.set_foto(conn, tid, name)
-                flash("Foto gespeichert.")
+                # Ein Schlussfoto heisst: dort gewesen
+                if trails.als_gemacht(conn, tid, current_user()["username"]):
+                    flash("Foto gespeichert – Trail als gemacht markiert.")
+                else:
+                    flash("Foto gespeichert.")
         elif aktion == "loeschen" and t.get("foto"):
             fotos.entfernen(ordner, t["foto"])
             trails.set_foto(conn, tid, "")          # '' = bewusst geloescht, Import laedt es nicht neu

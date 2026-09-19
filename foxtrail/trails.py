@@ -270,10 +270,15 @@ def _clean_done(form, username):
 
 
 def update_done(conn, trail_id, form, username):
-    """Eigene Eintraege speichern: gemacht, Datum, Mitspieler, Bemerkung."""
+    """Eigene Eintraege speichern: gemacht, Datum, Mitspieler, Bemerkung.
+    Bei einem noch offenen Trail zaehlt ein eingetragenes Datum oder eine Mitspielerzahl als
+    "gemacht", auch ohne Haken (sonst gingen die Angaben stillschweigend verloren). Ein schon
+    gemachter Trail laesst sich weiterhin per Haken zuruecksetzen."""
     t = get(conn, trail_id)
     if not t:
         raise TrailError("Trail nicht gefunden.")
+    if not t["gemacht"] and ((form.get("gemacht_datum") or "").strip() or (form.get("mitspieler") or "").strip()):
+        form = dict(form.items(), gemacht="1")
     gemacht, datum, mit, bemerkung = _clean_done(form, username)
     conn.execute(
         "UPDATE trails SET gemacht=?, gemacht_datum=?, mitspieler=?, bemerkung=?, "
@@ -289,6 +294,14 @@ def set_import(conn, trail_id, start=None, ziel=None, code=None, bestellung=None
         "team_code=COALESCE(?, team_code), bestellung=COALESCE(?, bestellung), "
         "foto_url=COALESCE(?, foto_url) WHERE id=?",
         (start, ziel, code, bestellung, foto_url, trail_id))
+
+
+def als_gemacht(conn, trail_id, username):
+    """Offenen Trail als gemacht markieren (z. B. beim Hochladen eines Schlussfotos).
+    True, wenn er vorher offen war."""
+    cur = conn.execute("UPDATE trails SET gemacht=1, erfasst_von=?, erfasst_am=? WHERE id=? AND gemacht=0",
+                       (username, now(), trail_id))
+    return cur.rowcount == 1
 
 
 def set_foto(conn, trail_id, dateiname):

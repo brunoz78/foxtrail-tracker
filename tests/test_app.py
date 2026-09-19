@@ -255,6 +255,9 @@ def test_foto_hochladen_ersetzen_loeschen(app, tmp_path):
     with db.session(app.config["DB_PATH"]) as conn:
         erstes = trails.get(conn, 1)["foto"]
     assert erstes.startswith("1-") and Image.open(ordner / erstes).size == (2560, 1920)
+    assert "als gemacht markiert" in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 1)["gemacht"] == 1                 # Schlussfoto = dort gewesen
     # Vorschau fuer Liste/Kacheln
     r = c.get(f"/foto/1?g=klein&v={erstes}")
     assert r.status_code == 200 and Image.open(io.BytesIO(r.data)).size[0] == 640
@@ -532,6 +535,26 @@ def test_seiten_nicht_zwischengespeichert(app):
     assert c.get("/archiv").headers["Cache-Control"] == "no-store"
     assert c.get("/login").headers["Cache-Control"] == "no-store"
     assert "no-store" not in (c.get("/static/style.css").headers.get("Cache-Control") or "")
+
+
+def test_datum_ohne_haken_zaehlt_als_gemacht(app):
+    c = app.test_client()
+    login(c)
+    r = c.post("/trail/2", data={"gemacht_datum": "2025-04-12", "mitspieler": "2", "next": "/"},
+               follow_redirects=True)
+    assert "als gemacht markiert" in r.get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        t = trails.get(conn, 2)
+    assert (t["gemacht"], t["gemacht_datum"], t["mitspieler"]) == (1, "2025-04-12", 2)
+    # schon gemacht: Haken entfernen setzt zurueck, auch wenn das Datum noch im Formular steht
+    r = c.post("/trail/2", data={"gemacht_datum": "2025-04-12", "mitspieler": "2", "next": "/"},
+               follow_redirects=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 2)["gemacht"] == 0
+    # nur Bemerkung: bleibt offen
+    c.post("/trail/2", data={"bemerkung": "irgendwann", "next": "/"})
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert trails.get(conn, 2)["gemacht"] == 0
 
 
 def test_healthz(app):
