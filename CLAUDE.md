@@ -68,8 +68,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Vorschau nennt jede Änderung einzeln; ein von Hand gelöschtes (`foto = ''`) oder durch ein eigenes
   ersetztes Foto (Name `<id>-<zeit>.jpg` statt `<id>.jpg`, `_foto_hinweis`) lädt der Import
   nicht, sagt das aber ausdrücklich.
-  Eingetragene und ergänzte Trails bekommen `erfasst_von = "Import (<benutzer>)"` (Kommandozeile:
-  "Import"), damit man sie von Eingaben von Hand unterscheiden kann (Wunsch von Bruno, 2026-09-19).
+  Eingetragene und ergänzte Trails bekommen `erfasst_von = "Import"` (egal wer importiert, ohne
+  Benutzername), damit man sie von Eingaben von Hand unterscheiden kann (Wunsch von Bruno, 2026-09-19).
   Auch übersprungene, schon gemachte Trails aus der Bestellliste werden so gekennzeichnet, wenn sie
   es noch nicht sind (`zuordnen(..., benutzer=)` → `e["_kennzeichnen"]`, Vorschau sagt es).
 - **Fotos** (`foxtrail/fotos.py`): Upload auf der Detailseite (`POST /trail/<id>/foto`,

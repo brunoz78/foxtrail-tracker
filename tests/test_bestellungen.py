@@ -228,9 +228,9 @@ def test_zuordnen_und_anwenden_text():
     assert res == {"gesetzt": 1, "ergaenzt": 1, "gekennzeichnet": 0, "fotos": 0, "foto_fehler": 0}
     col = trails.get(c, _id(c, "ostschweiz/columban"))
     assert col["gemacht"] == 1 and col["gemacht_datum"] == "2026-09-17" and col["mitspieler"] == 2
-    assert col["erfasst_von"] == "Import (bruno)" and col["team_code"] == "AAAAAA" and col["bestellung"] == "418324"
+    assert col["erfasst_von"] == "Import" and col["team_code"] == "AAAAAA" and col["bestellung"] == "418324"
     h = trails.get(c, hera)
-    assert h["erfasst_von"] == "Import (bruno)"                                  # auch beim Ergaenzen
+    assert h["erfasst_von"] == "Import"                                  # auch beim Ergaenzen
     assert bestellungen.erfasst_durch_import("import") == "Import"               # Kommandozeile
     datum_bestellung = next(e["datum"] for e, _, _, _ in plan if e["name"] == "Hera")
     assert "Datum 01.01.2020 → " in aktionen["Hera"][2] and "Team-Code" in aktionen["Hera"][2]
@@ -370,10 +370,10 @@ def test_bekannte_trails_als_import_kennzeichnen():
     c.execute("UPDATE trails SET erfasst_von = 'admin', foto = ? WHERE id = ?", (f"{hera}.jpg", hera))
     plan = bestellungen.zuordnen(c, eintraege, heute="2026-09-17", benutzer="bruno")
     zeile = next((e, a, g) for e, t, a, g in plan if t and t["id"] == hera)
-    assert zeile[1] == "uebersprungen" and "wird auf „Import (bruno)“ gesetzt" in zeile[2]
+    assert zeile[1] == "uebersprungen" and "wird auf „Import“ gesetzt" in zeile[2]
     res = bestellungen.anwenden(c, plan, "bruno")
     assert res["gekennzeichnet"] == 1 and res["gesetzt"] == 0
-    assert trails.get(c, hera)["erfasst_von"] == "Import (bruno)"
+    assert trails.get(c, hera)["erfasst_von"] == "Import"
     # schon gekennzeichnet -> nichts mehr zu tun
     plan = bestellungen.zuordnen(c, eintraege, heute="2026-09-17", benutzer="bruno")
     assert not any(e.get("_kennzeichnen") for e, *_ in plan)
