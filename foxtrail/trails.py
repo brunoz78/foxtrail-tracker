@@ -248,7 +248,7 @@ def stats(conn):
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
-def _clean_done(form, username):
+def _clean_done(form, username, datum_pflicht=False):
     gemacht = 1 if form.get("gemacht") in ("1", "on", "ja") else 0
     datum = (form.get("gemacht_datum") or "").strip() or None
     if datum and not _DATE_RE.match(datum):
@@ -266,20 +266,23 @@ def _clean_done(form, username):
     bemerkung = (form.get("bemerkung") or "").strip()[:2000]
     if not gemacht:
         datum, mit = None, None
+    elif datum_pflicht and not datum:
+        raise TrailError("Bitte das Datum eintragen, an dem ihr den Trail gemacht habt.")
     return gemacht, datum, mit, bemerkung
 
 
-def update_done(conn, trail_id, form, username):
+def update_done(conn, trail_id, form, username, datum_pflicht=False):
     """Eigene Eintraege speichern: gemacht, Datum, Mitspieler, Bemerkung.
     Bei einem noch offenen Trail zaehlt ein eingetragenes Datum oder eine Mitspielerzahl als
     "gemacht", auch ohne Haken (sonst gingen die Angaben stillschweigend verloren). Ein schon
-    gemachter Trail laesst sich weiterhin per Haken zuruecksetzen."""
+    gemachter Trail laesst sich weiterhin per Haken zuruecksetzen. datum_pflicht (Oberflaeche):
+    ein gemachter Trail braucht ein Datum; Importe duerfen ohne."""
     t = get(conn, trail_id)
     if not t:
         raise TrailError("Trail nicht gefunden.")
     if not t["gemacht"] and ((form.get("gemacht_datum") or "").strip() or (form.get("mitspieler") or "").strip()):
         form = dict(form.items(), gemacht="1")
-    gemacht, datum, mit, bemerkung = _clean_done(form, username)
+    gemacht, datum, mit, bemerkung = _clean_done(form, username, datum_pflicht)
     conn.execute(
         "UPDATE trails SET gemacht=?, gemacht_datum=?, mitspieler=?, bemerkung=?, "
         "erfasst_von=?, erfasst_am=? WHERE id=?",
@@ -294,14 +297,6 @@ def set_import(conn, trail_id, start=None, ziel=None, code=None, bestellung=None
         "team_code=COALESCE(?, team_code), bestellung=COALESCE(?, bestellung), "
         "foto_url=COALESCE(?, foto_url) WHERE id=?",
         (start, ziel, code, bestellung, foto_url, trail_id))
-
-
-def als_gemacht(conn, trail_id, username):
-    """Offenen Trail als gemacht markieren (z. B. beim Hochladen eines Schlussfotos).
-    True, wenn er vorher offen war."""
-    cur = conn.execute("UPDATE trails SET gemacht=1, erfasst_von=?, erfasst_am=? WHERE id=? AND gemacht=0",
-                       (username, now(), trail_id))
-    return cur.rowcount == 1
 
 
 def set_foto(conn, trail_id, dateiname):
@@ -320,14 +315,14 @@ def _region_aus_form(form):
     return form.get("region") if form.get("region") in REGION_LABEL else ""
 
 
-def add_manual(conn, form, username):
+def add_manual(conn, form, username, datum_pflicht=False):
     """Manuell erfasster Trail (z. B. frueher gemacht, heute nicht mehr im Angebot)."""
     ort = (form.get("ort") or "").strip()[:100]
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
         raise TrailError("Ort und Name sind Pflichtfelder.")
     typ = _typ_aus_form(form, name)
-    gemacht, datum, mit, bemerkung = _clean_done(form, username)
+    gemacht, datum, mit, bemerkung = _clean_done(form, username, datum_pflicht)
     slug = "manual-" + uuid.uuid4().hex[:12]
     ts = now()
     conn.execute(

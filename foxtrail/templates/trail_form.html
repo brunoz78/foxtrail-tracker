@@ -73,10 +73,10 @@
       </div>
     </fieldset>
     {% endif %}
-    <fieldset><legend>Unsere Einträge</legend>
-      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if t.gemacht }}> Trail gemacht</label>
+    <fieldset id="eintraege"><legend>Unsere Einträge</legend>
+      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if t.gemacht or request.args.get('gemacht') }}> Trail gemacht</label>
       <div class="row">
-        <label>Datum <input type="date" name="gemacht_datum" value="{{ t.gemacht_datum or '' }}"></label>
+        <label>Datum <span class="muted small">(Pflicht, wenn gemacht)</span> <input type="date" name="gemacht_datum" value="{{ t.gemacht_datum or '' }}"></label>
         <label>Anzahl Mitspieler <input type="number" name="mitspieler" min="1" max="999" value="{{ t.mitspieler or '' }}"></label>
       </div>
       <label>Bemerkung <textarea name="bemerkung" rows="3" maxlength="2000">{{ t.bemerkung }}</textarea></label>
@@ -94,4 +94,14 @@
   </form>
   {% endif %}
 </div>
+<script>
+// Datum ist Pflicht, sobald "Trail gemacht" angehakt ist (der Server prueft es ebenfalls)
+document.querySelectorAll('input[name="gemacht"]').forEach(function (cb) {
+  var d = cb.form.querySelector('input[name="gemacht_datum"]');
+  if (!d) { return; }
+  var f = function () { d.required = cb.checked; };
+  cb.addEventListener('change', f);
+  f();
+});
+</script>
 {% endblock %}

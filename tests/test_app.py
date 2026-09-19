@@ -72,7 +72,7 @@ def test_bearbeiten_und_archiv(app):
     html = c.get("/archiv").get_data(as_text=True)
     assert "Simplon" in html
     # aus dem Archiv als gemacht markieren -> zurueck in die Liste
-    c.post("/trail/2", data={"gemacht": "1", "next": "/archiv"})
+    c.post("/trail/2", data={"gemacht": "1", "gemacht_datum": "2024-07-01", "next": "/archiv"})
     assert "Simplon" in c.get("/?f=gemacht").get_data(as_text=True)
     assert "Simplon" not in c.get("/archiv").get_data(as_text=True)
 
@@ -255,9 +255,11 @@ def test_foto_hochladen_ersetzen_loeschen(app, tmp_path):
     with db.session(app.config["DB_PATH"]) as conn:
         erstes = trails.get(conn, 1)["foto"]
     assert erstes.startswith("1-") and Image.open(ordner / erstes).size == (2560, 1920)
-    assert "als gemacht markiert" in html
+    # offener Trail: Foto allein macht ihn nicht "gemacht" (Datum ist Pflicht), der Haken ist
+    # aber vorgesetzt und das Formular bittet ums Datum
+    assert "Bitte noch das Datum eintragen" in html and 'name="gemacht" value="1" checked' in html
     with db.session(app.config["DB_PATH"]) as conn:
-        assert trails.get(conn, 1)["gemacht"] == 1                 # Schlussfoto = dort gewesen
+        assert trails.get(conn, 1)["gemacht"] == 0
     # Vorschau fuer Liste/Kacheln
     r = c.get(f"/foto/1?g=klein&v={erstes}")
     assert r.status_code == 200 and Image.open(io.BytesIO(r.data)).size[0] == 640
@@ -555,6 +557,30 @@ def test_datum_ohne_haken_zaehlt_als_gemacht(app):
     c.post("/trail/2", data={"bemerkung": "irgendwann", "next": "/"})
     with db.session(app.config["DB_PATH"]) as conn:
         assert trails.get(conn, 2)["gemacht"] == 0
+
+
+def test_gemacht_nur_mit_datum(app):
+    c = app.test_client()
+    login(c)
+    # Haken ohne Datum: nicht gespeichert, Fehlermeldung, Eingaben bleiben stehen
+    r = c.post("/trail/2", data={"gemacht": "1", "mitspieler": "3", "bemerkung": "toll", "next": "/"},
+               follow_redirects=True)
+    html = r.get_data(as_text=True)
+    assert "Bitte das Datum eintragen" in html and "toll" in html
+    with db.session(app.config["DB_PATH"]) as conn:
+        t = trails.get(conn, 2)
+    assert t["gemacht"] == 0 and not t["bemerkung"]
+    # nur Mitspieler (zaehlt als gemacht) ohne Datum: ebenfalls abgelehnt
+    r = c.post("/trail/2", data={"mitspieler": "3", "next": "/"}, follow_redirects=True)
+    assert "Bitte das Datum eintragen" in r.get_data(as_text=True)
+    # manueller Trail "gemacht" ohne Datum: nicht angelegt
+    r = c.post("/trail/neu", data={"ort": "Brienz", "name": "Ohne Datum", "gemacht": "1"},
+               follow_redirects=True)
+    assert "Bitte das Datum eintragen" in r.get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM trails WHERE name = 'Ohne Datum'").fetchone()[0] == 0
+    # Formular: Datum ist Pflicht, sobald der Haken gesetzt ist (Hinweis + JS)
+    assert "Pflicht, wenn gemacht" in c.get("/trail/2").get_data(as_text=True)
 
 
 def test_healthz(app):

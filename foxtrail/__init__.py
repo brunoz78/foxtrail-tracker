@@ -270,13 +270,15 @@ def create_app(test_config=None):
             try:
                 if t["quelle"] == "manual":
                     trails.update_manual(conn, tid, request.form)
-                neu = trails.update_done(conn, tid, request.form, current_user()["username"])
+                neu = trails.update_done(conn, tid, request.form, current_user()["username"],
+                                         datum_pflicht=True)
                 if neu["gemacht"] and not t["gemacht"] and not request.form.get("gemacht"):
                     flash("Gespeichert – als gemacht markiert (Datum bzw. Mitspieler eingetragen).")
                 else:
                     flash("Gespeichert.")
                 return redirect(request.form.get("next") or url_for("index"))
             except trails.TrailError as ex:
+                conn.rollback()                     # nichts halb speichern (manuelle Felder)
                 flash(str(ex))
                 t = dict(t, **{k: request.form.get(k, "") for k in
                                ("gemacht_datum", "mitspieler", "bemerkung")})
@@ -289,7 +291,7 @@ def create_app(test_config=None):
     def trail_new():
         if request.method == "POST":
             try:
-                tid = trails.add_manual(get_conn(), request.form, current_user()["username"])
+                tid = trails.add_manual(get_conn(), request.form, current_user()["username"], datum_pflicht=True)
                 flash("Trail manuell erfasst.")
                 return redirect(url_for("trail_edit", tid=tid))
             except trails.TrailError as ex:
@@ -385,11 +387,14 @@ def create_app(test_config=None):
             else:
                 fotos.entfernen(ordner, t.get("foto"))
                 trails.set_foto(conn, tid, name)
-                # Ein Schlussfoto heisst: dort gewesen
-                if trails.als_gemacht(conn, tid, current_user()["username"]):
-                    flash("Foto gespeichert – Trail als gemacht markiert.")
-                else:
+                if t["gemacht"]:
                     flash("Foto gespeichert.")
+                else:
+                    # Ein Schlussfoto heisst: dort gewesen - "gemacht" braucht aber ein Datum
+                    flash("Foto gespeichert. Bitte noch das Datum eintragen und speichern, "
+                          "dann ist der Trail als gemacht markiert.")
+                    return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None,
+                                            gemacht=1) + "#eintraege")
         elif aktion == "loeschen" and t.get("foto"):
             fotos.entfernen(ordner, t["foto"])
             trails.set_foto(conn, tid, "")          # '' = bewusst geloescht, Import laedt es nicht neu

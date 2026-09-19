@@ -25,10 +25,14 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Eine gemeinsame Liste** für alle Benutzer, **ein Eintrag pro Trail** (kein
   Mehrfach-Tracking). `erfasst_von` hält fest, wer zuletzt gespeichert hat.
 - **Mitspieler** = einfaches Zahlenfeld, keine Namen.
-- **Automatisch „gemacht“** (2026-09-19, Wunsch von Bruno): Bei einem offenen Trail setzen ein
-  eingetragenes Datum oder eine Mitspielerzahl (`update_done`) sowie das Hochladen eines Fotos
-  (`als_gemacht`) den Haken selbst, mit Hinweis in der Meldung. Ein schon gemachter Trail lässt sich
-  per Haken weiterhin zurücksetzen. Nur Bemerkung ändert nichts.
+- **Gemacht nur mit Datum** (2026-09-19, Wunsch von Bruno): In der Oberfläche (Trail bearbeiten,
+  Trail manuell erfassen) lässt sich „gemacht“ nur mit Datum speichern (`datum_pflicht=True` →
+  `TrailError`, Formular-Eingaben bleiben stehen, `conn.rollback()`). Im Formular macht ein kleines
+  Script das Datum zum Pflichtfeld, sobald der Haken gesetzt ist. Importe (Bestellungen, Excel)
+  dürfen ohne Datum. Bei einem offenen Trail gilt ein eingetragenes Datum oder eine Mitspielerzahl
+  auch ohne Haken als „gemacht“. Ein Foto-Upload bei einem offenen Trail speichert nur das Foto und
+  öffnet das Formular mit vorgesetztem Haken (`?gemacht=1`) und der Bitte ums Datum. Ein schon
+  gemachter Trail lässt sich per Haken zurücksetzen. Nur Bemerkung ändert nichts.
 - **Typ** ist `foxtrail | mini | maxi | go` und wird aus dem Namen abgeleitet
   (`trails.typ_aus_name`: Wort „Mini“/„Maxi“ im Namen, GO vom Badge „Digitale
   Schnitzeljagd“). foxtrail.ch zeigt MINI/MAXI nur als Badge im Titelbild, im HTML gibt
