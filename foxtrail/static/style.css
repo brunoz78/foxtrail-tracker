@@ -14,6 +14,8 @@ body { margin: 0; font: 15px/1.45 Arial, Helvetica, sans-serif; background: var(
 a { color: var(--green); }
 @media (prefers-color-scheme: dark) { a { color: #8fd0a6; } }
 main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+/* Liste, Kacheln, Archiv: ganze Bildschirmbreite (viele Spalten); Textseiten bleiben schmaler */
+main.voll { max-width: none; padding-left: 24px; padding-right: 24px; }
 footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 16px; }
 
 .top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 10px 16px; background: var(--green); color: #fff; }
@@ -155,9 +157,8 @@ a.thumb:hover img { box-shadow: 0 0 0 2px var(--green); }
 .kachel-kopf a.sort { color: inherit; text-decoration: none; }
 .kachel-kopf a.sort:hover, .kachel-kopf a.sort.on { text-decoration: underline; }
 .kachel-kopf a.sort .arrow { font-size: 9px; }
-.kacheln { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-@media (max-width: 960px) { .kacheln { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .kacheln { grid-template-columns: minmax(0, 1fr); } }
+/* So viele Spalten, wie Kacheln von mind. 380 px Platz haben (Laptop 3, Breitbild 6-8, Handy 1) */
+.kacheln { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr)); gap: 16px; }
 .kgrp { grid-column: 1 / -1; margin: 8px 0 -4px; color: var(--green); }
 @media (prefers-color-scheme: dark) { .kgrp { color: #a9d8b8; } }
 .kacheln .empty { grid-column: 1 / -1; text-align: center; padding: 24px; }
@@ -237,7 +238,7 @@ dl.rekorde dd { margin: 0; }
 /* ---- Smartphone ---------------------------------------------------------- */
 .navtoggle { display: none; }
 @media (max-width: 700px) {
-  main { padding: 12px; }
+  main, main.voll { padding: 12px; }
   h1 { font-size: 20px; margin: 4px 0 8px; }
   .head { gap: 4px 12px; }
   .kpis { gap: 10px; font-size: 13px; }

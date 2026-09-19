@@ -76,7 +76,7 @@
   </script>
   {% endif %}
 </header>
-<main>
+<main class="{% block main_class %}{% endblock %}">
   {% with msgs = get_flashed_messages() %}
     {% for m in msgs %}<div class="flash">{{ m }}</div>{% endfor %}
   {% endwith %}
