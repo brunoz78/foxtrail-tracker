@@ -101,6 +101,13 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   - taucht wieder auf → reaktiviert
   - manuell erfasste Trails (`quelle='manual'`) fasst der Abgleich nie an
   - Sicherung: < 50 % der bekannten Trails gefunden → Abbruch ohne Änderung
+- **Ehemalige Trails** (2026-09-19, Wunsch von Bruno): `trails_seed.json` → `"ehemalig"` hält 18
+  Trails, die foxtrail.ch früher angeboten hat, ermittelt aus 91 archivierten Kategorie-Seiten im
+  Internet Archive (Stände 2023-11 bis 2026-06, einmalig abgerufen, nur web.archive.org).
+  `seed_from_file` fügt sie mit `im_angebot = 0` und `last_seen = zuletzt_gesehen` ein (offene →
+  Archiv), nur wenn weder Slug noch Name schon existieren. `url` zeigt auf die archivierte
+  Produkt- bzw. Übersichtsseite (Link „Archiv ↗“). 7 weitere Archiv-Slugs waren nur umgezogen
+  (anderer Regionspfad, gleicher Trail) und sind nicht dabei.
 - **Archiv-Status wird nicht gespeichert, sondern abgeleitet**
   (`db.ARCHIV_COND`: `quelle='foxtrail' AND im_angebot=0 AND gemacht=0`).
   Nicht durch eine Status-Spalte ersetzen – die Ableitung garantiert, dass ein

@@ -349,12 +349,35 @@ def seed_from_file(conn, path=None):
     Einzige Ausnahme: im Seed hinterlegte Werte fuer neu_seit (aus den Neuigkeiten auf
     foxtrail.ch), schwierigkeit und bild_url werden bei vorhandenen Trails nachgetragen, wenn dort
     noch nichts steht - nie ueberschrieben.
+
+    "ehemalig": Trails, die foxtrail.ch frueher angeboten hat (aus archivierten Seiten im
+    Internet Archive). Sie werden mit im_angebot = 0 eingefuegt - offene landen damit im Archiv,
+    und "zuletzt gesehen" ist das Datum des juengsten Archivstands. Nur einfuegen, nie aendern;
+    taucht einer auf foxtrail.ch wieder auf, reaktiviert ihn der Abgleich. Gibt es schon einen Trail
+    mit demselben Namen (z. B. von Hand erfasst oder unter neuer Adresse), wird er ausgelassen.
     Gibt die Anzahl neu eingefuegter Trails zurueck."""
     with open(path or config.SEED_FILE, encoding="utf-8") as fh:
         data = json.load(fh)
     items = data["trails"] if isinstance(data, dict) else data
+    ehemalig = data.get("ehemalig", []) if isinstance(data, dict) else []
     ts = now()
     n = 0
+    namen = {r[0].casefold() for r in conn.execute("SELECT name FROM trails")}
+    for t in ehemalig:
+        if t["name"].casefold() in namen or                 conn.execute("SELECT 1 FROM trails WHERE slug = ?", (t["slug"],)).fetchone():
+            continue
+        gesehen = t["zuletzt_gesehen"] + " 00:00:00" if _DATE_RE.match(t.get("zuletzt_gesehen") or "") else ts
+        conn.execute(
+            "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, dauer, "
+            "preis, url, schwierigkeit, im_angebot, first_seen, last_seen) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0,?,?)",
+            (t["slug"], "foxtrail", t["ort"], t["name"], t.get("route", ""),
+             typ_aus_name(t["name"], go=(t.get("typ") == "go")) if t.get("typ") in (None, "foxtrail", "go")
+             else t["typ"],
+             t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
+             t.get("url", ""), t.get("schwierigkeit") if t.get("schwierigkeit") in GRADE else None,
+             gesehen, gesehen))
+        n += 1
     for t in items:
         neu_seit = t.get("neu_seit") if _DATE_RE.match(t.get("neu_seit") or "") else None
         grad = t.get("schwierigkeit") if t.get("schwierigkeit") in GRADE else None

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests der Abgleich-Regeln (ohne Netz, In-Memory-SQLite)."""
 
+import json
 import os
 import sys
 
@@ -265,3 +266,27 @@ def test_seed_insert_only(tmp_path):
     assert trails.seed_from_file(c, str(p)) == 0            # y nicht neu eingefuegt
     assert trails.get(c, 3)["im_angebot"] == 1               # z bleibt im Angebot
     assert slugs(trails.list_archiv(c)) == ["a/y"]
+
+
+def test_seed_ehemalige_trails(tmp_path):
+    c = db.connect(str(tmp_path / "e.db"))
+    db.init_db(c)
+    p = tmp_path / "seed.json"
+    p.write_text(json.dumps({"trails": [
+        {"slug": "aargau/aquae", "ort": "Baden", "name": "Aquae", "region": "aargau"}],
+        "ehemalig": [{"slug": "bern-und-umgebung/ballenberg", "ort": "Ballenberg", "name": "Ballenberg",
+                      "region": "bern-und-umgebung", "zuletzt_gesehen": "2024-12-07",
+                      "url": "https://web.archive.org/web/20241207/https://foxtrail.ch/x/"}]}), encoding="utf-8")
+    assert trails.seed_from_file(c, str(p)) == 2
+    t = dict(c.execute("SELECT * FROM trails WHERE slug = 'bern-und-umgebung/ballenberg'").fetchone())
+    assert t["im_angebot"] == 0 and t["last_seen"] == "2024-12-07 00:00:00" and t["quelle"] == "foxtrail"
+    assert [r["name"] for r in trails.list_archiv(c)] == ["Ballenberg"]        # offen -> Archiv
+    # der Abgleich laesst ihn in Ruhe, solange er nicht wieder auftaucht
+    sync.apply(c, [mk("aargau/aquae", ort="Baden", name="Aquae")])
+    assert c.execute("SELECT im_angebot FROM trails WHERE slug = 'bern-und-umgebung/ballenberg'").fetchone()[0] == 0
+    assert trails.seed_from_file(c, str(p)) == 0                                # nur einmal
+    # schon von Hand erfasst -> nicht doppelt
+    c2 = db.connect(str(tmp_path / "m.db"))
+    db.init_db(c2)
+    trails.add_manual(c2, {"ort": "Brienz", "name": "BALLENBERG"}, "bruno")
+    assert trails.seed_from_file(c2, str(p)) == 1

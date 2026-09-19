@@ -150,7 +150,7 @@
     </div>
   </a>
   {% if t.url %}<a class="kfox" href="{{ t.url }}" target="_blank" rel="noopener"
-     title="{{ t.name }} auf {{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else 'der Website' }} öffnen">{{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else 'Website' }} ↗</a>{% endif %}
+     title="{{ t.name }} {{ 'auf foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else ('im Internet Archive' if 'web.archive.org' in t.url else 'auf der Website') }} öffnen">{{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else ('Archiv' if 'web.archive.org' in t.url else 'Website') }} ↗</a>{% endif %}
   </div>
   {% else %}
   <p class="empty muted">Keine Trails gefunden.</p>
