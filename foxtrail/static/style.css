@@ -184,7 +184,6 @@ a.kfox:hover, a.kfox:focus-visible { text-decoration: underline; }
 @media (prefers-color-scheme: dark) { .kbild img { background: #1e1e1e; } }
 /* Titelbilder (3:2) fuellen die Flaeche; oben und unten fehlen je knapp 8 % */
 .kbild img.titel { object-fit: cover; }
-.kachel.gone .kbild img { filter: grayscale(.8); }
 .kleer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   color: var(--green); font-size: 22px; font-weight: bold; text-align: center; padding: 12px; }
 @media (prefers-color-scheme: dark) { .kleer { color: #a9d8b8; } }
