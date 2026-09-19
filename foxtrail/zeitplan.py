@@ -24,11 +24,11 @@ import datetime
 import json
 import os
 import random
-import re
 import sys
 import time
 
 from . import db, sync
+from .i18n import tr
 
 WOCHENTAG = 0                # Montag
 STUNDE, MINUTE = 4, 30
@@ -37,7 +37,7 @@ START_PAUSE = 60             # nachgeholter Lauf erst, wenn der Webserver steht
 HERZSCHLAG = 15 * 60         # so oft wird zeitplan.json aufgefrischt
 VERALTET = 2 * HERZSCHLAG    # aelter -> Prozess laeuft nicht mehr
 
-PLAN_TEXT = "jeden Montag um 04:30"
+PLAN_TEILE = ("Montag", "04:30")
 
 ZYKLEN = {"woechentlich": "Wöchentlich", "monatlich": "Monatlich", "aus": "Aus"}
 STANDARD_ZYKLUS = "woechentlich"
@@ -78,11 +78,12 @@ def naechster_lauf(conn, kandidat):
     return kandidat
 
 
-def plan_text(z, plan):
-    """'jeden Montag um 04:30' je nach Zyklus anpassen."""
-    if z == "monatlich":
-        return re.sub(r"^jeden (\S+) um", r"am ersten \1 im Monat um", plan or "")
-    return plan
+def plan_text(z, st):
+    """Zeitplan-Text je nach Zyklus; st = Status mit plan und plan_teile (Wochentag, Zeit)."""
+    teile = st.get("plan_teile")
+    if z == "monatlich" and teile:
+        return tr("am ersten {tag} im Monat um {zeit}", tag=tr(teile[0]), zeit=teile[1])
+    return st.get("plan")
 
 
 def mit_zyklus(conn, st):
@@ -90,7 +91,7 @@ def mit_zyklus(conn, st):
     if st is None:
         return None
     z = zyklus(conn)
-    st = dict(st, zyklus=z, plan=plan_text(z, st.get("plan")))
+    st = dict(st, zyklus=z, plan=plan_text(z, st))
     if z == "aus":
         st["naechster"] = ""
     elif z == "monatlich" and st.get("naechster_dt") and not st.get("nachholen"):
@@ -147,13 +148,14 @@ def status(pfad, jetzt=None):
     jetzt = jetzt or datetime.datetime.now()
     return {
         "aktiv": (jetzt - herzschlag).total_seconds() <= VERALTET,
-        "plan": PLAN_TEXT,
+        "plan": tr("jeden {tag} um {zeit}", tag=tr(PLAN_TEILE[0]), zeit=PLAN_TEILE[1]),
+        "plan_teile": PLAN_TEILE,
         "naechster_dt": naechster,
         "nachholen": bool(d.get("nachholen")),
         "naechster": sync.zeitpunkt_text(naechster)
-                     + (" (verpasster Termin wird nachgeholt)" if d.get("nachholen") else ""),
+                     + (" (" + tr("verpasster Termin wird nachgeholt") + ")" if d.get("nachholen") else ""),
         "letzter": "",
-        "verzoegerung": "" if d.get("nachholen") else f"{MAX_VERZOEGERUNG // 60} Min.",
+        "verzoegerung": "" if d.get("nachholen") else tr("{n} Min.", n=MAX_VERZOEGERUNG // 60),
         "docker": True,
     }
 

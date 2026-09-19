@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="{{ sprache }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,53 +10,62 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%232e5b3e'/%3E%3C/svg%3E">
 </head>
 <body>
+{# Sprachwahl: kleine POST-Formulare (gespeichert beim Benutzer bzw. in der Sitzung) #}
+{% macro sprachwahl() -%}
+<form method="post" action="{{ url_for('sprache_setzen') }}" class="sprachwahl">
+  <input type="hidden" name="next" value="{{ request.full_path }}">
+  {% for code, name in sprachen.items() %}<button type="submit" name="sprache" value="{{ code }}" title="{{ name }}"
+    class="{{ 'on' if code == sprache }}" lang="{{ code }}" {{ 'aria-current="true"'|safe if code == sprache }}>{{ code|upper }}</button>{% endfor %}
+</form>
+{%- endmacro %}
 <header class="top" id="top">
   <a class="brand" href="{{ url_for('index') }}">🦊 Foxtrail-Tracker</a>
   {% if me %}
   {# Auf dem Handy klappt ☰ das Menue auf; ohne JavaScript bleibt es immer offen #}
-  <button type="button" class="navtoggle" aria-controls="hauptnav" aria-expanded="false" aria-label="Menü"
+  <button type="button" class="navtoggle" aria-controls="hauptnav" aria-expanded="false" aria-label="{{ _('Menü') }}"
           onclick="var o=document.getElementById('top').classList.toggle('offen');this.setAttribute('aria-expanded',o)">☰</button>
   {% set ep = request.endpoint %}
   <nav id="hauptnav">
-    <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}">Trails
+    <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}">{{ _('Trails') }}
       {% if stats %}<span class="pill">{{ stats.gemacht }}/{{ stats.total }}</span>{% endif %}</a>
-    <a href="{{ url_for('statistik') }}" class="{{ 'on' if ep == 'statistik' }}">Statistik</a>
+    <a href="{{ url_for('statistik') }}" class="{{ 'on' if ep == 'statistik' }}">{{ _('Statistik') }}</a>
     {# Aufklappmenues: <details> geht ohne JavaScript; ein paar Zeilen JS schliessen sie beim
        Klick daneben bzw. wenn ein anderes aufgeht #}
     {% if darf_schreiben %}
     <details class="dd">
-      <summary class="{{ 'on' if ep in ('archiv', 'trail_new') }}">Mehr
+      <summary class="{{ 'on' if ep in ('archiv', 'trail_new') }}">{{ _('Mehr') }}
         {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</summary>
       <div class="dd-menu">
-        <a href="{{ url_for('archiv') }}" class="{{ 'on' if ep == 'archiv' }}">Archiv
+        <a href="{{ url_for('archiv') }}" class="{{ 'on' if ep == 'archiv' }}">{{ _('Archiv') }}
           {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}
-          <small>nicht mehr angebotene, offene Trails</small></a>
-        <a href="{{ url_for('trail_new') }}" class="{{ 'on' if ep == 'trail_new' }}">+ Trail manuell erfassen
-          <small>für Trails, die es nicht mehr gibt</small></a>
+          <small>{{ _('nicht mehr angebotene, offene Trails') }}</small></a>
+        <a href="{{ url_for('trail_new') }}" class="{{ 'on' if ep == 'trail_new' }}">{{ _('+ Trail manuell erfassen') }}
+          <small>{{ _('für Trails, die es nicht mehr gibt') }}</small></a>
       </div>
     </details>
     {% endif %}
     <details class="dd">
       <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'profil') }}"
-               title="Einstellungen{% if update %} – neue Version {{ update.version }} verfügbar{% endif %}" aria-label="Einstellungen"><span class="zahnrad" aria-hidden="true">⚙</span>{% if update %}<span class="upd-punkt" aria-hidden="true"></span>{% endif %}<span class="dd-text">Einstellungen</span></summary>
+               title="{{ _('Einstellungen') }}{% if update %} – {{ _('neue Version {version} verfügbar', version=update.version) }}{% endif %}" aria-label="{{ _('Einstellungen') }}"><span class="zahnrad" aria-hidden="true">⚙</span>{% if update %}<span class="upd-punkt" aria-hidden="true"></span>{% endif %}<span class="dd-text">{{ _('Einstellungen') }}</span></summary>
       <div class="dd-menu">
-        <div class="dd-kopf">Angemeldet als <b>{{ me.username }}</b>{% if me.is_admin %} (Admin){% elif not darf_schreiben %} (nur lesen){% endif %}</div>
+        <div class="dd-kopf">{{ _('Angemeldet als') }} <b>{{ me.username }}</b>{% if me.is_admin %} ({{ _('Admin') }}){% elif not darf_schreiben %} ({{ _('nur lesen') }}){% endif %}</div>
         {% if update %}
-        <a href="{{ update.url }}" class="dd-update" target="_blank" rel="noopener">Neue Version {{ update.version }} verfügbar ↗
-          <small>Update: im Proxmox-LXC <code>update</code>, mit Docker <code>docker compose pull</code></small></a>
+        <a href="{{ update.url }}" class="dd-update" target="_blank" rel="noopener">{{ _('Neue Version {version} verfügbar', version=update.version) }} ↗
+          <small>{{ _('Update: im Proxmox-LXC') }} <code>update</code>, {{ _('mit Docker') }} <code>docker compose pull</code></small></a>
         {% endif %}
         {% if me.is_admin %}
-        <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if ep == 'import_bestellungen' }}">Import
-          <small>Bestellungen von foxtrail.ch übernehmen</small></a>
-        <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if ep == 'sync_admin' }}">Abgleich
-          <small>Trail-Liste mit foxtrail.ch abgleichen</small></a>
-        <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}">Benutzer
-          <small>Benutzer anlegen und verwalten</small></a>
+        <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if ep == 'import_bestellungen' }}">{{ _('Import') }}
+          <small>{{ _('Bestellungen von foxtrail.ch übernehmen') }}</small></a>
+        <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if ep == 'sync_admin' }}">{{ _('Abgleich') }}
+          <small>{{ _('Trail-Liste mit foxtrail.ch abgleichen') }}</small></a>
+        <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}">{{ _('Benutzer') }}
+          <small>{{ _('Benutzer anlegen und verwalten') }}</small></a>
         {% endif %}
-        <a href="{{ url_for('profil') }}" class="{{ 'on' if ep == 'profil' }}">Passwort ändern</a>
-        <a href="{{ repo_url }}" class="dd-trenner" target="_blank" rel="noopener">Über Foxtrail-Tracker ↗
-          <small>Version {{ app_version }} · GitHub</small></a>
-        <a href="{{ url_for('logout') }}" class="dd-trenner">Abmelden</a>
+        <a href="{{ url_for('profil') }}" class="{{ 'on' if ep == 'profil' }}">{{ _('Passwort ändern') }}</a>
+        <div class="dd-sprache"><span>{{ _('Sprache') }}</span>{{ sprachwahl() }}</div>
+        <a href="{{ repo_url }}" class="dd-trenner" target="_blank" rel="noopener">{{ _('Über Foxtrail-Tracker') }} ↗
+          <small>{{ _('Version') }} {{ app_version }} · GitHub</small></a>
+        <a href="{{ url_for('logout') }}" class="dd-trenner">{{ _('Abmelden') }}</a>
       </div>
     </details>
   </nav>
@@ -76,6 +85,8 @@
     });
   })();
   </script>
+  {% else %}
+  {{ sprachwahl() }}
   {% endif %}
 </header>
 <main class="{% block main_class %}{% endblock %}">
@@ -85,13 +96,14 @@
   {% block content %}{% endblock %}
 </main>
 <footer>
-  Trail-Daten stammen von <a href="https://foxtrail.ch" rel="noopener">foxtrail.ch</a>.
-  Dieses Projekt ist privat und nicht mit der Foxtrail AG verbunden.
+  {{ _('Trail-Daten stammen von') }} <a href="https://foxtrail.ch" rel="noopener">foxtrail.ch</a>.
+  {{ _('Dieses Projekt ist privat und nicht mit der Foxtrail AG verbunden.') }}
 </footer>
 <script>
 // Passwortfelder: Auge zum kurzen Anzeigen (Kontrolle beim Tippen). Vor dem Absenden wird
 // das Feld wieder verdeckt, damit der Browser den Wert nicht als normalen Text merkt.
 (function () {
+  var TEXT_AN = {{ _('Passwort anzeigen')|tojson }}, TEXT_AUS = {{ _('Passwort verbergen')|tojson }};
   var AUF = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
   var ZU = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2"/></svg>';
   document.querySelectorAll('input[type=password]').forEach(function (inp) {
@@ -103,14 +115,14 @@
     b.type = 'button';
     b.className = 'pw-auge';
     b.innerHTML = AUF;
-    b.title = 'Passwort anzeigen';
+    b.title = TEXT_AN;
     b.setAttribute('aria-label', b.title);
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', function () {
       var zeigen = inp.type === 'password';
       inp.type = zeigen ? 'text' : 'password';
       b.innerHTML = zeigen ? ZU : AUF;
-      b.title = zeigen ? 'Passwort verbergen' : 'Passwort anzeigen';
+      b.title = zeigen ? TEXT_AUS : TEXT_AN;
       b.setAttribute('aria-label', b.title);
       b.setAttribute('aria-pressed', String(zeigen));
       inp.focus();

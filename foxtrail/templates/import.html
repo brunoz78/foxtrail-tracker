@@ -1,61 +1,55 @@
 {% extends "base.html" %}
-{% block title %}Import – Foxtrail-Tracker{% endblock %}
+{% block title %}{{ _('Import') }} – Foxtrail-Tracker{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Bestellungen von foxtrail.ch importieren</h1>
-  <p class="muted">Eingetragen werden Datum, Mitspieler, Start- und Zielzeit, Team-Code, Bestellnummer und
-    Schlussfoto. Bei bereits gemachten Trails werden fehlende Angaben ergänzt und ein abweichendes Datum
-    korrigiert; die Vorschau zeigt vorher genau, was passiert.</p>
+  <h1>{{ _('Bestellungen von foxtrail.ch importieren') }}</h1>
+  <p class="muted">{{ _('Eingetragen werden Datum, Mitspieler, Start- und Zielzeit, Team-Code, Bestellnummer und Schlussfoto. Bei bereits gemachten Trails werden fehlende Angaben ergänzt und ein abweichendes Datum korrigiert; die Vorschau zeigt vorher genau, was passiert.') }}</p>
 
   {% if zeilen is none %}
   <form method="post" autocomplete="off">
-    <label>Konto-Link aus der Mail von foxtrail.ch
+    <label>{{ _('Konto-Link aus der Mail von foxtrail.ch') }}
       <input type="password" name="link" required autocomplete="off" spellcheck="false"
              placeholder="https://foxtrail.ch/account/?foxtrail_magic=…"></label>
-    <p class="muted small">Den Link aus der Anmelde-Mail von foxtrail.ch einfügen. Er wird nur für diesen
-      Abruf verwendet und nicht gespeichert. Achtung: Wer den Link hat, ist in eurem foxtrail.ch-Konto
-      angemeldet – nicht weitergeben.</p>
+    <p class="muted small">{{ _('Den Link aus der Anmelde-Mail von foxtrail.ch einfügen. Er wird nur für diesen Abruf verwendet und nicht gespeichert. Achtung: Wer den Link hat, ist in eurem foxtrail.ch-Konto angemeldet – nicht weitergeben.') }}</p>
     <div class="actions">
-      <button type="submit">Bestellungen abrufen</button>
-      <span class="muted small">Es wird noch nichts gespeichert.</span>
+      <button type="submit">{{ _('Bestellungen abrufen') }}</button>
+      <span class="muted small">{{ _('Es wird noch nichts gespeichert.') }}</span>
     </div>
   </form>
 
   <details class="alternativ">
-    <summary>Stattdessen Datei hochladen oder Text einfügen</summary>
-  <p class="muted small">Im Browser bei foxtrail.ch angemeldet die Adresse
-    <code>https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account</code> öffnen und mit Ctrl+S als
-    <b>konto.json</b> speichern, dann hier hochladen. Oder den Text der Seite „Deine Bestellungen“
-    einfügen (dann ohne Zeiten und Foto).</p>
+    <summary>{{ _('Stattdessen Datei hochladen oder Text einfügen') }}</summary>
+  <p class="muted small">{{ _('Im Browser bei foxtrail.ch angemeldet diese Adresse öffnen, mit Ctrl+S als konto.json speichern und hier hochladen:') }}
+    <code>https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account</code>. {{ _('Oder den Text der Seite „Deine Bestellungen“ einfügen (dann ohne Zeiten und Foto).') }}</p>
   <form method="post" enctype="multipart/form-data">
-    <label>Datei (konto.json oder gespeicherte Seite)
+    <label>{{ _('Datei (konto.json oder gespeicherte Seite)') }}
       <input type="file" name="datei" accept=".json,.html,.htm,.txt"></label>
-    <label>oder Seitentext einfügen
-      <textarea name="text" rows="6" placeholder="Bestellung vom 17.09.2026 (#418324) ..."></textarea></label>
+    <label>{{ _('oder Seitentext einfügen') }}
+      <textarea name="text" rows="6" placeholder="{{ _('Bestellung vom 17.09.2026 (#418324) ...') }}"></textarea></label>
     <div class="actions">
-      <button type="submit">Prüfen</button>
-      <span class="muted small">Es wird noch nichts gespeichert.</span>
+      <button type="submit">{{ _('Prüfen') }}</button>
+      <span class="muted small">{{ _('Es wird noch nichts gespeichert.') }}</span>
     </div>
   </form>
   </details>
   {% else %}
-  <p><b>{{ zeilen|length }}</b> Bestellungen gelesen:
-    <b>{{ n_setzen }}</b> als gemacht eintragen, <b>{{ n_erg }}</b> ergänzen, {{ n_skip }} übersprungen{% if n_kenn %}
-    (davon <b>{{ n_kenn }}</b> als Import kennzeichnen){% endif %}, {{ n_unbekannt }} unbekannt.</p>
+  <p>{{ _('{n} Bestellungen gelesen:', n=zeilen|length) }}
+    {{ _('{n} als gemacht eintragen', n=n_setzen) }}, {{ _('{n} ergänzen', n=n_erg) }}, {{ _('{n} übersprungen', n=n_skip) }}{% if n_kenn %}
+    ({{ _('davon {n} als Import kennzeichnen', n=n_kenn) }}){% endif %}, {{ _('{n} unbekannt', n=n_unbekannt) }}.</p>
   <div class="tablewrap"><table class="trails">
-    <thead><tr><th>Datum</th><th>Trail</th><th class="r">Pers.</th><th class="r">Spielzeit</th><th>Foto</th><th>Aktion</th><th>Zuordnung</th></tr></thead>
+    <thead><tr><th>{{ _('Datum') }}</th><th>{{ _('Trail') }}</th><th class="r">{{ _('Pers.') }}</th><th class="r">{{ _('Spielzeit') }}</th><th>{{ _('Foto') }}</th><th>{{ _('Aktion') }}</th><th>{{ _('Zuordnung') }}</th></tr></thead>
     <tbody>
     {% for z in zeilen %}
     <tr class="{{ 'done' if z.aktion in ('setzen', 'ergaenzen') else 'gone' }}">
       <td class="nowrap">{{ z.e.datum|datum if z.e.datum else '?' }}</td>
-      <td><b>{{ z.e.name }}</b>{% if z.e.teams > 1 %} <span class="tag">{{ z.e.teams }} Teams</span>{% endif %}</td>
+      <td><b>{{ z.e.name }}</b>{% if z.e.teams > 1 %} <span class="tag">{{ _('{n} Teams', n=z.e.teams) }}</span>{% endif %}</td>
       <td class="r">{{ z.e.personen or '' }}</td>
       <td class="r nowrap">{{ z.spielzeit }}</td>
       <td>{{ '📷' if z.e.foto_url else '' }}</td>
-      <td class="nowrap">{% if z.aktion == 'setzen' %}<span class="tag new">eintragen</span>
-        {% elif z.aktion == 'ergaenzen' %}<span class="tag new">ergänzen</span>
-        {% elif z.aktion == 'unbekannt' %}<span class="tag warn">unbekannt</span>
-        {% else %}<span class="tag">übersprungen</span>{% endif %}</td>
+      <td class="nowrap">{% if z.aktion == 'setzen' %}<span class="tag new">{{ _('eintragen') }}</span>
+        {% elif z.aktion == 'ergaenzen' %}<span class="tag new">{{ _('ergänzen') }}</span>
+        {% elif z.aktion == 'unbekannt' %}<span class="tag warn">{{ _('unbekannt') }}</span>
+        {% else %}<span class="tag">{{ _('übersprungen') }}</span>{% endif %}</td>
       <td class="muted">{% if z.t %}{{ z.t.ort }} | {{ z.t.name }}{% endif %}{% if z.grund %} <span class="small">({{ z.grund }})</span>{% endif %}</td>
     </tr>
     {% endfor %}
@@ -66,10 +60,10 @@
     <input type="hidden" name="daten" value="{{ daten }}">
     <div class="actions">
       {% if n_setzen or n_erg or n_kenn %}
-      <button type="submit">Jetzt eintragen</button>
+      <button type="submit">{{ _('Jetzt eintragen') }}</button>
       {% endif %}
-      <a class="btn-link" href="{{ url_for('import_bestellungen') }}">Abbrechen</a>
-      <span class="muted small">Schlussfotos werden beim Eintragen von foxtrail.ch geladen.</span>
+      <a class="btn-link" href="{{ url_for('import_bestellungen') }}">{{ _('Abbrechen') }}</a>
+      <span class="muted small">{{ _('Schlussfotos werden beim Eintragen von foxtrail.ch geladen.') }}</span>
     </div>
   </form>
   {% endif %}

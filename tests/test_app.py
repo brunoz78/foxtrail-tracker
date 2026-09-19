@@ -423,7 +423,7 @@ def test_timer_status():
                "RandomizedDelayUSec=30min\n")
     t = sync.timer_status(ausgabe)
     assert t == {"aktiv": True, "plan": "jeden Montag um 04:30", "naechster": "Montag, 21.09.2026, 04:30",
-                 "naechster_dt": datetime.datetime(2026, 9, 21, 4, 30),
+                 "naechster_dt": datetime.datetime(2026, 9, 21, 4, 30), "plan_teile": ("Montag", "04:30"),
                  "letzter": "Montag, 14.09.2026, 04:41", "verzoegerung": "30 Min."}
     assert sync.timer_status("LoadState=not-found\nActiveState=inactive\n") is None
     assert sync.timer_status("")  is None
@@ -756,7 +756,7 @@ def test_abgleich_zyklus(app, monkeypatch):
         conn.execute("INSERT INTO sync_log (ts, ausloeser, ok) VALUES ('2026-10-13 09:00:00', 'web:admin', 1)")
         assert not zeitplan.termin_faellig(conn, dt(2026, 10, 19, 4, 30))
         assert zeitplan.naechster_lauf(conn, dt(2026, 10, 19, 4, 30)) == dt(2026, 11, 2, 4, 30)
-        st = zeitplan.mit_zyklus(conn, {"aktiv": True, "plan": "jeden Montag um 04:30", "naechster": "x",
+        st = zeitplan.mit_zyklus(conn, {"aktiv": True, "plan": "jeden Montag um 04:30", "naechster": "x", "plan_teile": ("Montag", "04:30"),
                                         "naechster_dt": dt(2026, 10, 19, 4, 30)})
         assert st["plan"] == "am ersten Montag im Monat um 04:30" and st["naechster"] == "Montag, 02.11.2026, 04:30"
         with pytest.raises(ValueError):

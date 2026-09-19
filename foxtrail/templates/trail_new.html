@@ -1,43 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Trail manuell erfassen – Foxtrail-Tracker{% endblock %}
+{% block title %}{{ _('Trail manuell erfassen') }} – Foxtrail-Tracker{% endblock %}
 {% block content %}
 <div class="card narrow">
-  <h1>Trail manuell erfassen</h1>
-  <p class="muted">Für Trails, die es auf foxtrail.ch nicht mehr gibt, die ihr aber gemacht habt.
-  Manuell erfasste Trails werden vom Abgleich nie verändert.</p>
+  <h1>{{ _('Trail manuell erfassen') }}</h1>
+  <p class="muted">{{ _('Für Trails, die es auf foxtrail.ch nicht mehr gibt, die ihr aber gemacht habt. Manuell erfasste Trails werden vom Abgleich nie verändert.') }}</p>
   <form method="post">
-    <fieldset><legend>Trail-Daten</legend>
+    <fieldset><legend>{{ _('Trail-Daten') }}</legend>
       <div class="row">
-        <label>Ort <input name="ort" value="{{ form.ort or '' }}" required maxlength="100" autofocus></label>
-        <label>Region <select name="region">
+        <label>{{ _('Ort') }} <input name="ort" value="{{ form.ort or '' }}" required maxlength="100" autofocus></label>
+        <label>{{ _('Region') }} <select name="region">
           <option value="">–</option>
-          {% for v, label in regionen.items() %}<option value="{{ v }}" {{ 'selected' if form.region == v }}>{{ label }}</option>{% endfor %}
+          {% for v, label in regionen.items() %}<option value="{{ v }}" {{ 'selected' if form.region == v }}>{{ _(label) }}</option>{% endfor %}
         </select></label>
       </div>
-      <label>Name <input name="name" value="{{ form.name or '' }}" required maxlength="100"></label>
-      <label>Route <input name="route" value="{{ form.route or '' }}" maxlength="300"></label>
+      <label>{{ _('Name') }} <input name="name" value="{{ form.name or '' }}" required maxlength="100"></label>
+      <label>{{ _('Route') }} <input name="route" value="{{ form.route or '' }}" maxlength="300"></label>
       <div class="row">
-        <label>Typ <select name="typ">
-          {% for v, label in typen.items() %}<option value="{{ v }}" {{ 'selected' if (form.typ or 'foxtrail') == v }}>{{ label }}</option>{% endfor %}
+        <label>{{ _('Typ') }} <select name="typ">
+          {% for v, label in typen.items() %}<option value="{{ v }}" {{ 'selected' if (form.typ or 'foxtrail') == v }}>{{ _(label) }}</option>{% endfor %}
         </select></label>
-        <label>Schwierigkeit <select name="schwierigkeit">
+        <label>{{ _('Schwierigkeit') }} <select name="schwierigkeit">
           <option value="">–</option>
-          {% for v, label in grade.items() %}<option value="{{ v }}" {{ 'selected' if form.schwierigkeit == v }}>{{ label }}</option>{% endfor %}
+          {% for v, label in grade.items() %}<option value="{{ v }}" {{ 'selected' if form.schwierigkeit == v }}>{{ _(label) }}</option>{% endfor %}
         </select></label>
-        <label>Dauer <input name="dauer" value="{{ form.dauer or '' }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
+        <label>{{ _('Dauer') }} <input name="dauer" value="{{ form.dauer or '' }}" maxlength="50" placeholder="{{ _('z. B. 2-3 Stunden') }}"></label>
       </div>
     </fieldset>
-    <fieldset><legend>Unsere Einträge</legend>
-      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if form.gemacht or not form }}> Trail gemacht</label>
+    <fieldset><legend>{{ _('Unsere Einträge') }}</legend>
+      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if form.gemacht or not form }}> {{ _('Trail gemacht') }}</label>
       <div class="row">
-        <label>Datum <span class="muted small">(Pflicht, wenn gemacht)</span> <input type="date" name="gemacht_datum" value="{{ form.gemacht_datum or '' }}"></label>
-        <label>Anzahl Mitspieler <input type="number" name="mitspieler" min="1" max="999" value="{{ form.mitspieler or '' }}"></label>
+        <label>{{ _('Datum') }} <span class="muted small">({{ _('Pflicht, wenn gemacht') }})</span> <input type="date" name="gemacht_datum" value="{{ form.gemacht_datum or '' }}"></label>
+        <label>{{ _('Anzahl Mitspieler') }} <input type="number" name="mitspieler" min="1" max="999" value="{{ form.mitspieler or '' }}"></label>
       </div>
-      <label>Bemerkung <textarea name="bemerkung" rows="3" maxlength="2000">{{ form.bemerkung or '' }}</textarea></label>
+      <label>{{ _('Bemerkung') }} <textarea name="bemerkung" rows="3" maxlength="2000">{{ form.bemerkung or '' }}</textarea></label>
     </fieldset>
     <div class="actions">
-      <button type="submit">Anlegen</button>
-      <a class="btn-link" href="{{ url_for('index') }}">Abbrechen</a>
+      <button type="submit">{{ _('Anlegen') }}</button>
+      <a class="btn-link" href="{{ url_for('index') }}">{{ _('Abbrechen') }}</a>
     </div>
   </form>
 </div>

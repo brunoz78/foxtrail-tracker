@@ -9,6 +9,7 @@ import re
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .db import now
+from .i18n import SPRACHEN, tr
 
 _NAME_RE = re.compile(r"^[a-z0-9._-]{2,32}$")
 MIN_PW_LEN = 8
@@ -30,7 +31,7 @@ def darf_schreiben(u):
 def _flags(rolle_):
     """(is_admin, nur_lesen) fuer eine Rolle."""
     if rolle_ not in ROLLEN:
-        raise UserError("Unbekannte Rolle.")
+        raise UserError(tr("Unbekannte Rolle."))
     return (1 if rolle_ == "admin" else 0), (1 if rolle_ == "lesen" else 0)
 
 
@@ -40,12 +41,12 @@ class UserError(Exception):
 
 def _check_name(name):
     if not _NAME_RE.match(name or ""):
-        raise UserError("Benutzername: 2-32 Zeichen, nur a-z, 0-9, Punkt, Minus, Unterstrich.")
+        raise UserError(tr("Benutzername: 2-32 Zeichen, nur a-z, 0-9, Punkt, Minus, Unterstrich."))
 
 
 def _check_pw(pw):
     if len(pw or "") < MIN_PW_LEN:
-        raise UserError(f"Passwort muss mindestens {MIN_PW_LEN} Zeichen haben.")
+        raise UserError(tr("Passwort muss mindestens {n} Zeichen haben.", n=MIN_PW_LEN))
 
 
 def get(conn, username):
@@ -53,6 +54,13 @@ def get(conn, username):
         return None
     row = conn.execute("SELECT * FROM users WHERE username = ?", (username.lower(),)).fetchone()
     return dict(row) if row else None
+
+
+def set_sprache(conn, username, sprache):
+    """Sprache der Oberflaeche; None/'' = automatisch (Browser)."""
+    if sprache and sprache not in SPRACHEN:
+        raise UserError(tr("Unbekannte Sprache."))
+    conn.execute("UPDATE users SET sprache = ? WHERE username = ?", (sprache or None, username))
 
 
 def set_spalten(conn, username, keys):
@@ -76,7 +84,7 @@ def add(conn, username, password, is_admin=False, rolle=None):
     _check_pw(password)
     admin, lesen = _flags(rolle or ("admin" if is_admin else "bearbeiten"))
     if get(conn, username):
-        raise UserError(f"Benutzer „{username}“ existiert bereits.")
+        raise UserError(tr("Benutzer „{name}“ existiert bereits.", name=username))
     conn.execute(
         "INSERT INTO users (username, pw_hash, is_admin, nur_lesen, active, created) VALUES (?,?,?,?,1,?)",
         (username, generate_password_hash(password), admin, lesen, now()))
@@ -98,24 +106,24 @@ def set_password(conn, username, new_password):
     _check_pw(new_password)
     u = get(conn, username)
     if not u:
-        raise UserError("Benutzer nicht gefunden.")
+        raise UserError(tr("Benutzer nicht gefunden."))
     conn.execute("UPDATE users SET pw_hash = ? WHERE id = ?",
                  (generate_password_hash(new_password), u["id"]))
 
 
 def change_own_password(conn, username, old, new, new2):
     if new != new2:
-        raise UserError("Die beiden neuen Passwörter stimmen nicht überein.")
+        raise UserError(tr("Die beiden neuen Passwörter stimmen nicht überein."))
     u = get(conn, username)
     if not u or not check_password_hash(u["pw_hash"], old or ""):
-        raise UserError("Altes Passwort ist falsch.")
+        raise UserError(tr("Altes Passwort ist falsch."))
     set_password(conn, username, new)
 
 
 def update(conn, username, is_admin=None, active=None, rolle=None):
     u = get(conn, username)
     if not u:
-        raise UserError("Benutzer nicht gefunden.")
+        raise UserError(tr("Benutzer nicht gefunden."))
     if rolle is not None:
         admin, lesen = _flags(rolle)
         conn.execute("UPDATE users SET is_admin = ?, nur_lesen = ? WHERE id = ?", (admin, lesen, u["id"]))
@@ -129,7 +137,7 @@ def update(conn, username, is_admin=None, active=None, rolle=None):
 def delete(conn, username):
     u = get(conn, username)
     if not u:
-        raise UserError("Benutzer nicht gefunden.")
+        raise UserError(tr("Benutzer nicht gefunden."))
     conn.execute("DELETE FROM users WHERE id = ?", (u["id"],))
     _ensure_one_admin(conn)
 
@@ -137,4 +145,4 @@ def delete(conn, username):
 def _ensure_one_admin(conn):
     n = conn.execute("SELECT COUNT(*) FROM users WHERE is_admin = 1 AND active = 1").fetchone()[0]
     if n == 0:
-        raise UserError("Es muss mindestens ein aktiver Administrator übrig bleiben.")
+        raise UserError(tr("Es muss mindestens ein aktiver Administrator übrig bleiben."))

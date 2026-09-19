@@ -25,6 +25,7 @@ import time
 import requests
 
 from . import config
+from .i18n import tr
 
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_KANTE = 2560
@@ -65,7 +66,7 @@ def _jpeg(daten, kante):
             im.save(out, "JPEG", quality=85, optimize=True)
             return out.getvalue()
     except (OSError, ValueError, Image.DecompressionBombError) as ex:
-        raise FotoError("Das Bild lässt sich nicht lesen.") from ex
+        raise FotoError(tr("Das Bild lässt sich nicht lesen.")) from ex
 
 
 def _schreiben(pfad, daten):
@@ -81,12 +82,12 @@ def speichern(foto_dir, trail_id, daten):
     """Hochgeladenes Foto pruefen und ablegen, gibt den neuen Dateinamen zurueck.
     Der Zeitstempel im Namen sorgt dafuer, dass der Browser ein ersetztes Foto neu laedt."""
     if not daten:
-        raise FotoError("Keine Datei ausgewählt.")
+        raise FotoError(tr("Keine Datei ausgewählt."))
     if len(daten) > MAX_UPLOAD_BYTES:
-        raise FotoError(f"Das Bild ist grösser als {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+        raise FotoError(tr("Das Bild ist grösser als {n} MB.", n=MAX_UPLOAD_BYTES // (1024 * 1024)))
     endung = art(daten)
     if not endung:
-        raise FotoError("Nur JPEG-, PNG- oder WebP-Bilder.")
+        raise FotoError(tr("Nur JPEG-, PNG- oder WebP-Bilder."))
     if Image is not None:
         daten, endung = _jpeg(daten, MAX_KANTE), "jpg"
     name = f"{trail_id}-{int(time.time())}.{endung}"

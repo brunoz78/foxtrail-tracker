@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Fehler – Foxtrail-Tracker{% endblock %}
+{% block title %}{{ _('Fehler') }} – Foxtrail-Tracker{% endblock %}
 {% block content %}
 <div class="card narrow">
-  <h1>Hoppla</h1>
+  <h1>{{ _('Hoppla') }}</h1>
   <p>{{ fehler }}</p>
-  <p><a href="{{ url_for('index') }}">Zurück zur Trail-Liste</a></p>
+  <p><a href="{{ url_for('index') }}">{{ _('Zurück zur Trail-Liste') }}</a></p>
 </div>
 {% endblock %}

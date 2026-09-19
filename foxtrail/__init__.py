@@ -15,7 +15,8 @@ import time
 from flask import (Flask, abort, flash, g, redirect, render_template, request,
                    send_file, send_from_directory, session, url_for)
 
-from . import bestellungen, config, db, fotos, sync, trails, users, version, zeitplan
+from . import bestellungen, config, db, fotos, i18n, sync, trails, users, version, zeitplan
+from .i18n import tr
 
 _ATTEMPTS = {}   # username -> [fails, lock_until_ts]
 
@@ -53,6 +54,25 @@ def create_app(test_config=None):
             else:
                 conn.rollback()
             conn.close()
+
+    # ---- Sprache -------------------------------------------------------- #
+    app.jinja_env.globals["_"] = tr
+
+    @app.before_request
+    def _sprache():
+        g.sprache = i18n.sprache_fuer(current_user(), session, request.accept_languages)
+
+    @app.route("/sprache", methods=["POST"])
+    def sprache_setzen():
+        """Sprache waehlen: angemeldet beim Benutzer gespeichert, sonst in der Sitzung."""
+        wahl = request.form.get("sprache", "")
+        if wahl in i18n.SPRACHEN:
+            session["sprache"] = wahl
+            me = current_user()
+            if me:
+                users.set_sprache(get_conn(), me["username"], wahl)
+        nxt = request.form.get("next") or ""
+        return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
 
     # ---- Auth ---------------------------------------------------------- #
     def current_user():
@@ -139,6 +159,7 @@ def create_app(test_config=None):
         update = (version.verfuegbar(version.datei(app.config["DB_PATH"]), app.config["UPDATE_CHECK"])
                   if me and me["is_admin"] else None)
         return {"me": me, "stats": trails.stats(get_conn()) if me else None,
+                "sprache": g.get("sprache", i18n.STANDARD), "sprachen": i18n.SPRACHEN,
                 "darf_schreiben": users.darf_schreiben(me), "rollen": users.ROLLEN, "rolle": users.rolle,
                 "typen": trails.TYP_LABEL, "grade": trails.GRAD_LABEL,
                 "regionen": trails.REGION_LABEL, "app_version": version.stand(config.REPO_ROOT),
@@ -155,15 +176,15 @@ def create_app(test_config=None):
 
     @app.errorhandler(403)
     def _forbidden(_):
-        return render_template("fehler.html", fehler="Dafür fehlt dir die Berechtigung."), 403
+        return render_template("fehler.html", fehler=tr("Dafür fehlt dir die Berechtigung.")), 403
 
     @app.errorhandler(404)
     def _notfound(_):
-        return render_template("fehler.html", fehler="Seite nicht gefunden."), 404
+        return render_template("fehler.html", fehler=tr("Seite nicht gefunden.")), 404
 
     @app.errorhandler(413)
     def _zugross(_):
-        return render_template("fehler.html", fehler="Die Datei ist zu gross (höchstens 15 MB)."), 413
+        return render_template("fehler.html", fehler=tr("Die Datei ist zu gross (höchstens 15 MB).")), 413
 
     # ---- Login / Logout ------------------------------------------------ #
     @app.route("/login", methods=["GET", "POST"])
@@ -173,23 +194,30 @@ def create_app(test_config=None):
         if request.method == "POST":
             name = (request.form.get("username") or "").strip().lower()
             if _locked(name):
-                flash(f"Zu viele Fehlversuche – bitte in {config.LOGIN_LOCK_SECONDS // 60} Minuten erneut.", "fehler")
+                flash(tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.", n=config.LOGIN_LOCK_SECONDS // 60),
+                      "fehler")
                 return render_template("login.html")
             u = users.authenticate(get_conn(), name, request.form.get("password", ""))
             if u:
                 nxt = request.args.get("next") or ""
+                sprache = session.get("sprache")           # Wahl auf der Anmeldeseite behalten
                 session.clear()
                 session["user"] = u["username"]
+                if sprache:
+                    session["sprache"] = sprache
                 session.permanent = False
                 _ATTEMPTS.pop(name, None)
                 return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
             _fail(name)
-            flash("Benutzername oder Passwort falsch.", "fehler")
+            flash(tr("Benutzername oder Passwort falsch."), "fehler")
         return render_template("login.html")
 
     @app.route("/logout")
     def logout():
+        sprache = g.get("sprache")
         session.clear()
+        if sprache:
+            session["sprache"] = sprache
         return redirect(url_for("login"))
 
     # ---- Trail-Liste --------------------------------------------------- #
@@ -245,11 +273,11 @@ def create_app(test_config=None):
         """Sichtbare Spalten der Liste fuer den angemeldeten Benutzer speichern."""
         if request.form.get("aktion") == "standard":
             users.set_spalten(get_conn(), current_user()["username"], None)
-            flash("Spalten auf Standard zurückgesetzt.")
+            flash(tr("Spalten auf Standard zurückgesetzt."))
         else:
             gewaehlt = [k for k in trails.SPALTEN_KEYS if k in request.form.getlist("spalte")]
             users.set_spalten(get_conn(), current_user()["username"], gewaehlt)
-            flash("Spaltenauswahl gespeichert.")
+            flash(tr("Spaltenauswahl gespeichert."))
         nxt = request.form.get("next") or ""
         return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
 
@@ -293,9 +321,9 @@ def create_app(test_config=None):
                 neu = trails.update_done(conn, tid, request.form, current_user()["username"],
                                          datum_pflicht=True)
                 if neu["gemacht"] and not t["gemacht"] and not request.form.get("gemacht"):
-                    flash("Gespeichert – als gemacht markiert (Datum bzw. Mitspieler eingetragen).")
+                    flash(tr("Gespeichert – als gemacht markiert (Datum bzw. Mitspieler eingetragen)."))
                 else:
-                    flash("Gespeichert.")
+                    flash(tr("Gespeichert."))
                 return redirect(request.form.get("next") or url_for("index"))
             except trails.TrailError as ex:
                 conn.rollback()                     # nichts halb speichern (manuelle Felder)
@@ -312,7 +340,7 @@ def create_app(test_config=None):
         if request.method == "POST":
             try:
                 tid = trails.add_manual(get_conn(), request.form, current_user()["username"], datum_pflicht=True)
-                flash("Trail manuell erfasst.")
+                flash(tr("Trail manuell erfasst."))
                 return redirect(url_for("trail_edit", tid=tid))
             except trails.TrailError as ex:
                 flash(str(ex), "fehler")
@@ -323,7 +351,7 @@ def create_app(test_config=None):
     def trail_delete(tid):
         try:
             trails.delete_manual(get_conn(), tid)
-            flash("Manuell erfasster Trail gelöscht.")
+            flash(tr("Manuell erfasster Trail gelöscht."))
         except trails.TrailError as ex:
             flash(str(ex), "fehler")
         return redirect(url_for("index"))
@@ -338,7 +366,7 @@ def create_app(test_config=None):
             flash(str(ex), "fehler")
             return redirect(url_for("index"))
         fotos.entfernen(app.config["FOTO_DIR"], alt)
-        flash("Einträge zurückgesetzt – der Trail ist wieder offen.")
+        flash(tr("Einträge zurückgesetzt – der Trail ist wieder offen."))
         return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None))
 
     # ---- Import der eigenen Bestellungen (foxtrail.ch-Konto) ------------ #
@@ -350,14 +378,15 @@ def create_app(test_config=None):
             try:
                 eintraege = bestellungen.eintraege_aus_json(request.form.get("daten", ""))
             except ValueError:
-                flash("Ungültige Daten – bitte die Datei nochmals prüfen.", "fehler")
+                flash(tr("Ungültige Daten – bitte die Datei nochmals prüfen."), "fehler")
                 return redirect(url_for("import_bestellungen"))
             plan = bestellungen.zuordnen(conn, eintraege, benutzer=current_user()["username"])
             res = bestellungen.anwenden(conn, plan, current_user()["username"], app.config["FOTO_DIR"])
-            msg = (f"Import: {res['gesetzt']} als gemacht eingetragen, {res['ergaenzt']} ergänzt, "
-                   f"{res['gekennzeichnet']} als Import gekennzeichnet, {res['fotos']} Schlussfoto(s) geladen")
+            msg = tr("Import: {gesetzt} als gemacht eingetragen, {ergaenzt} ergänzt, {kenn} als Import "
+                     "gekennzeichnet, {fotos} Schlussfoto(s) geladen", gesetzt=res["gesetzt"],
+                     ergaenzt=res["ergaenzt"], kenn=res["gekennzeichnet"], fotos=res["fotos"])
             if res["foto_fehler"]:
-                msg += f", {res['foto_fehler']} Foto(s) nicht ladbar"
+                msg += ", " + tr("{n} Foto(s) nicht ladbar", n=res["foto_fehler"])
             flash(msg + ".")
             return redirect(url_for("index", f="gemacht"))
         zeilen, daten = None, ""
@@ -376,8 +405,8 @@ def create_app(test_config=None):
             if not inhalt:
                 pass                                   # Abruf gescheitert, Meldung steht schon da
             elif not eintraege:
-                flash("Keine Bestellungen gefunden. Erwartet wird die Datei konto.json oder der Text "
-                      "der Seite „Deine Bestellungen“.", "fehler")
+                flash(tr("Keine Bestellungen gefunden. Erwartet wird die Datei konto.json oder der Text "
+                         "der Seite „Deine Bestellungen“."), "fehler")
             else:
                 zeilen = [{"e": e, "t": t, "aktion": aktion, "grund": grund,
                            "spielzeit": trails.spielzeit_label(trails.spielzeit_min(e["start"], e["ziel"]))}
@@ -434,17 +463,17 @@ def create_app(test_config=None):
                 fotos.entfernen(ordner, t.get("foto"))
                 trails.set_foto(conn, tid, name)
                 if t["gemacht"]:
-                    flash("Foto gespeichert.")
+                    flash(tr("Foto gespeichert."))
                 else:
                     # Ein Schlussfoto heisst: dort gewesen - "gemacht" braucht aber ein Datum
-                    flash("Foto gespeichert. Bitte noch das Datum eintragen und speichern, "
-                          "dann ist der Trail als gemacht markiert.", "hinweis")
+                    flash(tr("Foto gespeichert. Bitte noch das Datum eintragen und speichern, "
+                             "dann ist der Trail als gemacht markiert."), "hinweis")
                     return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None,
                                             gemacht=1) + "#eintraege")
         elif aktion == "loeschen" and t.get("foto"):
             fotos.entfernen(ordner, t["foto"])
             trails.set_foto(conn, tid, "")          # '' = bewusst geloescht, Import laedt es nicht neu
-            flash("Foto gelöscht.")
+            flash(tr("Foto gelöscht."))
         elif aktion == "foxtrail" and t.get("foto_url"):
             name = bestellungen.lade_foto(t["foto_url"], ordner, tid)
             if name:
@@ -452,9 +481,9 @@ def create_app(test_config=None):
                     fotos.entfernen(ordner, t["foto"])
                 fotos.entfernen_vorschau(ordner, name)     # gleicher Name, alte Vorschau weg
                 trails.set_foto(conn, tid, name)
-                flash("Schlussfoto von foxtrail.ch geladen.")
+                flash(tr("Schlussfoto von foxtrail.ch geladen."))
             else:
-                flash("Das Schlussfoto ist auf foxtrail.ch nicht mehr abrufbar.", "fehler")
+                flash(tr("Das Schlussfoto ist auf foxtrail.ch nicht mehr abrufbar."), "fehler")
         return redirect(url_for("trail_edit", tid=tid, next=request.form.get("next") or None) + "#foto")
 
     # ---- Profil -------------------------------------------------------- #
@@ -466,7 +495,7 @@ def create_app(test_config=None):
                 users.change_own_password(get_conn(), current_user()["username"],
                                           request.form.get("old", ""), request.form.get("new", ""),
                                           request.form.get("new2", ""))
-                flash("Passwort geändert.")
+                flash(tr("Passwort geändert."))
                 return redirect(url_for("index"))
             except users.UserError as ex:
                 flash(str(ex), "fehler")
@@ -484,7 +513,7 @@ def create_app(test_config=None):
         try:
             users.add(get_conn(), request.form.get("username", ""), request.form.get("password", ""),
                       rolle=request.form.get("rolle") or "bearbeiten")
-            flash("Benutzer angelegt.")
+            flash(tr("Benutzer angelegt."))
         except users.UserError as ex:
             flash(str(ex), "fehler")
         return redirect(url_for("user_admin"))
@@ -497,18 +526,23 @@ def create_app(test_config=None):
         try:
             if action == "passwort":
                 users.set_password(conn, name, request.form.get("password", ""))
-                flash(f"Passwort für „{name}“ gesetzt.")
+                flash(tr("Passwort für „{name}“ gesetzt.", name=name))
             elif action == "rolle":
                 users.update(conn, name, rolle=request.form.get("rolle", ""))
-                flash("Gespeichert.")
+                flash(tr("Gespeichert."))
+            elif action == "sprache":
+                if not users.get(conn, name):
+                    raise users.UserError(tr("Benutzer nicht gefunden."))
+                users.set_sprache(conn, name, request.form.get("sprache") or None)
+                flash(tr("Gespeichert."))
             elif action == "aktiv":
                 users.update(conn, name, active=bool(request.form.get("active")))
-                flash("Gespeichert.")
+                flash(tr("Gespeichert."))
             elif action == "loeschen":
                 if name == current_user()["username"]:
-                    raise users.UserError("Du kannst dich nicht selbst löschen.")
+                    raise users.UserError(tr("Du kannst dich nicht selbst löschen."))
                 users.delete(conn, name)
-                flash(f"Benutzer „{name}“ gelöscht.")
+                flash(tr("Benutzer „{name}“ gelöscht.", name=name))
         except users.UserError as ex:
             conn.rollback()
             flash(str(ex), "fehler")
@@ -522,19 +556,19 @@ def create_app(test_config=None):
         if request.method == "POST" and request.form.get("aktion") == "zyklus":
             try:
                 zeitplan.set_zyklus(conn, request.form.get("zyklus", ""))
-                flash("Automatischer Abgleich: " + zeitplan.ZYKLEN[request.form["zyklus"]] + ".")
+                flash(tr("Automatischer Abgleich: {wert}.", wert=tr(zeitplan.ZYKLEN[request.form["zyklus"]])))
             except ValueError:
-                flash("Unbekannte Einstellung.", "fehler")
+                flash(tr("Unbekannte Einstellung."), "fehler")
             return redirect(url_for("sync_admin"))
         if request.method == "POST":
             res = sync.run(conn, ausloeser=f"web:{current_user()['username']}")
             if res["ok"]:
-                flash(f"Abgleich ok: {res['gefunden']} gefunden, {res['neu']} neu, "
-                      f"{res['aktualisiert']} aktualisiert, {res['reaktiviert']} reaktiviert, "
-                      f"{res['archiviert']} ins Archiv, {res['nicht_mehr_im_angebot']} gemachte "
-                      f"nicht mehr im Angebot.")
+                flash(tr("Abgleich ok: {gefunden} gefunden, {neu} neu, {akt} aktualisiert, {reakt} reaktiviert, "
+                         "{archiv} ins Archiv, {weg} gemachte nicht mehr im Angebot.", gefunden=res["gefunden"],
+                         neu=res["neu"], akt=res["aktualisiert"], reakt=res["reaktiviert"],
+                         archiv=res["archiviert"], weg=res["nicht_mehr_im_angebot"]))
             else:
-                flash("Abgleich fehlgeschlagen: " + res["meldung"], "fehler")
+                flash(tr("Abgleich fehlgeschlagen:") + " " + res["meldung"], "fehler")
             return redirect(url_for("sync_admin"))
         letzter_auto = conn.execute("SELECT ts, ok FROM sync_log WHERE ausloeser = 'timer' "
                                     "ORDER BY id DESC LIMIT 1").fetchone()

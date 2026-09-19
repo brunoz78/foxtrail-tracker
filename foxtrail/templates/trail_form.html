@@ -7,24 +7,24 @@
   <p class="muted">{{ t.route }}<br>
     {{ typ_badge(t) }}{% if t.schwierigkeit %} · <span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}{% if t.dauer %} · {{ t.dauer|dauer }}{% endif %}{% if t.preis %} · CHF {{ t.preis|chf }}{% endif %}{% if t.bewertung %} · ★ {{ t.bewertung }}{% endif %}
     {% if t.url %}· <a href="{{ t.url }}" target="_blank" rel="noopener">foxtrail.ch ↗</a>{% endif %}<br>
-    {% if t.quelle == 'manual' %}<span class="tag">manuell erfasst</span>
-    {% elif not t.im_angebot %}<span class="tag warn">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span> (zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }})
-    {% elif t.neu_seit %}<span class="tag new">Neu ab {{ t.neu_seit|mmjj }}</span> (vom Abgleich am {{ t.neu_seit|datum }} neu gefunden)
+    {% if t.quelle == 'manual' %}<span class="tag">{{ _('manuell erfasst') }}</span>
+    {% elif not t.im_angebot %}<span class="tag warn">{{ _('nicht mehr im Angebot') }}{% if t.last_seen %} {{ _('seit') }} {{ t.last_seen|mmjj }}{% endif %}</span> ({{ _('zuletzt gesehen {datum}', datum=(t.last_seen or '')[:10]|datum) }})
+    {% elif t.neu_seit %}<span class="tag new">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span> ({{ _('vom Abgleich am {datum} neu gefunden', datum=t.neu_seit|datum) }})
     {% endif %}
   </p>
 
   {# Team-Code, Bestellung und Rechnung nicht fuer "Nur lesen" #}
   {% if t.start_zeit or (darf_schreiben and (t.team_code or t.bestellung)) %}
   <p class="muted small">
-    {% if t.start_zeit %}Start {{ t.start_zeit[11:16] }}{% if t.ziel_zeit %} · Ziel {{ t.ziel_zeit[11:16] }}{% endif %}{% if t.spielzeit %} · Spielzeit <b>{{ t.spielzeit }}</b>{% endif %}{% endif %}
-    {% if darf_schreiben and t.team_code %} · Team-Code {{ t.team_code }}{% endif %}
-    {% if darf_schreiben and t.bestellung %} · Bestellung #{{ t.bestellung }}
-      <a href="https://api.foxtrail.ch/invoice/print/{{ t.bestellung }}" target="_blank" rel="noopener" title="Rechnung als PDF (Anmeldung bei foxtrail.ch nötig)">Rechnung ↗</a>{% endif %}
+    {% if t.start_zeit %}{{ _('Start') }} {{ t.start_zeit[11:16] }}{% if t.ziel_zeit %} · {{ _('Ziel') }} {{ t.ziel_zeit[11:16] }}{% endif %}{% if t.spielzeit %} · {{ _('Spielzeit') }} <b>{{ t.spielzeit }}</b>{% endif %}{% endif %}
+    {% if darf_schreiben and t.team_code %} · {{ _('Team-Code') }} {{ t.team_code }}{% endif %}
+    {% if darf_schreiben and t.bestellung %} · {{ _('Bestellung') }} #{{ t.bestellung }}
+      <a href="https://api.foxtrail.ch/invoice/print/{{ t.bestellung }}" target="_blank" rel="noopener" title="{{ _('Rechnung als PDF (Anmeldung bei foxtrail.ch nötig)') }}">{{ _('Rechnung') }} ↗</a>{% endif %}
   </p>
   {% endif %}
   <section id="foto" class="fotobox">
     {% if t.foto %}
-    <a href="{{ url_for('foto', tid=t.id, v=t.foto) }}" target="_blank" title="In voller Grösse öffnen"><img class="foto" src="{{ url_for('foto', tid=t.id, v=t.foto) }}" alt="Schlussfoto {{ t.name }}"></a>
+    <a href="{{ url_for('foto', tid=t.id, v=t.foto) }}" target="_blank" title="{{ _('In voller Grösse öffnen') }}"><img class="foto" src="{{ url_for('foto', tid=t.id, v=t.foto) }}" alt="{{ _('Schlussfoto') }} {{ t.name }}"></a>
     {% endif %}
     {% if darf_schreiben %}
     <div class="foto-actions">
@@ -32,86 +32,86 @@
         <input type="hidden" name="next" value="{{ next }}">
         <input type="hidden" name="aktion" value="hochladen">
         <label class="upload"><input type="file" name="datei" accept="image/jpeg,image/png,image/webp" required
-               onchange="this.form.submit()"><span>{{ '📷 Foto ersetzen' if t.foto else '📷 Foto hinzufügen' }}</span></label>
-        <noscript><button type="submit" class="small">Hochladen</button></noscript>
+               onchange="this.form.submit()"><span>📷 {{ _('Foto ersetzen') if t.foto else _('Foto hinzufügen') }}</span></label>
+        <noscript><button type="submit" class="small">{{ _('Hochladen') }}</button></noscript>
       </form>
       {% if t.foto %}
-      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" onsubmit="return confirm('Foto wirklich löschen?')">
+      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" onsubmit='return confirm({{ _("Foto wirklich löschen?")|tojson }})'>
         <input type="hidden" name="next" value="{{ next }}">
-        <button type="submit" name="aktion" value="loeschen" class="secondary small">Foto löschen</button>
+        <button type="submit" name="aktion" value="loeschen" class="secondary small">{{ _('Foto löschen') }}</button>
       </form>
       {% elif t.foto_url %}
       <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}">
         <input type="hidden" name="next" value="{{ next }}">
-        <button type="submit" name="aktion" value="foxtrail" class="secondary small" title="Das Schlussfoto aus deiner Bestellung erneut herunterladen">Schlussfoto von foxtrail.ch laden</button>
+        <button type="submit" name="aktion" value="foxtrail" class="secondary small" title="{{ _('Das Schlussfoto aus deiner Bestellung erneut herunterladen') }}">{{ _('Schlussfoto von foxtrail.ch laden') }}</button>
       </form>
       {% endif %}
-      <span class="muted small">JPEG, PNG oder WebP, höchstens 15 MB</span>
+      <span class="muted small">{{ _('JPEG, PNG oder WebP, höchstens 15 MB') }}</span>
     </div>
     {% endif %}
   </section>
 
   {% if not darf_schreiben %}
   <dl class="lesen">
-    <dt>Gemacht</dt><dd>{% if t.gemacht %}ja{% if t.gemacht_datum %}, am {{ t.gemacht_datum|datum }}{% endif %}{% else %}nein{% endif %}</dd>
-    {% if t.mitspieler %}<dt>Mitspieler</dt><dd>{{ t.mitspieler }}</dd>{% endif %}
-    {% if t.bemerkung %}<dt>Bemerkung</dt><dd class="umbruch">{{ t.bemerkung }}</dd>{% endif %}
-    {% if t.erfasst_von %}<dt>Erfasst von</dt><dd>{{ t.erfasst_von }}{% if t.erfasst_am %} am {{ t.erfasst_am }}{% endif %}</dd>{% endif %}
+    <dt>{{ _('Gemacht') }}</dt><dd>{% if t.gemacht %}{{ _('ja') }}{% if t.gemacht_datum %}, {{ _('am {datum}', datum=t.gemacht_datum|datum) }}{% endif %}{% else %}{{ _('nein') }}{% endif %}</dd>
+    {% if t.mitspieler %}<dt>{{ _('Mitspieler') }}</dt><dd>{{ t.mitspieler }}</dd>{% endif %}
+    {% if t.bemerkung %}<dt>{{ _('Bemerkung') }}</dt><dd class="umbruch">{{ t.bemerkung }}</dd>{% endif %}
+    {% if t.erfasst_von %}<dt>{{ _('Erfasst von') }}</dt><dd>{{ t.erfasst_von }}{% if t.erfasst_am %} ({{ t.erfasst_am|datum_zeit }}){% endif %}</dd>{% endif %}
   </dl>
-  <div class="actions"><a class="btn-link" href="{{ next }}">Zurück</a></div>
+  <div class="actions"><a class="btn-link" href="{{ next }}">{{ _('Zurück') }}</a></div>
   {% else %}
   <form method="post">
     <input type="hidden" name="next" value="{{ next }}">
     {% if t.quelle == 'manual' %}
-    <fieldset><legend>Trail-Daten</legend>
+    <fieldset><legend>{{ _('Trail-Daten') }}</legend>
       <div class="row">
-        <label>Ort <input name="ort" value="{{ t.ort }}" required maxlength="100"></label>
-        <label>Region <select name="region">
+        <label>{{ _('Ort') }} <input name="ort" value="{{ t.ort }}" required maxlength="100"></label>
+        <label>{{ _('Region') }} <select name="region">
           <option value="">–</option>
-          {% for v, label in regionen.items() %}<option value="{{ v }}" {{ 'selected' if t.region == v }}>{{ label }}</option>{% endfor %}
+          {% for v, label in regionen.items() %}<option value="{{ v }}" {{ 'selected' if t.region == v }}>{{ _(label) }}</option>{% endfor %}
         </select></label>
       </div>
-      <label>Name <input name="name" value="{{ t.name }}" required maxlength="100"></label>
-      <label>Route <input name="route" value="{{ t.route }}" maxlength="300"></label>
+      <label>{{ _('Name') }} <input name="name" value="{{ t.name }}" required maxlength="100"></label>
+      <label>{{ _('Route') }} <input name="route" value="{{ t.route }}" maxlength="300"></label>
       <div class="row">
-        <label>Typ <select name="typ">
-          {% for v, label in typen.items() %}<option value="{{ v }}" {{ 'selected' if t.typ == v }}>{{ label }}</option>{% endfor %}
+        <label>{{ _('Typ') }} <select name="typ">
+          {% for v, label in typen.items() %}<option value="{{ v }}" {{ 'selected' if t.typ == v }}>{{ _(label) }}</option>{% endfor %}
         </select></label>
-        <label>Schwierigkeit <select name="schwierigkeit">
+        <label>{{ _('Schwierigkeit') }} <select name="schwierigkeit">
           <option value="">–</option>
-          {% for v, label in grade.items() %}<option value="{{ v }}" {{ 'selected' if t.schwierigkeit == v }}>{{ label }}</option>{% endfor %}
+          {% for v, label in grade.items() %}<option value="{{ v }}" {{ 'selected' if t.schwierigkeit == v }}>{{ _(label) }}</option>{% endfor %}
         </select></label>
-        <label>Dauer <input name="dauer" value="{{ t.dauer }}" maxlength="50" placeholder="z. B. 2-3 Stunden"></label>
+        <label>{{ _('Dauer') }} <input name="dauer" value="{{ t.dauer }}" maxlength="50" placeholder="{{ _('z. B. 2-3 Stunden') }}"></label>
       </div>
     </fieldset>
     {% endif %}
-    <fieldset id="eintraege"><legend>Unsere Einträge</legend>
-      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if t.gemacht or request.args.get('gemacht') }}> Trail gemacht</label>
+    <fieldset id="eintraege"><legend>{{ _('Unsere Einträge') }}</legend>
+      <label class="chk"><input type="checkbox" name="gemacht" value="1" {{ 'checked' if t.gemacht or request.args.get('gemacht') }}> {{ _('Trail gemacht') }}</label>
       <div class="row">
-        <label>Datum <span class="muted small">(Pflicht, wenn gemacht)</span> <input type="date" name="gemacht_datum" value="{{ t.gemacht_datum or '' }}"></label>
-        <label>Anzahl Mitspieler <input type="number" name="mitspieler" min="1" max="999" value="{{ t.mitspieler or '' }}"></label>
+        <label>{{ _('Datum') }} <span class="muted small">({{ _('Pflicht, wenn gemacht') }})</span> <input type="date" name="gemacht_datum" value="{{ t.gemacht_datum or '' }}"></label>
+        <label>{{ _('Anzahl Mitspieler') }} <input type="number" name="mitspieler" min="1" max="999" value="{{ t.mitspieler or '' }}"></label>
       </div>
-      <label>Bemerkung <textarea name="bemerkung" rows="3" maxlength="2000">{{ t.bemerkung }}</textarea></label>
-      {% if t.erfasst_von %}<p class="muted small">Zuletzt erfasst von {{ t.erfasst_von }}{% if t.erfasst_am %} am {{ t.erfasst_am }}{% endif %}</p>{% endif %}
+      <label>{{ _('Bemerkung') }} <textarea name="bemerkung" rows="3" maxlength="2000">{{ t.bemerkung }}</textarea></label>
+      {% if t.erfasst_von %}<p class="muted small">{{ _('Zuletzt erfasst von {name}', name=t.erfasst_von) }}{% if t.erfasst_am %} ({{ t.erfasst_am|datum_zeit }}){% endif %}</p>{% endif %}
     </fieldset>
     <div class="actions">
-      <button type="submit">Speichern</button>
-      <a class="btn-link" href="{{ next }}">Abbrechen</a>
+      <button type="submit">{{ _('Speichern') }}</button>
+      <a class="btn-link" href="{{ next }}">{{ _('Abbrechen') }}</a>
     </div>
   </form>
   {% if t.quelle != 'manual' and (t.gemacht or t.bemerkung or t.erfasst_von or t.foto or t.bestellung
                                   or t.team_code or t.start_zeit or t.foto_url) %}
   <form method="post" action="{{ url_for('trail_zuruecksetzen', tid=t.id) }}" class="danger"
-        onsubmit="return confirm('Alle eigenen Einträge zu diesem Trail entfernen? Gemacht, Datum, Mitspieler, Bemerkung, Importdaten und Foto werden gelöscht.')">
+        onsubmit='return confirm({{ _("Alle eigenen Einträge zu diesem Trail entfernen? Gemacht, Datum, Mitspieler, Bemerkung, Importdaten und Foto werden gelöscht.")|tojson }})'>
     <input type="hidden" name="next" value="{{ next }}">
-    <button type="submit" class="secondary">Einträge zurücksetzen</button>
-    <span class="muted small">Trail wieder auf „offen“ und ohne eigene Angaben</span>
+    <button type="submit" class="secondary">{{ _('Einträge zurücksetzen') }}</button>
+    <span class="muted small">{{ _('Trail wieder auf „offen“ und ohne eigene Angaben') }}</span>
   </form>
   {% endif %}
   {% if t.quelle == 'manual' %}
   <form method="post" action="{{ url_for('trail_delete', tid=t.id) }}" class="danger"
-        onsubmit="return confirm('Diesen manuell erfassten Trail wirklich löschen?')">
-    <button type="submit" class="secondary">Manuellen Trail löschen</button>
+        onsubmit='return confirm({{ _("Diesen manuell erfassten Trail wirklich löschen?")|tojson }})'>
+    <button type="submit" class="secondary">{{ _('Manuellen Trail löschen') }}</button>
   </form>
   {% endif %}
   {% endif %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Statistik – Foxtrail-Tracker{% endblock %}
+{% block title %}{{ _('Statistik') }} – Foxtrail-Tracker{% endblock %}
 {% macro trail_link(t) -%}
 <a href="{{ url_for('trail_edit', tid=t.id, next=url_for('statistik')) }}">{{ t.name }}</a> <span class="muted">· {{ t.ort }}</span>
 {%- endmacro %}
@@ -7,7 +7,7 @@
 {% macro anteile(zeilen, param) -%}
 <div class="anteile">
   {% for wert, label, n, gesamt in zeilen %}
-  <a class="anteil" href="{{ url_for('index', **{param: wert}) }}" title="{{ label }}: {{ n }} von {{ gesamt }} gemacht – in der Liste zeigen">
+  <a class="anteil" href="{{ url_for('index', **{param: wert}) }}" title="{{ _('{label}: {n} von {gesamt} gemacht – in der Liste zeigen', label=label, n=n, gesamt=gesamt) }}">
     <span class="a-label">{{ label }}</span>
     <span class="a-bahn"><span class="a-wert" style="width: {{ (100 * n / gesamt)|round(1) if gesamt else 0 }}%"></span></span>
     <span class="a-zahl"><b>{{ n }}</b> / {{ gesamt }}</span>
@@ -16,43 +16,42 @@
 </div>
 {%- endmacro %}
 {% block content %}
-<h1>Statistik</h1>
+<h1>{{ _('Statistik') }}</h1>
 
 {% if not st.gemacht %}
-<div class="card"><p class="muted">Noch kein Trail als gemacht erfasst – hier erscheinen die Zahlen, sobald der erste eingetragen ist.</p></div>
+<div class="card"><p class="muted">{{ _('Noch kein Trail als gemacht erfasst – hier erscheinen die Zahlen, sobald der erste eingetragen ist.') }}</p></div>
 {% else %}
 <div class="tiles">
   <div class="tile">
     <div class="t-zahl">{{ st.gemacht }}<span class="t-von"> / {{ st.gesamt }}</span></div>
-    <div class="t-text">Trails gemacht ({{ (100 * st.gemacht / st.gesamt)|round|int }} %),
-      davon {{ st.dieses_jahr }} in {{ st.jahr }}</div>
+    <div class="t-text">{{ _('Trails gemacht ({prozent} %), davon {n} in {jahr}', prozent=(100 * st.gemacht / st.gesamt)|round|int, n=st.dieses_jahr, jahr=st.jahr) }}</div>
   </div>
   <div class="tile">
     <div class="t-zahl">{{ st.regionen_besucht }}<span class="t-von"> / {{ st.regionen_gesamt }}</span></div>
-    <div class="t-text">Regionen erkundet{% if st.top_region %}, am meisten in
+    <div class="t-text">{{ _('Regionen erkundet') }}{% if st.top_region %}, {{ _('am meisten in') }}
       <a href="{{ url_for('index', region=st.top_region[0], f='gemacht') }}">{{ st.top_region[1] }}</a> ({{ st.top_region[2] }}){% endif %}</div>
   </div>
   <div class="tile">
     <div class="t-zahl">{{ st.spielzeit_summe or '–' }}</div>
-    <div class="t-text">Spielzeit gesamt{% if st.spielzeit_n %}, Ø {{ st.spielzeit_schnitt }}
-      <span class="muted">({{ st.spielzeit_n }} Trail{{ 's' if st.spielzeit_n != 1 }} mit Zeiten)</span>{% endif %}</div>
+    <div class="t-text">{{ _('Spielzeit gesamt') }}{% if st.spielzeit_n %}, Ø {{ st.spielzeit_schnitt }}
+      <span class="muted">({{ _('1 Trail mit Zeiten') if st.spielzeit_n == 1 else _('{n} Trails mit Zeiten', n=st.spielzeit_n) }})</span>{% endif %}</div>
   </div>
   {% if st.erster %}
   <div class="tile">
     <div class="t-zahl">{{ st.erster.gemacht_datum[:4] }}</div>
-    <div class="t-text">erster Trail: {{ trail_link(st.erster) }}, {{ st.erster.gemacht_datum|datum }}</div>
+    <div class="t-text">{{ _('erster Trail:') }} {{ trail_link(st.erster) }}, {{ st.erster.gemacht_datum|datum }}</div>
   </div>
   {% endif %}
 </div>
 
 <div class="stat-grid">
   <section class="card">
-    <h2>Trails pro Jahr</h2>
+    <h2>{{ _('Trails pro Jahr') }}</h2>
     {% set max_j = st.jahre|map(attribute=1)|max if st.jahre else 0 %}
     {% if st.jahre %}
-    <div class="saeulen" role="img" aria-label="Trails pro Jahr: {% for j, n in st.jahre %}{{ j }}: {{ n }}{{ ', ' if not loop.last }}{% endfor %}">
+    <div class="saeulen" role="img" aria-label="{{ _('Trails pro Jahr') }}: {% for j, n in st.jahre %}{{ j }}: {{ n }}{{ ', ' if not loop.last }}{% endfor %}">
       {% for j, n in st.jahre %}
-      <a class="saeule" href="{{ url_for('index', f='gemacht', sort='datum', dir='desc') }}" title="{{ j }}: {{ n }} Trail{{ 's' if n != 1 }}">
+      <a class="saeule" href="{{ url_for('index', f='gemacht', sort='datum', dir='desc') }}" title="{{ j }}: {{ _('1 Trail') if n == 1 else _('{n} Trails', n=n) }}">
         <span class="s-zahl">{{ n }}</span>
         <span class="s-bar" style="height: {{ (100 * n / max_j)|round(1) if max_j else 0 }}%"></span>
         <span class="s-jahr">{{ j }}</span>
@@ -60,41 +59,41 @@
       {% endfor %}
     </div>
     {% endif %}
-    {% if st.ohne_datum %}<p class="muted small">{{ st.ohne_datum }} gemachte Trail{{ 's' if st.ohne_datum != 1 }} ohne Datum nicht mitgezählt.</p>{% endif %}
+    {% if st.ohne_datum %}<p class="muted small">{{ _('1 gemachter Trail ohne Datum nicht mitgezählt.') if st.ohne_datum == 1 else _('{n} gemachte Trails ohne Datum nicht mitgezählt.', n=st.ohne_datum) }}</p>{% endif %}
   </section>
 
   <section class="card">
-    <h2>Spielzeit</h2>
+    <h2>{{ _('Spielzeit') }}</h2>
     {% if st.schnellster %}
     <dl class="rekorde">
-      <dt>Schnellster</dt><dd><b>{{ st.schnellster.spielzeit }}</b> – {{ trail_link(st.schnellster) }}
-        <span class="muted small">(angegeben {{ st.schnellster.dauer|dauer or '–' }})</span></dd>
+      <dt>{{ _('Schnellster') }}</dt><dd><b>{{ st.schnellster.spielzeit }}</b> – {{ trail_link(st.schnellster) }}
+        <span class="muted small">({{ _('angegeben') }} {{ st.schnellster.dauer|dauer or '–' }})</span></dd>
       {% if st.laengster %}
-      <dt>Längster</dt><dd><b>{{ st.laengster.spielzeit }}</b> – {{ trail_link(st.laengster) }}
-        <span class="muted small">(angegeben {{ st.laengster.dauer|dauer or '–' }})</span></dd>
+      <dt>{{ _('Längster') }}</dt><dd><b>{{ st.laengster.spielzeit }}</b> – {{ trail_link(st.laengster) }}
+        <span class="muted small">({{ _('angegeben') }} {{ st.laengster.dauer|dauer or '–' }})</span></dd>
       {% endif %}
       {% if st.letzter %}
-      <dt>Zuletzt</dt><dd>{{ trail_link(st.letzter) }}, {{ st.letzter.gemacht_datum|datum }}</dd>
+      <dt>{{ _('Zuletzt') }}</dt><dd>{{ trail_link(st.letzter) }}, {{ st.letzter.gemacht_datum|datum }}</dd>
       {% endif %}
     </dl>
-    <p class="muted small">Spielzeit = Start bis Ziel laut foxtrail.ch, nur für importierte Bestellungen bekannt.</p>
+    <p class="muted small">{{ _('Spielzeit = Start bis Ziel laut foxtrail.ch, nur für importierte Bestellungen bekannt.') }}</p>
     {% else %}
-    <p class="muted">Noch keine Zeiten – sie kommen über den {% if me.is_admin %}<a href="{{ url_for('import_bestellungen') }}">Import</a>{% else %}Import{% endif %} der Bestellungen{% if not me.is_admin %} (durch einen Admin){% endif %}.</p>
+    <p class="muted">{{ _('Noch keine Zeiten – sie kommen über den Import der Bestellungen.') }}{% if me.is_admin %} <a href="{{ url_for('import_bestellungen') }}">{{ _('Zum Import') }}</a>{% else %} {{ _('Den Import macht ein Admin.') }}{% endif %}</p>
     {% endif %}
   </section>
 
   <section class="card">
-    <h2>Nach Region</h2>
+    <h2>{{ _('Nach Region') }}</h2>
     {{ anteile(st.regionen, 'region') }}
   </section>
 
   <section class="card">
-    <h2>Nach Typ</h2>
+    <h2>{{ _('Nach Typ') }}</h2>
     {{ anteile(st.typen, 'typ') }}
-    <h2>Nach Schwierigkeit</h2>
+    <h2>{{ _('Nach Schwierigkeit') }}</h2>
     {{ anteile(st.grade, 'grad') }}
   </section>
 </div>
-<p class="muted small">Gezählt werden alle Trails der Hauptliste (ohne Archiv), manuell erfasste eingeschlossen. Ein Klick auf einen Balken zeigt die Trails in der Liste.</p>
+<p class="muted small">{{ _('Gezählt werden alle Trails der Hauptliste (ohne Archiv), manuell erfasste eingeschlossen. Ein Klick auf einen Balken zeigt die Trails in der Liste.') }}</p>
 {% endif %}
 {% endblock %}

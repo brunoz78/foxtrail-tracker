@@ -27,6 +27,19 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   `users.darf_schreiben`), Templates blenden Knöpfe über `darf_schreiben` aus. Eigenes Passwort und
   die eigene Spaltenauswahl darf auch „Nur lesen“ ändern. „Nur lesen“ sieht weder Archiv (403, Menü
   „Mehr“ ausgeblendet) noch Team-Code, Bestellnummer und Rechnungslink (`trails.SPALTEN_INTERN`).
+- **Sprachen** (2026-09-19, Wunsch von Bruno): Oberfläche auf Deutsch, Französisch, Italienisch und
+  Englisch, ohne zusätzliches Paket (`foxtrail/i18n.py`). Ausgangstext ist Deutsch: Templates
+  `{{ _('Text') }}`, Python `tr("Text", platzhalter=...)` (str.format-Stil, `{name}`), Übersetzungen in
+  `foxtrail/i18n/<code>.json` als `{"deutscher Text": "…"}`. Sprache = `users.sprache` (⚙-Menü DE/FR/IT/EN,
+  Admin kann sie in der Benutzerverwaltung auf „automatisch“ setzen), sonst Sitzung (Knöpfe auf der
+  Anmeldeseite), sonst Browser (`Accept-Language`), sonst Deutsch. Ausserhalb einer Anfrage (CLI,
+  Zeitplan, Log) immer Deutsch; `sync_log.meldung` bleibt deutsch. Trail-Namen, Routen und Orte
+  kommen von foxtrail.ch und werden nicht übersetzt. `tests/test_i18n.py` sammelt alle Texte
+  (Jinja-Parser + AST, dazu Beschriftungen aus Konstanten) und prüft, dass jede Sprache jeden Text mit
+  denselben Platzhaltern hat – neue Texte brauchen einen Eintrag in allen drei JSON-Dateien
+  (`python tests/test_i18n.py fr` gibt die fehlenden als Gerüst aus). Code darf nie auf übersetzten
+  Text prüfen (z. B. `_datum_abweichend` statt `startswith("Datum ")`). Bestätigungsdialoge:
+  `onsubmit='return confirm({{ _("…")|tojson }})'` (Apostrophe im Französischen).
 - **Eine gemeinsame Liste** für alle Benutzer, **ein Eintrag pro Trail** (kein
   Mehrfach-Tracking). `erfasst_von` hält fest, wer zuletzt gespeichert hat.
 - **Mitspieler** = einfaches Zahlenfeld, keine Namen.
@@ -253,6 +266,8 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
   1 s Pause zwischen Seiten, sprechender User-Agent). Keine weiteren Seiten als die
   Kategorie-Übersicht und deren Schwierigkeits-Filteransichten abgrasen, ohne dass das
   besprochen wurde (insbesondere keine Detailseiten).
+- **Neue Texte** in der Oberfläche immer übersetzbar schreiben (`_()` / `tr()`) und in `fr.json`,
+  `it.json`, `en.json` eintragen – sonst schlägt `tests/test_i18n.py` fehl.
 - **Umlaute:** Alles, was im Browser erscheint (Templates, Flash-Meldungen, Fehlertexte,
   Titel), schreibt ä/ö/ü – nie ae/oe/ue (Wunsch von Bruno, 2026-09-18). ASCII bleibt bei
   internen Schlüsseln (`aktion='ergaenzen'`, `value="loeschen"`, Spaltennamen, URLs), in

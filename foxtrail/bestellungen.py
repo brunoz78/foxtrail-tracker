@@ -63,6 +63,7 @@ from bs4 import BeautifulSoup
 
 from .db import now
 from . import config, trails
+from .i18n import tr
 
 API_URL = "https://api.foxtrail.ch"
 _JWT_RE = re.compile(r"[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
@@ -77,8 +78,8 @@ def token_aus_link(link):
     u = urlparse((link or "").strip())
     token = (parse_qs(u.query).get("foxtrail_magic") or [""])[0]
     if u.scheme != "https" or u.netloc not in ("foxtrail.ch", "www.foxtrail.ch") or not _JWT_RE.fullmatch(token):
-        raise AbrufFehler("Das ist kein Konto-Link von foxtrail.ch. Erwartet wird der Link aus der Mail "
-                          "(https://foxtrail.ch/account/?foxtrail_magic=…).")
+        raise AbrufFehler(tr("Das ist kein Konto-Link von foxtrail.ch. Erwartet wird der Link aus der Mail "
+                             "(https://foxtrail.ch/account/?foxtrail_magic=…)."))
     return token
 
 
@@ -91,25 +92,25 @@ def abrufen(link, session=None):
     try:
         r = s.get(f"{API_URL}/auth/magic/login", params={"token": token}, allow_redirects=False, timeout=30)
         if r.status_code in (400, 401, 403):
-            fehler = ("foxtrail.ch hat den Link nicht angenommen – vielleicht ist er abgelaufen. "
-                      "Auf foxtrail.ch unter „Konto“ einen neuen Link per Mail anfordern.")
+            fehler = tr("foxtrail.ch hat den Link nicht angenommen – vielleicht ist er abgelaufen. "
+                        "Auf foxtrail.ch unter „Konto“ einen neuen Link per Mail anfordern.")
         elif "connect.sid" not in s.cookies:
-            fehler = "Die Anmeldung bei foxtrail.ch hat nicht geklappt (keine Sitzung erhalten)."
+            fehler = tr("Die Anmeldung bei foxtrail.ch hat nicht geklappt (keine Sitzung erhalten).")
         else:
             r = s.get(f"{API_URL}/account", params={"_": int(time.time())}, timeout=30,
                       headers={"Accept": "application/json"})
             if r.status_code != 200:
-                fehler = f"foxtrail.ch hat die Bestellungen nicht geliefert (Status {r.status_code})."
+                fehler = tr("foxtrail.ch hat die Bestellungen nicht geliefert (Status {status}).", status=r.status_code)
             else:
                 daten = r.json()
                 if not isinstance(daten, dict) or not isinstance(daten.get("orders"), list):
-                    fehler = "Unerwartete Antwort von foxtrail.ch – der Aufbau hat sich wohl geändert."
+                    fehler = tr("Unerwartete Antwort von foxtrail.ch – der Aufbau hat sich wohl geändert.")
                 else:
                     return {"orders": daten["orders"]}          # Kontodaten verwerfen
     except requests.RequestException:
-        fehler = "foxtrail.ch ist gerade nicht erreichbar. Bitte später nochmals versuchen."
+        fehler = tr("foxtrail.ch ist gerade nicht erreichbar. Bitte später nochmals versuchen.")
     except ValueError:
-        fehler = "Unerwartete Antwort von foxtrail.ch (kein JSON)."
+        fehler = tr("Unerwartete Antwort von foxtrail.ch (kein JSON).")
     finally:
         if session is None:
             s.close()
@@ -266,10 +267,7 @@ def _norm(s):
 
 
 def _datum_de(iso):
-    return f"{iso[8:10]}.{iso[5:7]}.{iso[0:4]}" if iso and len(iso) >= 10 else (iso or "ohne Datum")
-
-
-_LADEN = "auf der Trail-Seite „Schlussfoto von foxtrail.ch laden“"
+    return f"{iso[8:10]}.{iso[5:7]}.{iso[0:4]}" if iso and len(iso) >= 10 else (iso or tr("ohne Datum"))
 
 
 def _foto_hinweis(t, e):
@@ -280,10 +278,16 @@ def _foto_hinweis(t, e):
     if not e["foto_url"] or foto is None:
         return None
     if foto == "":
-        return f"Schlussfoto wurde von Hand gelöscht und wird nicht geladen – {_LADEN}"
+        return tr("Schlussfoto wurde von Hand gelöscht und wird nicht geladen – auf der Trail-Seite "
+                  "„Schlussfoto von foxtrail.ch laden“")
     if foto not in (f"{t['id']}.jpg", f"{t['id']}.png"):
-        return f"Schlussfoto wurde durch ein anderes Foto ersetzt und wird nicht geladen – {_LADEN}"
+        return tr("Schlussfoto wurde durch ein anderes Foto ersetzt und wird nicht geladen – auf der "
+                  "Trail-Seite „Schlussfoto von foxtrail.ch laden“")
     return None
+
+
+def _datum_abweichend(t, e, eindeutig):
+    return bool(eindeutig and e["datum"] and t.get("gemacht_datum") != e["datum"])
 
 
 def _ergaenzungen(t, e, eindeutig):
@@ -291,18 +295,18 @@ def _ergaenzungen(t, e, eindeutig):
     Liste, plus Hinweise auf Dinge, die er bewusst nicht tut. eindeutig = nur eine Bestellung
     fuer diesen Trail in der Datei (sonst bleibt das Datum, wer weiss welches gemeint ist)."""
     was, hinweis = [], []
-    if eindeutig and e["datum"] and t.get("gemacht_datum") != e["datum"]:
-        was.append(f"Datum {_datum_de(t.get('gemacht_datum'))} → {_datum_de(e['datum'])}")
+    if _datum_abweichend(t, e, eindeutig):
+        was.append(tr("Datum") + f" {_datum_de(t.get('gemacht_datum'))} → {_datum_de(e['datum'])}")
     if e["personen"] and not t.get("mitspieler"):
-        was.append("Mitspieler")
+        was.append(tr("Mitspieler"))
     if e["start"] and not t.get("start_zeit"):
-        was.append("Start/Ziel")
+        was.append(tr("Start/Ziel"))
     if e["codes"] and not t.get("team_code"):
-        was.append("Team-Code")
+        was.append(tr("Team-Code"))
     if e["bestellung"] and not t.get("bestellung"):
-        was.append("Bestellnummer")
+        was.append(tr("Bestellnummer"))
     if e["foto_url"] and t.get("foto") is None:
-        was.append("Schlussfoto")
+        was.append(tr("Schlussfoto"))
     elif _foto_hinweis(t, e):
         hinweis.append(_foto_hinweis(t, e))
     return was, hinweis
@@ -335,23 +339,24 @@ def zuordnen(conn, eintraege, heute=None, benutzer=None):
     for e in eintraege:
         t = trail_zu(e)
         was, hinweis = _ergaenzungen(t, e, anzahl.get(t["id"]) == 1) if t and t["gemacht"] else ([], [])
-        e["_datum_korrigieren"] = any(w.startswith("Datum ") for w in was)
+        e["_datum_korrigieren"] = bool(t and t["gemacht"] and _datum_abweichend(t, e, anzahl.get(t["id"]) == 1))
         if t is None:
-            plan.append((e, None, "unbekannt", "kein Trail mit diesem Namen in der Liste"))
+            plan.append((e, None, "unbekannt", tr("kein Trail mit diesem Namen in der Liste")))
         elif e["status"] and e["status"].lower() != "abgeschlossen":
-            plan.append((e, t, "uebersprungen", f"Status {e['status']}"))
+            plan.append((e, t, "uebersprungen", tr("Status {status}", status=tr(e["status"]))))
         elif not e["datum"]:
-            plan.append((e, t, "uebersprungen", "keine Startzeit"))
+            plan.append((e, t, "uebersprungen", tr("keine Startzeit")))
         elif e["datum"] > heute:
-            plan.append((e, t, "uebersprungen", "Startzeit liegt in der Zukunft"))
+            plan.append((e, t, "uebersprungen", tr("Startzeit liegt in der Zukunft")))
         elif t["gemacht"] and was:
-            plan.append((e, t, "ergaenzen", "bereits gemacht – wird ergänzt: " + ", ".join(was)
+            plan.append((e, t, "ergaenzen", tr("bereits gemacht – wird ergänzt:") + " " + ", ".join(was)
                          + "".join(f". {h}" for h in hinweis)))
         elif t["gemacht"]:
             e["_kennzeichnen"] = bool(marke and t.get("erfasst_von") != marke)
             plan.append((e, t, "uebersprungen",
-                         f"bereits als gemacht erfasst ({_datum_de(t['gemacht_datum'])})"
-                         + (f" – „Erfasst von“ wird auf „{marke}“ gesetzt" if e["_kennzeichnen"] else "")
+                         tr("bereits als gemacht erfasst ({datum})", datum=_datum_de(t["gemacht_datum"]))
+                         + (" – " + tr("„Erfasst von“ wird auf „{marke}“ gesetzt", marke=marke)
+                            if e["_kennzeichnen"] else "")
                          + "".join(f". {h}" for h in hinweis)))
         else:
             plan.append((e, t, "setzen", _foto_hinweis(t, e) or ""))

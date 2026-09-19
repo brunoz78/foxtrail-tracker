@@ -1,19 +1,29 @@
 {% extends "base.html" %}
-{% block title %}Benutzer – Foxtrail-Tracker{% endblock %}
+{% block title %}{{ _('Benutzer') }} – Foxtrail-Tracker{% endblock %}
 {% block content %}
-<div class="head"><h1>Benutzer</h1></div>
+<div class="head"><h1>{{ _('Benutzer') }}</h1></div>
 
 <div class="tablewrap"><table class="trails">
-  <thead><tr><th>Benutzer</th><th>Rolle</th><th>Aktiv</th><th>Letzte Anmeldung</th><th>Aktionen</th></tr></thead>
+  <thead><tr><th>{{ _('Benutzer') }}</th><th>{{ _('Rolle') }}</th><th>{{ _('Sprache') }}</th><th>{{ _('Aktiv') }}</th><th>{{ _('Letzte Anmeldung') }}</th><th>{{ _('Aktionen') }}</th></tr></thead>
   <tbody>
   {% for u in userlist %}
   <tr>
-    <td><b>{{ u.username }}</b>{% if u.username == me.username %} <span class="tag">du</span>{% endif %}</td>
+    <td><b>{{ u.username }}</b>{% if u.username == me.username %} <span class="tag">{{ _('du') }}</span>{% endif %}</td>
     <td>
       <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
         <input type="hidden" name="action" value="rolle">
-        <select name="rolle" aria-label="Rolle von {{ u.username }}" onchange="this.form.submit()">
-          {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if rolle(u) == k }}>{{ label }}</option>{% endfor %}
+        <select name="rolle" aria-label="{{ _('Rolle von {name}', name=u.username) }}" onchange="this.form.submit()">
+          {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if rolle(u) == k }}>{{ _(label) }}</option>{% endfor %}
+        </select>
+        <noscript><button type="submit" class="small">OK</button></noscript>
+      </form>
+    </td>
+    <td>
+      <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
+        <input type="hidden" name="action" value="sprache">
+        <select name="sprache" aria-label="{{ _('Sprache von {name}', name=u.username) }}" onchange="this.form.submit()">
+          <option value="">{{ _('automatisch') }}</option>
+          {% for code, name in sprachen.items() %}<option value="{{ code }}" {{ 'selected' if u.sprache == code }}>{{ name }}</option>{% endfor %}
         </select>
         <noscript><button type="submit" class="small">OK</button></noscript>
       </form>
@@ -28,14 +38,14 @@
     <td class="actions-cell">
       <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline">
         <input type="hidden" name="action" value="passwort">
-        <input type="password" name="password" placeholder="neues Passwort" minlength="8" required autocomplete="new-password">
-        <button type="submit" class="small">Setzen</button>
+        <input type="password" name="password" placeholder="{{ _('neues Passwort') }}" minlength="8" required autocomplete="new-password">
+        <button type="submit" class="small">{{ _('Setzen') }}</button>
       </form>
       {% if u.username != me.username %}
       <form method="post" action="{{ url_for('user_update', name=u.username) }}" class="inline"
-            onsubmit="return confirm('Benutzer {{ u.username }} wirklich löschen?')">
+            onsubmit='return confirm({{ _("Benutzer {name} wirklich löschen?", name=u.username)|tojson }})'>
         <input type="hidden" name="action" value="loeschen">
-        <button type="submit" class="small secondary">Löschen</button>
+        <button type="submit" class="small secondary">{{ _('Löschen') }}</button>
       </form>
       {% endif %}
     </td>
@@ -45,16 +55,15 @@
 </table></div>
 
 <div class="card narrow">
-  <h2>Neuer Benutzer</h2>
+  <h2>{{ _('Neuer Benutzer') }}</h2>
   <form method="post" action="{{ url_for('user_add') }}">
-    <label>Benutzername <input name="username" required pattern="[a-z0-9._-]{2,32}" title="a-z, 0-9, Punkt, Minus, Unterstrich"></label>
-    <label>Passwort <input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
-    <label>Rolle <select name="rolle">
-      {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if k == 'bearbeiten' }}>{{ label }}</option>{% endfor %}
+    <label>{{ _('Benutzername') }} <input name="username" required pattern="[a-z0-9._-]{2,32}" title="{{ _('a-z, 0-9, Punkt, Minus, Unterstrich') }}"></label>
+    <label>{{ _('Passwort') }} <input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+    <label>{{ _('Rolle') }} <select name="rolle">
+      {% for k, label in rollen.items() %}<option value="{{ k }}" {{ 'selected' if k == 'bearbeiten' }}>{{ _(label) }}</option>{% endfor %}
     </select></label>
-    <p class="muted small">Administrator: alles, auch Import, Abgleich und Benutzer · Bearbeiten: Trails eintragen,
-      Fotos und manuelle Trails · Nur lesen: Liste, Statistik und Fotos ansehen, nichts ändern (ohne Archiv und Bestelldaten)</p>
-    <div class="actions"><button type="submit">Anlegen</button></div>
+    <p class="muted small">{{ _('Administrator: alles, auch Import, Abgleich und Benutzer') }} · {{ _('Bearbeiten: Trails eintragen, Fotos und manuelle Trails') }} · {{ _('Nur lesen: Liste, Statistik und Fotos ansehen, nichts ändern (ohne Archiv und Bestelldaten)') }}</p>
+    <div class="actions"><button type="submit">{{ _('Anlegen') }}</button></div>
   </form>
 </div>
 {% endblock %}

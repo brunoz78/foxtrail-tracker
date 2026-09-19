@@ -56,6 +56,8 @@ foxtrail.ch absichtlich unscharf.</sub>
   **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),
   **Bearbeiten** (Trails eintragen, Fotos, manuelle Trails) und **Nur lesen** (Liste, Statistik und
   Fotos ansehen, nichts ändern; ohne Archiv, Team-Code, Bestellnummer und Rechnung)
+* **Sprachen:** Deutsch, Français, Italiano, English – automatisch nach Browser, umschaltbar im ⚙-Menü
+  (pro Benutzer gespeichert)
 * Keine externen Abhängigkeiten im Browser (kein CDN), hell/dunkel automatisch
 * **Auf dem Smartphone** bedienbar: Menü hinter ☰, Liste und Archiv als kompakte
   Karten statt breiter Tabelle, Sortier- und Filterleiste oben, grosse Tipp-Flächen

@@ -30,6 +30,7 @@ import re
 import subprocess
 
 from .db import now
+from .i18n import tr
 
 META_FIELDS = ("ort", "name", "route", "typ", "region", "bewertung", "dauer", "preis", "url",
                "schwierigkeit")
@@ -158,15 +159,21 @@ def _zeitpunkt(text):
 
 def zeitpunkt_text(dt):
     """datetime -> 'Montag, 21.09.2026, 04:30'."""
-    return f"{_WOCHENTAG_NR[dt.weekday()]}, {dt:%d.%m.%Y, %H:%M}" if dt else ""
+    return f"{tr(_WOCHENTAG_NR[dt.weekday()])}, {dt:%d.%m.%Y, %H:%M}" if dt else ""
+
+
+def plan_teile(oncalendar):
+    """'Mon *-*-* 04:30:00' -> ('Montag', '04:30'); sonst None."""
+    m = _WOCHE_RE.match((oncalendar or "").strip())
+    return (_WOCHENTAG[m.group(1)], f"{m.group(2)}:{m.group(3)}") if m else None
 
 
 def plan_text(oncalendar):
     """'Mon *-*-* 04:30:00' -> 'jeden Montag um 04:30'; Unbekanntes bleibt wie es ist."""
-    m = _WOCHE_RE.match((oncalendar or "").strip())
-    if not m:
+    teile = plan_teile(oncalendar)
+    if not teile:
         return (oncalendar or "").strip()
-    return f"jeden {_WOCHENTAG[m.group(1)]} um {m.group(2)}:{m.group(3)}"
+    return tr("jeden {tag} um {zeit}", tag=tr(teile[0]), zeit=teile[1])
 
 
 def timer_status(ausgabe=None):
@@ -186,12 +193,13 @@ def timer_status(ausgabe=None):
         return None
     oncal = _ONCAL_RE.search(werte.get("TimersCalendar", ""))
     # systemd schreibt '30min', '1h', '1h 30min' -> '30 Min.', '1 Std.', '1 Std. 30 Min.'
-    verzoegerung = re.sub(r"(\d+)min", r"\1 Min.", werte.get("RandomizedDelayUSec", ""))
-    verzoegerung = re.sub(r"(\d+)h\b", r"\1 Std.", verzoegerung)
+    verzoegerung = re.sub(r"(\d+)min", lambda m: tr("{n} Min.", n=m.group(1)), werte.get("RandomizedDelayUSec", ""))
+    verzoegerung = re.sub(r"(\d+)h\b", lambda m: tr("{n} Std.", n=m.group(1)), verzoegerung)
     naechster = _zeitpunkt(werte.get("NextElapseUSecRealtime"))
     return {
         "aktiv": werte.get("ActiveState") == "active",
         "plan": plan_text(oncal.group(1)) if oncal else "",
+        "plan_teile": plan_teile(oncal.group(1)) if oncal else None,
         "naechster": zeitpunkt_text(naechster),
         "naechster_dt": naechster,
         "letzter": zeitpunkt_text(_zeitpunkt(werte.get("LastTriggerUSec"))),

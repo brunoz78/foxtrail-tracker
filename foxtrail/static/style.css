@@ -426,3 +426,14 @@ dl.lesen .umbruch { white-space: pre-wrap; }
 form.zyklus { margin-top: 10px; }
 form.zyklus label { display: inline-flex; align-items: center; gap: 8px; }
 form.zyklus select { width: auto; }
+
+/* Sprachwahl: im Einstellungsmenue und (abgemeldet) oben rechts in der Kopfzeile */
+form.sprachwahl { display: inline-flex; gap: 2px; margin: 0; }
+form.sprachwahl button { background: transparent; border: 1px solid transparent; color: inherit; padding: 2px 7px;
+  font-size: 12px; font-weight: bold; border-radius: 5px; opacity: .75; }
+form.sprachwahl button:hover { opacity: 1; background: var(--green-light); }
+form.sprachwahl button.on { opacity: 1; border-color: currentColor; }
+.top > form.sprachwahl { margin-left: auto; color: #fff; }
+.top > form.sprachwahl button:hover { background: rgba(255,255,255,.18); }
+.dd-sprache { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; color: var(--text); }
+.dd-sprache > span { font-size: 14px; }

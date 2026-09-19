@@ -4,25 +4,25 @@
 {# Spalten der Liste: Kopf und Zelle je Schluessel (Reihenfolge und Auswahl: trails.SPALTEN,
    pro Benutzer in users.spalten). Klassen k-*/m-* steuern die Handy-Karten in style.css. #}
 {% macro kopf(k) -%}
-{%- if k == 'route' %}<th class="wide">Route</th>
-{%- elif k == 'startort' %}<th class="k-startort">{{ sortlink('startort', 'Startort') }}</th>
-{%- elif k == 'zielort' %}<th class="k-zielort">{{ sortlink('zielort', 'Zielort') }}</th>
-{%- elif k == 'region' %}<th class="k-region">{{ sortlink('region', 'Region') }}{{ hfilter('region', opts.region) }}</th>
-{%- elif k == 'typ' %}<th class="k-typ">{{ sortlink('typ', 'Typ') }}{{ hfilter('typ', opts.typ) }}</th>
-{%- elif k == 'grad' %}<th class="k-grad">{{ sortlink('schwierigkeit', 'Grad') }}{{ hfilter('grad', opts.grad) }}</th>
+{%- if k == 'route' %}<th class="wide">{{ _('Route') }}</th>
+{%- elif k == 'startort' %}<th class="k-startort">{{ sortlink('startort', _('Startort')) }}</th>
+{%- elif k == 'zielort' %}<th class="k-zielort">{{ sortlink('zielort', _('Zielort')) }}</th>
+{%- elif k == 'region' %}<th class="k-region">{{ sortlink('region', _('Region')) }}{{ hfilter('region', opts.region) }}</th>
+{%- elif k == 'typ' %}<th class="k-typ">{{ sortlink('typ', _('Typ')) }}{{ hfilter('typ', opts.typ) }}</th>
+{%- elif k == 'grad' %}<th class="k-grad">{{ sortlink('schwierigkeit', _('Grad')) }}{{ hfilter('grad', opts.grad) }}</th>
 {%- elif k == 'bewertung' %}<th class="r k-bew">{{ sortlink('bewertung', '★', 'desc') }}</th>
-{%- elif k == 'dauer' %}<th class="k-dauer">{{ sortlink('dauer', 'Dauer') }}{{ hfilter('dauer', opts.dauer) }}</th>
+{%- elif k == 'dauer' %}<th class="k-dauer">{{ sortlink('dauer', _('Dauer')) }}{{ hfilter('dauer', opts.dauer) }}</th>
 {%- elif k == 'preis' %}<th class="r k-preis">{{ sortlink('preis', 'CHF') }}</th>
-{%- elif k == 'neu' %}<th class="k-neu">{{ sortlink('neu', 'Neu ab', 'desc') }}</th>
-{%- elif k == 'datum' %}<th class="k-datum">{{ sortlink('datum', 'Datum', 'desc') }}</th>
-{%- elif k == 'start' %}<th class="k-start">{{ sortlink('start', 'Start', 'desc') }}</th>
-{%- elif k == 'ziel' %}<th class="k-ziel">{{ sortlink('ziel', 'Ziel', 'desc') }}</th>
-{%- elif k == 'zeit' %}<th class="r k-zeit">{{ sortlink('spielzeit', 'Zeit', 'desc') }}</th>
-{%- elif k == 'pers' %}<th class="r k-aus">Pers.</th>
-{%- elif k == 'team' %}<th class="k-aus">Team-Code</th>
-{%- elif k == 'bestellung' %}<th class="k-aus">Bestellung</th>
-{%- elif k == 'bemerkung' %}<th class="k-aus">Bemerkung</th>
-{%- elif k == 'erfasst' %}<th class="k-erfasst">{{ sortlink('erfasst', 'Erfasst von') }}{{ hfilter('erfasst', opts.erfasst) }}</th>
+{%- elif k == 'neu' %}<th class="k-neu">{{ sortlink('neu', _('Neu ab'), 'desc') }}</th>
+{%- elif k == 'datum' %}<th class="k-datum">{{ sortlink('datum', _('Datum'), 'desc') }}</th>
+{%- elif k == 'start' %}<th class="k-start">{{ sortlink('start', _('Start'), 'desc') }}</th>
+{%- elif k == 'ziel' %}<th class="k-ziel">{{ sortlink('ziel', _('Ziel'), 'desc') }}</th>
+{%- elif k == 'zeit' %}<th class="r k-zeit">{{ sortlink('spielzeit', _('Zeit'), 'desc') }}</th>
+{%- elif k == 'pers' %}<th class="r k-aus">{{ _('Pers.') }}</th>
+{%- elif k == 'team' %}<th class="k-aus">{{ _('Team-Code') }}</th>
+{%- elif k == 'bestellung' %}<th class="k-aus">{{ _('Bestellung') }}</th>
+{%- elif k == 'bemerkung' %}<th class="k-aus">{{ _('Bemerkung') }}</th>
+{%- elif k == 'erfasst' %}<th class="k-erfasst">{{ sortlink('erfasst', _('Erfasst von')) }}{{ hfilter('erfasst', opts.erfasst) }}</th>
 {%- endif %}
 {%- endmacro %}
 {% macro zelle(t, k) -%}
@@ -31,7 +31,7 @@
 {%- elif k == 'zielort' %}<td class="m-zielort">{{ t.zielort }}</td>
 {%- elif k == 'region' %}<td class="nowrap muted m-region">{{ t.region_label }}</td>
 {%- elif k == 'typ' %}<td class="m-typ">{{ typ_badge(t) }}</td>
-{%- elif k == 'grad' %}<td class="nowrap m-grad">{% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}" title="Schwierigkeitsgrad laut foxtrail.ch">{{ t.grad_label }}</span>{% else %}<span class="muted leer">–</span>{% endif %}</td>
+{%- elif k == 'grad' %}<td class="nowrap m-grad">{% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}" title="{{ _('Schwierigkeitsgrad laut foxtrail.ch') }}">{{ t.grad_label }}</span>{% else %}<span class="muted leer">–</span>{% endif %}</td>
 {%- elif k == 'bewertung' %}<td class="r m-bew">{% if t.bewertung %}{{ t.bewertung }}{% else %}<span class="leer">–</span>{% endif %}</td>
 {%- elif k == 'dauer' %}<td class="nowrap m-dauer">{{ t.dauer|dauer }}</td>
 {%- elif k == 'preis' %}<td class="r m-preis">{{ t.preis|chf }}</td>
@@ -49,11 +49,11 @@
 {%- endmacro %}
 {% block content %}
 <div class="head">
-  <h1>Alle Trails</h1>
+  <h1>{{ _('Alle Trails') }}</h1>
   <div class="kpis">
-    <span><b>{{ stats.gemacht }}</b> gemacht</span>
-    <span><b>{{ stats.offen }}</b> offen</span>
-    <span><b>{{ stats.im_angebot }}</b> aktuell auf foxtrail.ch</span>
+    <span><b>{{ stats.gemacht }}</b> {{ _('gemacht') }}</span>
+    <span><b>{{ stats.offen }}</b> {{ _('offen') }}</span>
+    <span><b>{{ stats.im_angebot }}</b> {{ _('aktuell auf foxtrail.ch') }}</span>
   </div>
 </div>
 
@@ -66,37 +66,37 @@
 <form method="get" id="liste">
 <div class="filter">
   <div class="seg">
-    <a href="{{ index_url(f='alle') }}" class="{{ 'on' if f == 'alle' }}">Alle</a>
-    <a href="{{ index_url(f='offen') }}" class="{{ 'on' if f == 'offen' }}">Offen</a>
-    <a href="{{ index_url(f='gemacht') }}" class="{{ 'on' if f == 'gemacht' }}">Gemacht</a>
-    <a href="{{ index_url(f='neu', sort='neu', dir='desc') }}" class="{{ 'on' if f == 'neu' }}" title="Seit dem Start der Liste neu auf foxtrail.ch">Neu{% if stats.neu %} <span class="cnt">{{ stats.neu }}</span>{% endif %}</a>
+    <a href="{{ index_url(f='alle') }}" class="{{ 'on' if f == 'alle' }}">{{ _('Alle') }}</a>
+    <a href="{{ index_url(f='offen') }}" class="{{ 'on' if f == 'offen' }}">{{ _('Offen') }}</a>
+    <a href="{{ index_url(f='gemacht') }}" class="{{ 'on' if f == 'gemacht' }}">{{ _('Gemacht') }}</a>
+    <a href="{{ index_url(f='neu', sort='neu', dir='desc') }}" class="{{ 'on' if f == 'neu' }}" title="{{ _('Seit dem Start der Liste neu auf foxtrail.ch') }}">{{ _('Neu') }}{% if stats.neu %} <span class="cnt">{{ stats.neu }}</span>{% endif %}</a>
   </div>
   {% if f != 'alle' %}<input type="hidden" name="f" value="{{ f }}">{% endif %}
   {% if sort != 'ort' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
   {% if richtung != 'asc' %}<input type="hidden" name="dir" value="{{ richtung }}">{% endif %}
-  <input name="q" value="{{ q }}" placeholder="Suche Ort, Name, Route, Bemerkung">
-  <button type="submit">Suchen</button>
+  <input name="q" value="{{ q }}" placeholder="{{ _('Suche Ort, Name, Route, Bemerkung') }}">
+  <button type="submit">{{ _('Suchen') }}</button>
   {% if q or sel.typ or sel.region or sel.dauer or sel.grad or sel.erfasst %}
-  <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[], erfasst=[]) }}">Filter zurücksetzen</a>
+  <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[], erfasst=[]) }}">{{ _('Filter zurücksetzen') }}</a>
   {% endif %}
-  <span class="muted small">{{ rows|length }} Trails</span>
-  <div class="seg ansicht" title="Ansicht">
-    <a href="{{ index_url(ansicht='kacheln') }}" class="{{ 'on' if ansicht == 'kacheln' }}">▦ Kacheln</a>
-    <a href="{{ index_url(ansicht='liste') }}" class="{{ 'on' if ansicht == 'liste' }}">☰ Liste</a>
+  <span class="muted small">{{ _('{n} Trails', n=rows|length) }}</span>
+  <div class="seg ansicht" title="{{ _('Ansicht') }}">
+    <a href="{{ index_url(ansicht='kacheln') }}" class="{{ 'on' if ansicht == 'kacheln' }}">▦ {{ _('Kacheln') }}</a>
+    <a href="{{ index_url(ansicht='liste') }}" class="{{ 'on' if ansicht == 'liste' }}">☰ {{ _('Liste') }}</a>
   </div>
   {% if ansicht == 'liste' %}
   <details class="spw">
-    <summary title="Spalten ein- und ausblenden">Spalten{% if not sp_standard %}<span class="sp-mark" title="Eigene Spaltenauswahl aktiv">•</span>{% endif %}</summary>
+    <summary title="{{ _('Spalten ein- und ausblenden') }}">{{ _('Spalten') }}{% if not sp_standard %}<span class="sp-mark" title="{{ _('Eigene Spaltenauswahl aktiv') }}">•</span>{% endif %}</summary>
     <div class="hf-menu right">
-      <p class="muted small">Immer sichtbar: Ort und Trail. Die Auswahl gilt nur für dich.</p>
-      {% if not sp_standard %}<p class="small sp-hinweis">Du hast eine eigene Auswahl – „Standardspalten wiederherstellen“ setzt sie zurück.</p>{% endif %}
+      <p class="muted small">{{ _('Immer sichtbar: Ort und Trail. Die Auswahl gilt nur für dich.') }}</p>
+      {% if not sp_standard %}<p class="small sp-hinweis">{{ _('Du hast eine eigene Auswahl – „Standardspalten wiederherstellen“ setzt sie zurück.') }}</p>{% endif %}
       {% for k, label, std in spalten %}
-      <label><input type="checkbox" name="spalte" value="{{ k }}" form="spalten-form" autocomplete="off" {{ 'checked' if k in sp }}> {{ label }}</label>
+      <label><input type="checkbox" name="spalte" value="{{ k }}" form="spalten-form" autocomplete="off" {{ 'checked' if k in sp }}> {{ _(label) }}</label>
       {% endfor %}
       <div class="hf-actions sp-actions">
-        <button type="submit" form="spalten-form" name="aktion" value="speichern" class="small">Speichern</button>
+        <button type="submit" form="spalten-form" name="aktion" value="speichern" class="small">{{ _('Speichern') }}</button>
         <button type="submit" form="spalten-form" name="aktion" value="standard" class="small secondary"
-                {{ 'disabled title="Es sind bereits die Standardspalten eingestellt"'|safe if sp_standard }}>Standardspalten wiederherstellen</button>
+                {% if sp_standard %}disabled title="{{ _('Es sind bereits die Standardspalten eingestellt') }}"{% endif %}>{{ _('Standardspalten wiederherstellen') }}</button>
       </div>
     </div>
   </details>
@@ -107,23 +107,23 @@
 {# Kachelansicht: dieselben Koepfe wie in der Tabelle, jedes Feld einmal -
    Name = sortieren, ▾ = filtern #}
 <div class="kachel-kopf">
-  <span class="kk">{{ sortlink('ort', 'Ort') }}</span>
-  <span class="kk">{{ sortlink('name', 'Trail') }}</span>
-  {% if f == 'neu' %}<span class="kk">{{ sortlink('neu', 'Neu ab', 'desc') }}</span>{% endif %}
-  <span class="kk">{{ sortlink('region', 'Region') }}{{ hfilter('region', opts.region) }}</span>
-  <span class="kk">{{ sortlink('typ', 'Typ') }}{{ hfilter('typ', opts.typ) }}</span>
-  <span class="kk">{{ sortlink('schwierigkeit', 'Grad') }}{{ hfilter('grad', opts.grad) }}</span>
+  <span class="kk">{{ sortlink('ort', _('Ort')) }}</span>
+  <span class="kk">{{ sortlink('name', _('Trail')) }}</span>
+  {% if f == 'neu' %}<span class="kk">{{ sortlink('neu', _('Neu ab'), 'desc') }}</span>{% endif %}
+  <span class="kk">{{ sortlink('region', _('Region')) }}{{ hfilter('region', opts.region) }}</span>
+  <span class="kk">{{ sortlink('typ', _('Typ')) }}{{ hfilter('typ', opts.typ) }}</span>
+  <span class="kk">{{ sortlink('schwierigkeit', _('Grad')) }}{{ hfilter('grad', opts.grad) }}</span>
   <span class="kk">{{ sortlink('bewertung', '★', 'desc') }}</span>
-  <span class="kk">{{ sortlink('dauer', 'Dauer') }}{{ hfilter('dauer', opts.dauer) }}</span>
+  <span class="kk">{{ sortlink('dauer', _('Dauer')) }}{{ hfilter('dauer', opts.dauer) }}</span>
   <span class="kk">{{ sortlink('preis', 'CHF') }}</span>
-  <span class="kk">{{ sortlink('datum', 'Datum', 'desc') }}</span>
-  <span class="kk">{{ sortlink('spielzeit', 'Zeit', 'desc') }}</span>
-  <span class="kk">{{ sortlink('erfasst', 'Erfasst von') }}{{ hfilter('erfasst', opts.erfasst) }}</span>
+  <span class="kk">{{ sortlink('datum', _('Datum'), 'desc') }}</span>
+  <span class="kk">{{ sortlink('spielzeit', _('Zeit'), 'desc') }}</span>
+  <span class="kk">{{ sortlink('erfasst', _('Erfasst von')) }}{{ hfilter('erfasst', opts.erfasst) }}</span>
 </div>
 <div class="kacheln">
   {% for t in rows %}
   {% if sort == 'region' and (loop.first or t.region != loop.previtem.region) %}
-  <h2 class="kgrp">{{ t.region_label or 'Ohne Region' }}</h2>
+  <h2 class="kgrp">{{ t.region_label or _('Ohne Region') }}</h2>
   {% endif %}
   {# Die Kachel ist ein Link; der Link zu foxtrail.ch liegt daneben (Links duerfen nicht
      verschachtelt sein) und wird per CSS unten rechts in den Textbereich gelegt #}
@@ -133,29 +133,29 @@
     <div class="kbild">
       {# Ort als Platzhalter unter dem Bild: bleibt sichtbar, wenn es keins gibt oder es nicht laedt #}
       <div class="kleer"><span>{{ t.ort }}</span></div>
-      {% if t.foto %}<img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="Schlussfoto {{ t.name }}" loading="lazy" onerror="this.remove()">
+      {% if t.foto %}<img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="{{ _('Schlussfoto') }} {{ t.name }}" loading="lazy" onerror="this.remove()">
       {% elif t.bild_url %}<img class="titel" src="{{ url_for('titelbild', tid=t.id) }}" alt="" loading="lazy" onerror="this.remove()">{% endif %}
-      {% if t.gemacht %}<span class="khaken" title="Gemacht">✔{% if t.gemacht_datum %} {{ t.gemacht_datum|datum }}{% endif %}</span>{% endif %}
-      {% if t.quelle == 'manual' %}<span class="kstatus tag">manuell</span>
-      {% elif not t.im_angebot %}<span class="kstatus tag warn">nicht mehr im Angebot</span>{% endif %}
+      {% if t.gemacht %}<span class="khaken" title="{{ _('Gemacht') }}">✔{% if t.gemacht_datum %} {{ t.gemacht_datum|datum }}{% endif %}</span>{% endif %}
+      {% if t.quelle == 'manual' %}<span class="kstatus tag">{{ _('manuell') }}</span>
+      {% elif not t.im_angebot %}<span class="kstatus tag warn">{{ _('nicht mehr im Angebot') }}</span>{% endif %}
     </div>
     <div class="ktext">
       <div class="ktitel"><span class="kname"><b>{{ t.name }}</b> <span class="muted">· {{ t.ort }}</span></span>
-        {% if t.neu and t.im_angebot and t.quelle != 'manual' %}<span class="tag new">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}</div>
+        {% if t.neu and t.im_angebot and t.quelle != 'manual' %}<span class="tag new">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span>{% endif %}</div>
       <div class="kmeta">{{ typ_badge(t) }}
         {% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}
         {% if t.dauer %}<span>{{ t.dauer|dauer }}</span>{% endif %}
         {% if t.bewertung %}<span>★ {{ t.bewertung }}</span>{% endif %}
-        {% if t.spielzeit %}<span title="Unsere Spielzeit">⏱ {{ t.spielzeit }}</span>{% endif %}
-        {% if t.mitspieler %}<span title="Mitspieler">👥 {{ t.mitspieler }}</span>{% endif %}
+        {% if t.spielzeit %}<span title="{{ _('Unsere Spielzeit') }}">⏱ {{ t.spielzeit }}</span>{% endif %}
+        {% if t.mitspieler %}<span title="{{ _('Mitspieler') }}">👥 {{ t.mitspieler }}</span>{% endif %}
       </div>
     </div>
   </a>
   {% if t.url %}<a class="kfox" href="{{ t.url }}" target="_blank" rel="noopener"
-     title="{{ t.name }} auf {{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else 'der Website' }} öffnen">{{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else 'Website' }} ↗</a>{% endif %}
+     title="{{ _('{name} auf foxtrail.ch öffnen', name=t.name) if t.url.startswith('https://foxtrail.ch') else _('{name} auf der Website öffnen', name=t.name) }}">{{ 'foxtrail.ch' if t.url.startswith('https://foxtrail.ch') else _('Website') }} ↗</a>{% endif %}
   </div>
   {% else %}
-  <p class="empty muted">Keine Trails gefunden.</p>
+  <p class="empty muted">{{ _('Keine Trails gefunden.') }}</p>
   {% endfor %}
 </div>
 {% else %}
@@ -167,28 +167,28 @@
 <div class="tablewrap"><table class="trails karten">
   <thead><tr>
     <th class="c">✓</th>
-    <th class="k-ort">{{ sortlink('ort', 'Ort') }}</th>
-    <th class="k-name">{{ sortlink('name', 'Trail') }}{% if f == 'neu' and 'neu' not in sp %} · {{ sortlink('neu', 'Neu ab', 'desc') }}{% endif %}</th>
+    <th class="k-ort">{{ sortlink('ort', _('Ort')) }}</th>
+    <th class="k-name">{{ sortlink('name', _('Trail')) }}{% if f == 'neu' and 'neu' not in sp %} · {{ sortlink('neu', _('Neu ab'), 'desc') }}{% endif %}</th>
     {% for k in sp %}{{ kopf(k) }}{% endfor %}
   </tr></thead>
   <tbody>
   {% for t in rows %}
   {% if sort == 'region' and (loop.first or t.region != loop.previtem.region) %}
-  <tr class="grp"><td colspan="{{ ncols }}">{{ t.region_label or 'Ohne Region' }}</td></tr>
+  <tr class="grp"><td colspan="{{ ncols }}">{{ t.region_label or _('Ohne Region') }}</td></tr>
   {% endif %}
   <tr class="{{ 'done' if t.gemacht }} {{ 'gone' if (not t.im_angebot and t.quelle == 'foxtrail') }}">
-    <td class="c"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}" class="check" title="Bearbeiten">{{ '✔' if t.gemacht else '○' }}</a></td>
+    <td class="c"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}" class="check" title="{{ _('Öffnen') }}">{{ '✔' if t.gemacht else '○' }}</a></td>
     <td class="m-ort">{{ t.ort }}</td>
     <td class="m-name"><a href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}"><b>{{ t.name }}</b></a>
-      {% if t.quelle == 'manual' %}<span class="tag">manuell</span>
-      {% elif not t.im_angebot %}<span class="tag warn" title="Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {{ (t.last_seen or '')[:10]|datum }}">nicht mehr im Angebot{% if t.last_seen %} seit {{ t.last_seen|mmjj }}{% endif %}</span>
-      {% elif t.neu %}<span class="tag new" title="Vom Abgleich am {{ t.neu_seit|datum }} neu auf foxtrail.ch gefunden">Neu ab {{ t.neu_seit|mmjj }}</span>{% endif %}
-      {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="Auf foxtrail.ch öffnen">↗</a>{% endif %}
-      {% if t.foto %}<a class="thumb" href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}#foto" title="Schlussfoto ansehen"><img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="" loading="lazy"></a>{% endif %}</td>
+      {% if t.quelle == 'manual' %}<span class="tag">{{ _('manuell') }}</span>
+      {% elif not t.im_angebot %}<span class="tag warn" title="{{ _('Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {datum}', datum=(t.last_seen or '')[:10]|datum) }}">{{ _('nicht mehr im Angebot') }}{% if t.last_seen %} {{ _('seit') }} {{ t.last_seen|mmjj }}{% endif %}</span>
+      {% elif t.neu %}<span class="tag new" title="{{ _('Vom Abgleich am {datum} neu auf foxtrail.ch gefunden', datum=t.neu_seit|datum) }}">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span>{% endif %}
+      {% if t.url %}<a class="ext" href="{{ t.url }}" target="_blank" rel="noopener" title="{{ _('Auf foxtrail.ch öffnen') }}">↗</a>{% endif %}
+      {% if t.foto %}<a class="thumb" href="{{ url_for('trail_edit', tid=t.id, next=request.full_path) }}#foto" title="{{ _('Schlussfoto ansehen') }}"><img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="" loading="lazy"></a>{% endif %}</td>
     {% for k in sp %}{{ zelle(t, k) }}{% endfor %}
   </tr>
   {% else %}
-  <tr><td colspan="{{ ncols }}" class="empty">Keine Trails gefunden.</td></tr>
+  <tr><td colspan="{{ ncols }}" class="empty">{{ _('Keine Trails gefunden.') }}</td></tr>
   {% endfor %}
   </tbody>
 </table></div>

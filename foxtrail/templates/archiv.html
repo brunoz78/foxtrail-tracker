@@ -1,22 +1,20 @@
 {% extends "base.html" %}
 {% block main_class %}voll{% endblock %}
 {% from "_macros.html" import typ_badge, sortlink with context %}
-{% block title %}Archiv – Foxtrail-Tracker{% endblock %}
+{% block title %}{{ _('Archiv') }} – Foxtrail-Tracker{% endblock %}
 {% block content %}
-<div class="head"><h1>Archiv</h1></div>
-<p class="muted">Trails, die auf foxtrail.ch nicht mehr angeboten werden und die ihr noch nicht gemacht habt.
-Wird ein Trail hier als „gemacht“ markiert, wandert er automatisch zurück in die Hauptliste.
-Taucht er auf foxtrail.ch wieder auf, wird er beim nächsten Abgleich reaktiviert.</p>
+<div class="head"><h1>{{ _('Archiv') }}</h1></div>
+<p class="muted">{{ _('Trails, die auf foxtrail.ch nicht mehr angeboten werden und die ihr noch nicht gemacht habt. Wird ein Trail hier als „gemacht“ markiert, wandert er automatisch zurück in die Hauptliste. Taucht er auf foxtrail.ch wieder auf, wird er beim nächsten Abgleich reaktiviert.') }}</p>
 <form method="get" class="filter">
   {% if sort != 'ort' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
   {% if richtung != 'asc' %}<input type="hidden" name="dir" value="{{ richtung }}">{% endif %}
-  <input name="q" value="{{ q }}" placeholder="Suche Ort, Name, Route">
-  <button type="submit">Suchen</button>
-  {% if q %}<a class="btn-link" href="{{ index_url(q='') }}">Suche zurücksetzen</a>{% endif %}
-  <span class="muted small">{{ rows|length }} Trails</span>
+  <input name="q" value="{{ q }}" placeholder="{{ _('Suche Ort, Name, Route') }}">
+  <button type="submit">{{ _('Suchen') }}</button>
+  {% if q %}<a class="btn-link" href="{{ index_url(q='') }}">{{ _('Suche zurücksetzen') }}</a>{% endif %}
+  <span class="muted small">{{ _('{n} Trails', n=rows|length) }}</span>
 </form>
 <div class="tablewrap"><table class="trails karten ohne-haken">
-  <thead><tr><th class="k-ort">{{ sortlink('ort', 'Ort') }}</th><th class="k-name">{{ sortlink('name', 'Trail') }}</th><th class="wide">Route</th><th class="k-region">{{ sortlink('region', 'Region') }}</th><th class="k-typ">Typ</th><th class="k-grad">Grad</th><th class="k-dauer">Dauer</th><th class="r k-preis">CHF</th><th class="k-gesehen">{{ sortlink('gesehen', 'Zuletzt gesehen', 'desc') }}</th><th class="k-aus"></th></tr></thead>
+  <thead><tr><th class="k-ort">{{ sortlink('ort', _('Ort')) }}</th><th class="k-name">{{ sortlink('name', _('Trail')) }}</th><th class="wide">{{ _('Route') }}</th><th class="k-region">{{ sortlink('region', _('Region')) }}</th><th class="k-typ">{{ _('Typ') }}</th><th class="k-grad">{{ _('Grad') }}</th><th class="k-dauer">{{ _('Dauer') }}</th><th class="r k-preis">CHF</th><th class="k-gesehen">{{ sortlink('gesehen', _('Zuletzt gesehen'), 'desc') }}</th><th class="k-aus"></th></tr></thead>
   <tbody>
   {% for t in rows %}
   <tr class="gone">
@@ -29,10 +27,10 @@ Taucht er auf foxtrail.ch wieder auf, wird er beim nächsten Abgleich reaktivier
     <td class="nowrap m-dauer">{{ t.dauer|dauer }}</td>
     <td class="r m-preis">{{ t.preis|chf }}</td>
     <td class="nowrap m-gesehen">{{ (t.last_seen or '')[:10]|datum }}</td>
-    <td class="m-aktion">{% if darf_schreiben %}<a class="btn small" href="{{ url_for('trail_edit', tid=t.id, next=url_for('archiv')) }}">Doch gemacht?</a>{% endif %}</td>
+    <td class="m-aktion">{% if darf_schreiben %}<a class="btn small" href="{{ url_for('trail_edit', tid=t.id, next=url_for('archiv')) }}">{{ _('Doch gemacht?') }}</a>{% endif %}</td>
   </tr>
   {% else %}
-  <tr><td colspan="10" class="empty">{{ 'Keine Treffer.' if q else 'Das Archiv ist leer.' }}</td></tr>
+  <tr><td colspan="10" class="empty">{{ _('Keine Treffer.') if q else _('Das Archiv ist leer.') }}</td></tr>
   {% endfor %}
   </tbody>
 </table></div>

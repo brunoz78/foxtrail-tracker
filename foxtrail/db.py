@@ -68,7 +68,8 @@ CREATE TABLE IF NOT EXISTS users (
     created   TEXT NOT NULL,
     last_login TEXT,
     spalten   TEXT,                  -- sichtbare Spalten der Liste, 'route,typ,...'; NULL = Standard
-    nur_lesen INTEGER NOT NULL DEFAULT 0   -- 1 = darf nichts aendern (nie zusammen mit is_admin)
+    nur_lesen INTEGER NOT NULL DEFAULT 0,  -- 1 = darf nichts aendern (nie zusammen mit is_admin)
+    sprache   TEXT                   -- de | fr | it | en; NULL = automatisch (Browser)
 );
 
 -- einfache Einstellungen der App (z. B. 'abgleich' = woechentlich | monatlich | aus)
@@ -122,6 +123,9 @@ def _migrate(conn):
     if "nur_lesen" not in u_spalten:
         # 2026-09: Rolle "Nur lesen"
         conn.execute("ALTER TABLE users ADD COLUMN nur_lesen INTEGER NOT NULL DEFAULT 0")
+    if "sprache" not in u_spalten:
+        # 2026-09: Oberflaeche auf Deutsch, Franzoesisch, Italienisch, Englisch
+        conn.execute("ALTER TABLE users ADD COLUMN sprache TEXT")
     spalten = {r[1] for r in conn.execute("PRAGMA table_info(trails)")}
     if "neu_seit" not in spalten:
         # 2026-09: "Neu ab MM/JJ" fuer Trails, die ein Abgleich neu angelegt hat. Rueckwirkend

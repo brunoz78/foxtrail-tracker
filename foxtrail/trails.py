@@ -8,6 +8,7 @@ import uuid
 
 from . import config
 from .db import ARCHIV_COND, now
+from .i18n import tr
 
 # Typ wird aus dem Namen abgeleitet: foxtrail.ch zeigt MINI/MAXI nur als Badge im
 # Titelbild (kein HTML-Element), im Trail-Namen steht es aber immer ("Baccara Mini",
@@ -90,7 +91,7 @@ def route_enden(route):
 def region_label(slug):
     if not slug:
         return ""
-    return REGION_LABEL.get(slug) or slug.replace("-", " ").title()
+    return tr(REGION_LABEL[slug]) if slug in REGION_LABEL else slug.replace("-", " ").title()
 
 
 def parse_dauer(s):
@@ -131,7 +132,7 @@ def _row(r):
     d["region_label"] = region_label(d["region"])
     d["dauer_von"], d["dauer_bis"] = parse_dauer(d["dauer"])
     d["neu"] = bool(d.get("neu_seit"))      # "Neu ab MM/JJ": bleibt, solange neu_seit gesetzt ist
-    d["grad_label"] = GRAD_LABEL.get(d.get("schwierigkeit") or "", "")
+    d["grad_label"] = tr(GRAD_LABEL.get(d.get("schwierigkeit") or "", ""))
     d["spielzeit_min"] = spielzeit_min(d.get("start_zeit"), d.get("ziel_zeit"))
     d["spielzeit"] = spielzeit_label(d["spielzeit_min"])
     d["startort"], d["zielort"] = route_enden(d.get("route"))
@@ -228,18 +229,18 @@ def filter_options(conn):
         f"SELECT DISTINCT erfasst_von FROM trails WHERE NOT {ARCHIV_COND} AND COALESCE(erfasst_von, '') != ''")]
     wer.sort(key=str.lower)
 
-    def ohne(spalte, text="– ohne Angabe"):
+    def ohne(spalte, text="ohne Angabe"):
         """Eintrag "ohne Angabe" am Ende - nur, wenn es solche Trails gibt."""
         n = conn.execute(f"SELECT COUNT(*) FROM trails WHERE NOT {ARCHIV_COND} "
                          f"AND COALESCE({spalte}, '') = ''").fetchone()[0]
-        return [(LEER, text)] if n else []
+        return [(LEER, "– " + tr(text))] if n else []
 
     # typ ist nie leer (Default 'foxtrail'), deshalb dort kein "ohne Angabe"
-    return {"erfasst": [(w, w) for w in wer] + ohne("erfasst_von", "– nicht erfasst"),
+    return {"erfasst": [(w, w) for w in wer] + ohne("erfasst_von", "nicht erfasst"),
             "region": [(s, region_label(s)) for s in regs] + ohne("region"),
-            "typ": [(t, TYP_LABEL[t]) for t in TYPEN],
+            "typ": [(t, tr(TYP_LABEL[t])) for t in TYPEN],
             "dauer": [(s, dauer_kurz(s)) for s in dauern] + ohne("dauer"),
-            "grad": [(g, GRAD_LABEL[g]) for g in GRADE] + ohne("schwierigkeit")}
+            "grad": [(g, tr(GRAD_LABEL[g])) for g in GRADE] + ohne("schwierigkeit")}
 
 
 def list_archiv(conn, q="", sort="ort", richtung="asc"):
@@ -275,22 +276,22 @@ def _clean_done(form, username, datum_pflicht=False):
     gemacht = 1 if form.get("gemacht") in ("1", "on", "ja") else 0
     datum = (form.get("gemacht_datum") or "").strip() or None
     if datum and not _DATE_RE.match(datum):
-        raise TrailError("Datum bitte als JJJJ-MM-TT eingeben.")
+        raise TrailError(tr("Datum bitte als JJJJ-MM-TT eingeben."))
     mit = (form.get("mitspieler") or "").strip()
     if mit:
         try:
             mit = int(mit)
         except ValueError:
-            raise TrailError("Anzahl Mitspieler muss eine ganze Zahl sein.")
+            raise TrailError(tr("Anzahl Mitspieler muss eine ganze Zahl sein."))
         if mit < 1 or mit > 999:
-            raise TrailError("Anzahl Mitspieler: 1 bis 999.")
+            raise TrailError(tr("Anzahl Mitspieler: 1 bis 999."))
     else:
         mit = None
     bemerkung = (form.get("bemerkung") or "").strip()[:2000]
     if not gemacht:
         datum, mit = None, None
     elif datum_pflicht and not datum:
-        raise TrailError("Bitte das Datum eintragen, an dem ihr den Trail gemacht habt.")
+        raise TrailError(tr("Bitte das Datum eintragen, an dem ihr den Trail gemacht habt."))
     return gemacht, datum, mit, bemerkung
 
 
@@ -302,7 +303,7 @@ def update_done(conn, trail_id, form, username, datum_pflicht=False):
     ein gemachter Trail braucht ein Datum; Importe duerfen ohne."""
     t = get(conn, trail_id)
     if not t:
-        raise TrailError("Trail nicht gefunden.")
+        raise TrailError(tr("Trail nicht gefunden."))
     if not t["gemacht"] and ((form.get("gemacht_datum") or "").strip() or (form.get("mitspieler") or "").strip()):
         form = dict(form.items(), gemacht="1")
     gemacht, datum, mit, bemerkung = _clean_done(form, username, datum_pflicht)
@@ -322,7 +323,7 @@ def zuruecksetzen(conn, trail_id):
     zurueck, damit der Aufrufer die Datei loescht."""
     t = get(conn, trail_id)
     if not t:
-        raise TrailError("Trail nicht gefunden.")
+        raise TrailError(tr("Trail nicht gefunden."))
     conn.execute(
         "UPDATE trails SET gemacht=0, gemacht_datum=NULL, mitspieler=NULL, bemerkung='', erfasst_von=NULL, "
         "erfasst_am=NULL, start_zeit=NULL, ziel_zeit=NULL, team_code=NULL, bestellung=NULL, foto_url=NULL, "
@@ -360,7 +361,7 @@ def add_manual(conn, form, username, datum_pflicht=False):
     ort = (form.get("ort") or "").strip()[:100]
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
-        raise TrailError("Ort und Name sind Pflichtfelder.")
+        raise TrailError(tr("Ort und Name sind Pflichtfelder."))
     typ = _typ_aus_form(form, name)
     gemacht, datum, mit, bemerkung = _clean_done(form, username, datum_pflicht)
     slug = "manual-" + uuid.uuid4().hex[:12]
@@ -378,11 +379,11 @@ def add_manual(conn, form, username, datum_pflicht=False):
 def update_manual(conn, trail_id, form):
     t = get(conn, trail_id)
     if not t or t["quelle"] != "manual":
-        raise TrailError("Nur manuell erfasste Trails können so bearbeitet werden.")
+        raise TrailError(tr("Nur manuell erfasste Trails können so bearbeitet werden."))
     ort = (form.get("ort") or "").strip()[:100]
     name = (form.get("name") or "").strip()[:100]
     if not ort or not name:
-        raise TrailError("Ort und Name sind Pflichtfelder.")
+        raise TrailError(tr("Ort und Name sind Pflichtfelder."))
     conn.execute("UPDATE trails SET ort=?, name=?, route=?, typ=?, region=?, dauer=?, schwierigkeit=? "
                  "WHERE id=?",
                  (ort, name, (form.get("route") or "").strip()[:300], _typ_aus_form(form, name),
@@ -393,7 +394,7 @@ def update_manual(conn, trail_id, form):
 def delete_manual(conn, trail_id):
     t = get(conn, trail_id)
     if not t or t["quelle"] != "manual":
-        raise TrailError("Nur manuell erfasste Trails können gelöscht werden.")
+        raise TrailError(tr("Nur manuell erfasste Trails können gelöscht werden."))
     conn.execute("DELETE FROM trails WHERE id = ?", (trail_id,))
 
 
@@ -538,6 +539,6 @@ def statistik(conn):
         "schnellster": mit_zeit[0] if mit_zeit else None,
         "laengster": mit_zeit[-1] if len(mit_zeit) > 1 else None,
         "regionen": regionen,
-        "typen": _anteile(alle, "typ", TYPEN, lambda v: TYP_LABEL.get(v, v)),
-        "grade": _anteile(alle, "schwierigkeit", GRADE, lambda v: GRAD_LABEL.get(v, v)),
+        "typen": _anteile(alle, "typ", TYPEN, lambda v: tr(TYP_LABEL.get(v, v))),
+        "grade": _anteile(alle, "schwierigkeit", GRADE, lambda v: tr(GRAD_LABEL.get(v, v))),
     }
