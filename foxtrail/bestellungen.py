@@ -206,6 +206,23 @@ def _datum_de(iso):
     return f"{iso[8:10]}.{iso[5:7]}.{iso[0:4]}" if iso and len(iso) >= 10 else (iso or "ohne Datum")
 
 
+_LADEN = "auf der Trail-Seite „Schlussfoto von foxtrail.ch laden“"
+
+
+def _foto_hinweis(t, e):
+    """Warum das Schlussfoto nicht geladen wird, obwohl die Bestellung eins hat - oder None.
+    Schlussfotos (Import, Knopf auf der Trail-Seite) heissen <id>.jpg/.png, selbst hochgeladene
+    <id>-<zeit>.jpg (fotos.speichern)."""
+    foto = t.get("foto")
+    if not e["foto_url"] or foto is None:
+        return None
+    if foto == "":
+        return f"Schlussfoto wurde von Hand gelöscht und wird nicht geladen – {_LADEN}"
+    if foto not in (f"{t['id']}.jpg", f"{t['id']}.png"):
+        return f"Schlussfoto wurde durch ein anderes Foto ersetzt und wird nicht geladen – {_LADEN}"
+    return None
+
+
 def _ergaenzungen(t, e, eindeutig):
     """Bereits gemachter Trail: was der Import nachtragen bzw. korrigieren wuerde, als lesbare
     Liste, plus Hinweise auf Dinge, die er bewusst nicht tut. eindeutig = nur eine Bestellung
@@ -223,9 +240,8 @@ def _ergaenzungen(t, e, eindeutig):
         was.append("Bestellnummer")
     if e["foto_url"] and t.get("foto") is None:
         was.append("Schlussfoto")
-    elif e["foto_url"] and t.get("foto") == "":
-        hinweis.append("Schlussfoto wurde von Hand gelöscht und wird nicht geladen – "
-                       "auf der Trail-Seite „Schlussfoto von foxtrail.ch laden“")
+    elif _foto_hinweis(t, e):
+        hinweis.append(_foto_hinweis(t, e))
     return was, hinweis
 
 
@@ -270,7 +286,7 @@ def zuordnen(conn, eintraege, heute=None):
                          f"bereits als gemacht erfasst ({_datum_de(t['gemacht_datum'])})"
                          + "".join(f". {h}" for h in hinweis)))
         else:
-            plan.append((e, t, "setzen", ""))
+            plan.append((e, t, "setzen", _foto_hinweis(t, e) or ""))
     return plan
 
 

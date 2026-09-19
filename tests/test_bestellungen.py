@@ -287,6 +287,24 @@ def test_ergaenzen_datum_und_geloeschtes_foto():
     assert all("Datum " not in g for e, t, a, g in plan if t and t["id"] == hera)
 
 
+
+def test_hinweis_foto_ersetzt():
+    c = _db()
+    hera = _id(c, "zuerich/hera")
+    eintraege = bestellungen.parse(json.dumps(MUSTER_JSON))
+
+    def grund():
+        return next(g for e, t, a, g in bestellungen.zuordnen(c, eintraege, heute="2026-09-17")
+                    if t and t["id"] == hera)
+
+    trails.set_foto(c, hera, f"{hera}-1789822635.jpg")           # eigenes Foto, noch offen
+    assert "durch ein anderes Foto ersetzt" in grund()
+    trails.update_done(c, hera, {"gemacht": "1", "gemacht_datum": "2020-01-01"}, "u")
+    assert "durch ein anderes Foto ersetzt" in grund()           # gemacht: beim Ergaenzen ebenso
+    trails.set_foto(c, hera, f"{hera}.jpg")                      # Schlussfoto liegt schon da
+    assert "Foto" not in grund()
+
+
 def test_spielzeit():
     assert trails.spielzeit_min("2026-09-17 12:02", "2026-09-17 14:52") == 170
     assert trails.spielzeit_min("2026-09-17 23:30", "2026-09-18 01:00") == 90

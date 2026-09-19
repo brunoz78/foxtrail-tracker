@@ -58,7 +58,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Bereits gemachte Trails ergänzt der Import (`_ergaenzungen`): leere Felder (Mitspieler, Start/Ziel,
   Team-Code, Bestellnummer, Foto) und ein **abweichendes Datum wird auf das Bestelldatum korrigiert**,
   sofern die Datei nur eine Bestellung für diesen Trail enthält (Wunsch von Bruno, 2026-09-19). Die
-  Vorschau nennt jede Änderung einzeln; ein von Hand gelöschtes Foto (`foto = ''`) lädt der Import
+  Vorschau nennt jede Änderung einzeln; ein von Hand gelöschtes (`foto = ''`) oder durch ein eigenes
+  ersetztes Foto (Name `<id>-<zeit>.jpg` statt `<id>.jpg`, `_foto_hinweis`) lädt der Import
   nicht, sagt das aber ausdrücklich.
 - **Fotos** (`foxtrail/fotos.py`): Upload auf der Detailseite (`POST /trail/<id>/foto`,
   aktion `hochladen | loeschen | foxtrail`). Pillow dreht nach EXIF, verkleinert auf 2560 px
