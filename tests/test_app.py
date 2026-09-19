@@ -706,6 +706,18 @@ def test_rolle_nur_lesen(app, tmp_path):
     assert c.get("/import").status_code == 403 and c.get("/admin/benutzer").status_code == 403
     with db.session(app.config["DB_PATH"]) as conn:
         assert trails.get(conn, 2)["gemacht"] == 0
+    # keine Bestelldaten, kein Archiv
+    assert c.get("/archiv").status_code == 403 and "/archiv" not in c.get("/").get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        conn.execute("UPDATE trails SET team_code = 'TEAM42', bestellung = '777', start_zeit = '2024-05-01 10:00' "
+                     "WHERE id = 2")
+        users.set_spalten(conn, "leserin", ["team", "bestellung", "typ"])
+    seite = c.get("/trail/2").get_data(as_text=True)
+    assert "TEAM42" not in seite and "777" not in seite and "invoice" not in seite and "Start 10:00" in seite
+    liste = c.get("/?ansicht=liste").get_data(as_text=True)
+    assert "TEAM42" not in liste and "Bestellnummer" not in liste and "Team-Code" not in liste
+    login(c)                                            # Admin sieht beides weiterhin
+    assert "TEAM42" in c.get("/trail/2").get_data(as_text=True) and c.get("/archiv").status_code == 200
 
 
 def test_rolle_im_benutzer_admin(app):

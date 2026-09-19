@@ -25,7 +25,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   `nur_lesen` (seit 2026-09-19, Wunsch von Bruno: darf alles ansehen, nichts ändern; nie zusammen mit
   `is_admin`). Ändernde Routen tragen `@schreiben_required` (bzw. prüfen im POST-Zweig
   `users.darf_schreiben`), Templates blenden Knöpfe über `darf_schreiben` aus. Eigenes Passwort und
-  die eigene Spaltenauswahl darf auch „Nur lesen“ ändern.
+  die eigene Spaltenauswahl darf auch „Nur lesen“ ändern. „Nur lesen“ sieht weder Archiv (403, Menü
+  „Mehr“ ausgeblendet) noch Team-Code, Bestellnummer und Rechnungslink (`trails.SPALTEN_INTERN`).
 - **Eine gemeinsame Liste** für alle Benutzer, **ein Eintrag pro Trail** (kein
   Mehrfach-Tracking). `erfasst_von` hält fest, wer zuletzt gespeichert hat.
 - **Mitspieler** = einfaches Zahlenfeld, keine Namen.

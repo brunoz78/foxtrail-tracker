@@ -230,8 +230,12 @@ def create_app(test_config=None):
             return url_for("index", **{k: v for k, v in params.items() if v not in (None, "", [])})
 
         sp = trails.spalten_aus(current_user().get("spalten"))
+        spalten = trails.SPALTEN
+        if not users.darf_schreiben(current_user()):
+            sp = [k for k in sp if k not in trails.SPALTEN_INTERN]
+            spalten = [s for s in spalten if s[0] not in trails.SPALTEN_INTERN]
         return render_template("index.html", rows=rows, f=f, q=q, sel=sel, sort=sort, ansicht=ansicht,
-                               sp=sp, spalten=trails.SPALTEN,
+                               sp=sp, spalten=spalten,
                                sp_standard=(tuple(sp) == trails.SPALTEN_STANDARD),
                                richtung=richtung, opts=trails.filter_options(conn), index_url=index_url)
 
@@ -255,7 +259,7 @@ def create_app(test_config=None):
         return render_template("statistik.html", st=trails.statistik(get_conn()))
 
     @app.route("/archiv")
-    @login_required
+    @schreiben_required                 # "Nur lesen" braucht das Archiv nicht (Wunsch von Bruno)
     def archiv():
         q = (request.args.get("q") or "").strip()[:80]
         sort = request.args.get("sort", "ort")

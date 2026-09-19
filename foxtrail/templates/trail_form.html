@@ -13,11 +13,12 @@
     {% endif %}
   </p>
 
-  {% if t.start_zeit or t.team_code or t.bestellung %}
+  {# Team-Code, Bestellung und Rechnung nicht fuer "Nur lesen" #}
+  {% if t.start_zeit or (darf_schreiben and (t.team_code or t.bestellung)) %}
   <p class="muted small">
     {% if t.start_zeit %}Start {{ t.start_zeit[11:16] }}{% if t.ziel_zeit %} · Ziel {{ t.ziel_zeit[11:16] }}{% endif %}{% if t.spielzeit %} · Spielzeit <b>{{ t.spielzeit }}</b>{% endif %}{% endif %}
-    {% if t.team_code %} · Team-Code {{ t.team_code }}{% endif %}
-    {% if t.bestellung %} · Bestellung #{{ t.bestellung }}
+    {% if darf_schreiben and t.team_code %} · Team-Code {{ t.team_code }}{% endif %}
+    {% if darf_schreiben and t.bestellung %} · Bestellung #{{ t.bestellung }}
       <a href="https://api.foxtrail.ch/invoice/print/{{ t.bestellung }}" target="_blank" rel="noopener" title="Rechnung als PDF (Anmeldung bei foxtrail.ch nötig)">Rechnung ↗</a>{% endif %}
   </p>
   {% endif %}

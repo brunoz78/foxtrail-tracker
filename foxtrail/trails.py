@@ -46,6 +46,8 @@ SPALTEN = (
     ("bemerkung", "Bemerkung", True), ("erfasst", "Erfasst von", False),
 )
 SPALTEN_KEYS = tuple(k for k, _, _ in SPALTEN)
+# Bestelldaten sieht die Rolle "Nur lesen" nicht (auch nicht als Spalte)
+SPALTEN_INTERN = ("team", "bestellung")
 SPALTEN_STANDARD = tuple(k for k, _, an in SPALTEN if an)
 _ROUTE_TEIL_RE = re.compile(r"\s+[-–]\s+")
 

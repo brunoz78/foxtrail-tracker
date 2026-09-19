@@ -23,6 +23,7 @@
     <a href="{{ url_for('statistik') }}" class="{{ 'on' if ep == 'statistik' }}">Statistik</a>
     {# Aufklappmenues: <details> geht ohne JavaScript; ein paar Zeilen JS schliessen sie beim
        Klick daneben bzw. wenn ein anderes aufgeht #}
+    {% if darf_schreiben %}
     <details class="dd">
       <summary class="{{ 'on' if ep in ('archiv', 'trail_new') }}">Mehr
         {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</summary>
@@ -30,12 +31,11 @@
         <a href="{{ url_for('archiv') }}" class="{{ 'on' if ep == 'archiv' }}">Archiv
           {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}
           <small>nicht mehr angebotene, offene Trails</small></a>
-        {% if darf_schreiben %}
         <a href="{{ url_for('trail_new') }}" class="{{ 'on' if ep == 'trail_new' }}">+ Trail manuell erfassen
           <small>für Trails, die es nicht mehr gibt</small></a>
-        {% endif %}
       </div>
     </details>
+    {% endif %}
     <details class="dd">
       <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'profil') }}"
                title="Einstellungen{% if update %} – neue Version {{ update.version }} verfügbar{% endif %}" aria-label="Einstellungen"><span class="zahnrad" aria-hidden="true">⚙</span>{% if update %}<span class="upd-punkt" aria-hidden="true"></span>{% endif %}<span class="dd-text">Einstellungen</span></summary>
