@@ -230,8 +230,10 @@ def test_zuordnen_und_anwenden_text():
     assert col["gemacht"] == 1 and col["gemacht_datum"] == "2026-09-17" and col["mitspieler"] == 2
     assert col["erfasst_von"] == "bruno" and col["team_code"] == "AAAAAA" and col["bestellung"] == "418324"
     h = trails.get(c, hera)
-    assert h["gemacht_datum"] == "2020-01-01" and h["bemerkung"] == "alt"      # nicht angetastet
-    assert h["team_code"] == "BBBBBB, CCCCCC" and h["mitspieler"] is None       # nur ergaenzt
+    datum_bestellung = next(e["datum"] for e, _, _, _ in plan if e["name"] == "Hera")
+    assert "Datum 01.01.2020 → " in aktionen["Hera"][2] and "Team-Code" in aktionen["Hera"][2]
+    assert h["gemacht_datum"] == datum_bestellung and h["bemerkung"] == "alt"   # Datum korrigiert
+    assert h["team_code"] == "BBBBBB, CCCCCC"                                    # ergaenzt
     # zweiter Lauf: alles komplett -> nichts mehr zu tun
     plan = bestellungen.zuordnen(c, bestellungen.parse(MUSTER), heute="2026-09-17")
     assert bestellungen.anwenden(c, plan)["gesetzt"] == 0
@@ -267,6 +269,22 @@ def test_anwenden_json_mit_fotos(tmp_path, monkeypatch):
     res = bestellungen.anwenden(c, plan, "bruno", foto_dir=str(tmp_path / "fotos"))
     assert res["ergaenzt"] == 1 and res["fotos"] == 1
     assert trails.get(c, _id(c, "zuerich/hera"))["foto"] is not None
+
+
+
+def test_ergaenzen_datum_und_geloeschtes_foto():
+    c = _db()
+    hera = _id(c, "zuerich/hera")
+    trails.update_done(c, hera, {"gemacht": "1", "gemacht_datum": "2020-01-01"}, "u")
+    trails.set_foto(c, hera, "")                                      # von Hand geloescht
+    eintraege = bestellungen.parse(json.dumps(MUSTER_JSON))
+    plan = bestellungen.zuordnen(c, eintraege, heute="2026-09-17")
+    grund = next(g for e, t, a, g in plan if t and t["id"] == hera)
+    assert "von Hand gelöscht" in grund and "Schlussfoto," not in grund
+    # zwei Bestellungen fuer denselben Trail: Datum bleibt, weil unklar ist, welche gemeint ist
+    doppelt = eintraege + [dict(e, datum="2019-05-05") for e in eintraege if e["name"] == "Hera"]
+    plan = bestellungen.zuordnen(c, doppelt, heute="2026-09-17")
+    assert all("Datum " not in g for e, t, a, g in plan if t and t["id"] == hera)
 
 
 def test_spielzeit():

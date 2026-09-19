@@ -55,6 +55,11 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   liegen als `<id>.jpg` in `config.foto_dir()` (LXC: `/var/lib/foxtrail-tracker/fotos`,
   lokal `data/fotos`, gitignored) und werden ueber `/foto/<id>` nur angemeldet ausgeliefert.
   Kein Weg B (Tracker meldet sich selbst bei foxtrail.ch an) ohne neue Absprache.
+  Bereits gemachte Trails ergänzt der Import (`_ergaenzungen`): leere Felder (Mitspieler, Start/Ziel,
+  Team-Code, Bestellnummer, Foto) und ein **abweichendes Datum wird auf das Bestelldatum korrigiert**,
+  sofern die Datei nur eine Bestellung für diesen Trail enthält (Wunsch von Bruno, 2026-09-19). Die
+  Vorschau nennt jede Änderung einzeln; ein von Hand gelöschtes Foto (`foto = ''`) lädt der Import
+  nicht, sagt das aber ausdrücklich.
 - **Fotos** (`foxtrail/fotos.py`): Upload auf der Detailseite (`POST /trail/<id>/foto`,
   aktion `hochladen | loeschen | foxtrail`). Pillow dreht nach EXIF, verkleinert auf 2560 px
   und speichert als JPEG `<id>-<zeit>.jpg` (entfernt EXIF/GPS; neuer Name = neue URL, daher

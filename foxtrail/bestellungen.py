@@ -50,6 +50,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+from .db import now
 from . import config, trails
 
 _ORDER_RE = re.compile(r"Bestellung vom (\d{2}\.\d{2}\.\d{4}) \(#(\d+)\)")
@@ -201,10 +202,31 @@ def _norm(s):
     return re.sub(r"\s+", " ", (s or "").strip()).lower()
 
 
-def _fehlt_etwas(t, e):
-    """Bereits gemachter Trail: gibt es Zusatzdaten im Eintrag, die im Trail noch fehlen?"""
-    return bool((e["start"] and not t.get("start_zeit")) or (e["foto_url"] and not t.get("foto"))
-                or (e["codes"] and not t.get("team_code")) or (e["bestellung"] and not t.get("bestellung")))
+def _datum_de(iso):
+    return f"{iso[8:10]}.{iso[5:7]}.{iso[0:4]}" if iso and len(iso) >= 10 else (iso or "ohne Datum")
+
+
+def _ergaenzungen(t, e, eindeutig):
+    """Bereits gemachter Trail: was der Import nachtragen bzw. korrigieren wuerde, als lesbare
+    Liste, plus Hinweise auf Dinge, die er bewusst nicht tut. eindeutig = nur eine Bestellung
+    fuer diesen Trail in der Datei (sonst bleibt das Datum, wer weiss welches gemeint ist)."""
+    was, hinweis = [], []
+    if eindeutig and e["datum"] and t.get("gemacht_datum") != e["datum"]:
+        was.append(f"Datum {_datum_de(t.get('gemacht_datum'))} → {_datum_de(e['datum'])}")
+    if e["personen"] and not t.get("mitspieler"):
+        was.append("Mitspieler")
+    if e["start"] and not t.get("start_zeit"):
+        was.append("Start/Ziel")
+    if e["codes"] and not t.get("team_code"):
+        was.append("Team-Code")
+    if e["bestellung"] and not t.get("bestellung"):
+        was.append("Bestellnummer")
+    if e["foto_url"] and t.get("foto") is None:
+        was.append("Schlussfoto")
+    elif e["foto_url"] and t.get("foto") == "":
+        hinweis.append("Schlussfoto wurde von Hand gelöscht und wird nicht geladen – "
+                       "auf der Trail-Seite „Schlussfoto von foxtrail.ch laden“")
+    return was, hinweis
 
 
 def zuordnen(conn, eintraege, heute=None):
@@ -216,12 +238,22 @@ def zuordnen(conn, eintraege, heute=None):
     by_name = {}
     for t in alle:
         by_name.setdefault(_norm(t["name"]), []).append(t)
-    plan = []
-    for e in eintraege:
+    def trail_zu(e):
         kand = by_name.get(_norm(e["name"]), [])
         # bei mehreren gleichnamigen (foxtrail + manuell) den Website-Trail bevorzugen
         kand.sort(key=lambda t: (t["quelle"] != "foxtrail", t["id"]))
-        t = kand[0] if kand else None
+        return kand[0] if kand else None
+
+    anzahl = {}
+    for e in eintraege:
+        t = trail_zu(e)
+        if t is not None:
+            anzahl[t["id"]] = anzahl.get(t["id"], 0) + 1
+    plan = []
+    for e in eintraege:
+        t = trail_zu(e)
+        was, hinweis = _ergaenzungen(t, e, anzahl.get(t["id"]) == 1) if t and t["gemacht"] else ([], [])
+        e["_datum_korrigieren"] = any(w.startswith("Datum ") for w in was)
         if t is None:
             plan.append((e, None, "unbekannt", "kein Trail mit diesem Namen in der Liste"))
         elif e["status"] and e["status"].lower() != "abgeschlossen":
@@ -230,11 +262,13 @@ def zuordnen(conn, eintraege, heute=None):
             plan.append((e, t, "uebersprungen", "keine Startzeit"))
         elif e["datum"] > heute:
             plan.append((e, t, "uebersprungen", "Startzeit liegt in der Zukunft"))
-        elif t["gemacht"] and _fehlt_etwas(t, e):
-            plan.append((e, t, "ergaenzen", "bereits gemacht, Zeiten/Foto/Code werden nachgetragen"))
+        elif t["gemacht"] and was:
+            plan.append((e, t, "ergaenzen", "bereits gemacht – wird ergänzt: " + ", ".join(was)
+                         + "".join(f". {h}" for h in hinweis)))
         elif t["gemacht"]:
             plan.append((e, t, "uebersprungen",
-                         f"bereits als gemacht erfasst ({t['gemacht_datum'] or 'ohne Datum'})"))
+                         f"bereits als gemacht erfasst ({_datum_de(t['gemacht_datum'])})"
+                         + "".join(f". {h}" for h in hinweis)))
         else:
             plan.append((e, t, "setzen", ""))
     return plan
@@ -270,6 +304,12 @@ def anwenden(conn, plan, benutzer="import", foto_dir=None):
                 "bemerkung": t["bemerkung"]}, benutzer)
             res["gesetzt"] += 1
         elif aktion == "ergaenzen":
+            # Datum aus der Bestellung gilt (nur wenn es die einzige fuer diesen Trail ist),
+            # Mitspieler nur, wo noch keine stehen; Bemerkung bleibt
+            conn.execute("UPDATE trails SET gemacht_datum = CASE WHEN ? THEN ? ELSE gemacht_datum END, "
+                         "mitspieler = COALESCE(mitspieler, ?), erfasst_von = ?, erfasst_am = ? WHERE id = ?",
+                         (1 if e.get("_datum_korrigieren") else 0, e["datum"], e["personen"] or None,
+                          benutzer, now(), t["id"]))
             res["ergaenzt"] += 1
         else:
             continue
