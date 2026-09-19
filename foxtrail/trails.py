@@ -354,7 +354,11 @@ def seed_from_file(conn, path=None):
     Internet Archive). Sie werden mit im_angebot = 0 eingefuegt - offene landen damit im Archiv,
     und "zuletzt gesehen" ist das Datum des juengsten Archivstands. Nur einfuegen, nie aendern;
     taucht einer auf foxtrail.ch wieder auf, reaktiviert ihn der Abgleich. Gibt es schon einen Trail
-    mit demselben Namen (z. B. von Hand erfasst oder unter neuer Adresse), wird er ausgelassen.
+    mit demselben Namen, wird keiner angelegt; ist es ein von Hand erfasster, werden dort nur
+    leere Felder (Route, Dauer, Region, Bewertung, Preis) aus dem Archivstand ergaenzt.
+
+    Ein Seed-Trail, dessen bekannter Eintrag unter altem Slug existiert (Umzug, siehe
+    sync.umzug_von), wird nicht doppelt eingefuegt - der naechste Abgleich stellt ihn um.
     Gibt die Anzahl neu eingefuegter Trails zurueck."""
     with open(path or config.SEED_FILE, encoding="utf-8") as fh:
         data = json.load(fh)
@@ -362,9 +366,22 @@ def seed_from_file(conn, path=None):
     ehemalig = data.get("ehemalig", []) if isinstance(data, dict) else []
     ts = now()
     n = 0
-    namen = {r[0].casefold() for r in conn.execute("SELECT name FROM trails")}
+    namen = {}
+    for r in conn.execute("SELECT id, name, quelle FROM trails"):
+        namen.setdefault(r["name"].casefold(), []).append(r)
     for t in ehemalig:
-        if t["name"].casefold() in namen or                 conn.execute("SELECT 1 FROM trails WHERE slug = ?", (t["slug"],)).fetchone():
+        if conn.execute("SELECT 1 FROM trails WHERE slug = ?", (t["slug"],)).fetchone():
+            continue
+        if t["name"].casefold() in namen:
+            for r in namen[t["name"].casefold()]:
+                if r["quelle"] == "manual":
+                    conn.execute(
+                        "UPDATE trails SET route = CASE WHEN COALESCE(route, '') = '' THEN ? ELSE route END, "
+                        "dauer = CASE WHEN COALESCE(dauer, '') = '' THEN ? ELSE dauer END, "
+                        "region = CASE WHEN COALESCE(region, '') = '' THEN ? ELSE region END, "
+                        "bewertung = COALESCE(bewertung, ?), preis = COALESCE(preis, ?) WHERE id = ?",
+                        (t.get("route", ""), t.get("dauer", ""), t.get("region", ""), t.get("bewertung"),
+                         t.get("preis"), r["id"]))
             continue
         gesehen = t["zuletzt_gesehen"] + " 00:00:00" if _DATE_RE.match(t.get("zuletzt_gesehen") or "") else ts
         conn.execute(
@@ -378,6 +395,8 @@ def seed_from_file(conn, path=None):
              t.get("url", ""), t.get("schwierigkeit") if t.get("schwierigkeit") in GRADE else None,
              gesehen, gesehen))
         n += 1
+    from .sync import umzug_von
+    bekannte = [dict(r) for r in conn.execute("SELECT slug, name FROM trails WHERE quelle = 'foxtrail'")]
     for t in items:
         neu_seit = t.get("neu_seit") if _DATE_RE.match(t.get("neu_seit") or "") else None
         grad = t.get("schwierigkeit") if t.get("schwierigkeit") in GRADE else None
@@ -392,6 +411,8 @@ def seed_from_file(conn, path=None):
             if bild:
                 conn.execute("UPDATE trails SET bild_url = ? WHERE slug = ? AND bild_url IS NULL",
                              (bild, t["slug"]))
+            continue
+        if umzug_von(bekannte, t["slug"], t["name"]):
             continue
         conn.execute(
             "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, dauer, "

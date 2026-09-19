@@ -105,9 +105,16 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Trails, die foxtrail.ch früher angeboten hat, ermittelt aus 91 archivierten Kategorie-Seiten im
   Internet Archive (Stände 2023-11 bis 2026-06, einmalig abgerufen, nur web.archive.org).
   `seed_from_file` fügt sie mit `im_angebot = 0` und `last_seen = zuletzt_gesehen` ein (offene →
-  Archiv), nur wenn weder Slug noch Name schon existieren. `url` zeigt auf die archivierte
-  Produkt- bzw. Übersichtsseite (Link „Archiv ↗“). 7 weitere Archiv-Slugs waren nur umgezogen
-  (anderer Regionspfad, gleicher Trail) und sind nicht dabei.
+  Archiv), nur wenn weder Slug noch Name schon existieren. Gleichnamige manuelle Trails (Bruno hat
+  Aristoteles und Ballenberg von Hand erfasst) bleiben manuell, bekommen aber leere Felder (Route,
+  Dauer, Region, Bewertung, Preis) ergänzt – nie überschrieben. Keine Links ins Archiv (`url` leer,
+  Wunsch von Bruno). Schwierigkeit ist nicht archiviert. 7 weitere Archiv-Slugs waren nur
+  umgezogen (anderer Regionspfad, gleicher Trail) und sind nicht dabei.
+- **Umzug** (`sync.umzug_von`): foxtrail.ch ändert manchmal nur den Regionsteil des Slugs. Neuer
+  Slug + gleicher letzter Adressteil + gleicher Name (casefold) wie ein bekannter, nicht mehr
+  gelisteter foxtrail-Trail → dessen Eintrag bekommt den neuen Slug (Meldung „Neue Adresse: …“ im
+  sync_log), kein Doppel, kein Archiv. Nur eindeutige Treffer. `seed_from_file` fügt einen
+  Seed-Trail nicht ein, wenn sein alter Eintrag noch unter altem Slug existiert.
 - **Archiv-Status wird nicht gespeichert, sondern abgeleitet**
   (`db.ARCHIV_COND`: `quelle='foxtrail' AND im_angebot=0 AND gemacht=0`).
   Nicht durch eine Status-Spalte ersetzen – die Ableitung garantiert, dass ein

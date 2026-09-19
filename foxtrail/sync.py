@@ -13,6 +13,11 @@ Regeln (siehe README):
         - noch offen:       erscheint im Archiv (abgeleitet, siehe db.ARCHIV_COND)
   * archivierter Trail taucht wieder auf   -> im_angebot = 1 (reaktiviert)
   * manuell erfasste Trails (quelle='manual') werden vom Abgleich nie beruehrt
+  * Umzug: foxtrail.ch aendert manchmal nur den Regionsteil der Adresse
+    (zuerich-und-umgebung/baccara -> ostschweiz/baccara). Ein "neuer" Slug mit gleichem
+    letztem Adressteil und gleichem Namen wie ein bekannter, nicht mehr gelisteter Trail
+    ist derselbe Trail: der bestehende Eintrag bekommt den neuen Slug (eigene Eintraege,
+    Fotos usw. bleiben), statt dass ein Doppel entsteht und der alte ins Archiv wandert.
   * Es wird NIE ein Trail geloescht.
 
 Sicherung: liefert der Scraper deutlich weniger Trails als bisher im Angebot
@@ -35,6 +40,18 @@ MIN_RATIO = 0.5
 
 class SyncAbort(Exception):
     pass
+
+
+def _kurz(slug):
+    return slug.rsplit("/", 1)[-1]
+
+
+def umzug_von(kandidaten, slug, name):
+    """Bekannter Trail, der unter `slug` umgezogen ist: gleicher letzter Adressteil, gleicher
+    Name (Gross/klein egal). kandidaten = dicts mit slug/name. Nur eindeutige Treffer."""
+    treffer = [k for k in kandidaten if k["slug"] != slug and _kurz(k["slug"]) == _kurz(slug)
+               and (k["name"] or "").casefold() == (name or "").casefold()]
+    return treffer[0] if len(treffer) == 1 else None
 
 
 def apply(conn, scraped, ausloeser="manual"):
@@ -71,8 +88,18 @@ def _apply(conn, scraped, ts, res):
     existing = {r["slug"]: dict(r) for r in
                 conn.execute("SELECT * FROM trails WHERE quelle = 'foxtrail'")}
 
+    umzuege = []
     for t in scraped:
         old = existing.get(t["slug"])
+        if old is None:
+            weg = [e for s, e in existing.items() if s not in slugs]
+            old = umzug_von(weg, t["slug"], t["name"])
+            if old is not None:
+                conn.execute("UPDATE trails SET slug = ? WHERE id = ?", (t["slug"], old["id"]))
+                del existing[old["slug"]]
+                umzuege.append(f"{old['name']}: {old['slug']} → {t['slug']}")
+                old["slug"] = t["slug"]
+                existing[t["slug"]] = old
         if old is None:
             conn.execute(
                 "INSERT INTO trails (slug, quelle, ort, name, route, typ, region, bewertung, "
@@ -98,6 +125,9 @@ def _apply(conn, scraped, ts, res):
             (t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"), t.get("region", ""),
              t.get("bewertung"), t.get("dauer", ""), t.get("preis"), t.get("url", ""),
              t.get("schwierigkeit"), t.get("bild_url"), ts, old["id"]))
+
+    if umzuege:
+        res["meldung"] = "Neue Adresse: " + "; ".join(umzuege)
 
     for slug, old in existing.items():
         if slug in slugs or not old["im_angebot"]:

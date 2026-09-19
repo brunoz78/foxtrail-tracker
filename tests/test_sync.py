@@ -275,8 +275,8 @@ def test_seed_ehemalige_trails(tmp_path):
     p.write_text(json.dumps({"trails": [
         {"slug": "aargau/aquae", "ort": "Baden", "name": "Aquae", "region": "aargau"}],
         "ehemalig": [{"slug": "bern-und-umgebung/ballenberg", "ort": "Ballenberg", "name": "Ballenberg",
-                      "region": "bern-und-umgebung", "zuletzt_gesehen": "2024-12-07",
-                      "url": "https://web.archive.org/web/20241207/https://foxtrail.ch/x/"}]}), encoding="utf-8")
+                      "region": "bern-und-umgebung", "zuletzt_gesehen": "2024-12-07", "route": "Quer durchs Museum",
+                      "dauer": "1.5-2.5 Stunden", "preis": 36.0}]}), encoding="utf-8")
     assert trails.seed_from_file(c, str(p)) == 2
     t = dict(c.execute("SELECT * FROM trails WHERE slug = 'bern-und-umgebung/ballenberg'").fetchone())
     assert t["im_angebot"] == 0 and t["last_seen"] == "2024-12-07 00:00:00" and t["quelle"] == "foxtrail"
@@ -285,8 +285,38 @@ def test_seed_ehemalige_trails(tmp_path):
     sync.apply(c, [mk("aargau/aquae", ort="Baden", name="Aquae")])
     assert c.execute("SELECT im_angebot FROM trails WHERE slug = 'bern-und-umgebung/ballenberg'").fetchone()[0] == 0
     assert trails.seed_from_file(c, str(p)) == 0                                # nur einmal
-    # schon von Hand erfasst -> nicht doppelt
+    # schon von Hand erfasst -> nicht doppelt, leere Felder werden ergaenzt, eigene bleiben
     c2 = db.connect(str(tmp_path / "m.db"))
     db.init_db(c2)
-    trails.add_manual(c2, {"ort": "Brienz", "name": "BALLENBERG"}, "bruno")
+    tid = trails.add_manual(c2, {"ort": "Brienz", "name": "BALLENBERG", "route": "Eigene Route",
+                                 "gemacht": "1", "gemacht_datum": "2024-08-01"}, "bruno")
     assert trails.seed_from_file(c2, str(p)) == 1
+    m = dict(c2.execute("SELECT * FROM trails WHERE id = ?", (tid,)).fetchone())
+    assert (m["quelle"], m["ort"], m["route"], m["gemacht"]) == ("manual", "Brienz", "Eigene Route", 1)
+    assert (m["dauer"], m["region"], m["preis"]) == ("1.5-2.5 Stunden", "bern-und-umgebung", 36.0)
+
+
+def test_umzug_neue_adresse(tmp_path):
+    c = db.connect(str(tmp_path / "u.db"))
+    db.init_db(c)
+    alt = [mk("zuerich-und-umgebung/baccara", ort="Rapperswil", name="Baccara"),
+           mk("aargau/aquae", ort="Baden", name="Aquae")]
+    sync.apply(c, alt)
+    tid = c.execute("SELECT id FROM trails WHERE name = 'Baccara'").fetchone()[0]
+    c.execute("UPDATE trails SET gemacht = 1, gemacht_datum = '2025-05-01', foto = 'x.jpg' WHERE id = ?", (tid,))
+    res = sync.apply(c, [mk("ostschweiz/baccara", ort="Rapperswil", name="Baccara"), alt[1]])
+    assert res["ok"] and res["neu"] == 0 and res["nicht_mehr_im_angebot"] == 0 and res["archiviert"] == 0
+    assert "Baccara" in res["meldung"]
+    rows = [dict(r) for r in c.execute("SELECT * FROM trails WHERE name = 'Baccara'")]
+    assert len(rows) == 1 and rows[0]["id"] == tid and rows[0]["slug"] == "ostschweiz/baccara"
+    assert rows[0]["im_angebot"] == 1 and rows[0]["gemacht"] == 1 and rows[0]["foto"] == "x.jpg"
+    # anderer Name mit gleichem Adressteil ist kein Umzug
+    res = sync.apply(c, [mk("ostschweiz/baccara", ort="Rapperswil", name="Baccara"), alt[1],
+                         mk("bern-und-umgebung/aquae", ort="Bern", name="Aquae Bern")])
+    assert res["neu"] == 1
+    # Seed mit neuer Adresse legt kein Doppel an, solange der Eintrag noch die alte hat
+    c.execute("UPDATE trails SET slug = 'zuerich-und-umgebung/baccara' WHERE id = ?", (tid,))
+    p = tmp_path / "seed.json"
+    p.write_text(json.dumps({"trails": [{"slug": "ostschweiz/baccara", "ort": "Rapperswil", "name": "Baccara"}]}),
+                 encoding="utf-8")
+    assert trails.seed_from_file(c, str(p)) == 0

@@ -1370,7 +1370,7 @@
   }
  ],
  "neu_seit_quelle": "https://foxtrail.ch/thema/neuigkeiten/ (Datum des Beitrags), Stand 2026-09-17",
- "ehemalig_quelle": "Trails, die foxtrail.ch frueher angeboten hat: archivierte Kategorie-Seiten im Internet Archive (web.archive.org, Staende 2023-11 bis 2026-06, 91 Seiten), abgeglichen am 2026-09-19. zuletzt_gesehen = juengster Archivstand, der den Trail listet; url = archivierte Produkt- oder Uebersichtsseite.",
+ "ehemalig_quelle": "Trails, die foxtrail.ch frueher angeboten hat: archivierte Kategorie-Seiten im Internet Archive (web.archive.org, Staende 2023-11 bis 2026-06, 91 Seiten), abgeglichen am 2026-09-19. zuletzt_gesehen = juengster Archivstand, der den Trail listet. Schwierigkeit ist dort nicht archiviert.",
  "ehemalig": [
   {
    "slug": "bern-und-umgebung/ballenberg",
@@ -1383,7 +1383,7 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 36.0,
    "zuletzt_gesehen": "2024-10-01",
-   "url": "https://web.archive.org/web/20240612173414/https://foxtrail.ch/produkte/trails/bern-und-umgebung/ballenberg/"
+   "url": ""
   },
   {
    "slug": "basel-und-umgebung/laggs-trail",
@@ -1396,7 +1396,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2023-12-01",
-   "url": "https://web.archive.org/web/20231201094421/https://foxtrail.ch/produkte/trails/basel-und-umgebung/laggs-trail/"
+   "url": ""
   },
   {
    "slug": "bern-und-umgebung/marmor",
@@ -1409,7 +1409,7 @@
    "dauer": "3-4 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2024-05-26",
-   "url": "https://web.archive.org/web/20240526203928/https://foxtrail.ch/kategorie/trails/bern-und-umgebung/"
+   "url": ""
   },
   {
    "slug": "bern-und-umgebung/schiefer",
@@ -1422,7 +1422,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2025-07-18",
-   "url": "https://web.archive.org/web/20250621050747/https://foxtrail.ch/produkte/trails/bern-und-umgebung/schiefer/"
+   "url": ""
   },
   {
    "slug": "aargau/vindonissa",
@@ -1435,7 +1435,7 @@
    "dauer": "2-3 Stunden",
    "preis": 36.0,
    "zuletzt_gesehen": "2024-06-16",
-   "url": "https://web.archive.org/web/20240616183359/https://foxtrail.ch/produkte/trails/aargau/vindonissa/"
+   "url": ""
   },
   {
    "slug": "graubuenden/truccastschiel",
@@ -1448,7 +1448,7 @@
    "dauer": "4-5 Stunden",
    "preis": 36.0,
    "zuletzt_gesehen": "2024-11-12",
-   "url": "https://web.archive.org/web/20241006002426/https://foxtrail.ch/produkte/trails/graubuenden/truccastschiel/"
+   "url": ""
   },
   {
    "slug": "graubuenden/funtauna",
@@ -1461,7 +1461,7 @@
    "dauer": "2-3 Stunden",
    "preis": 29.0,
    "zuletzt_gesehen": "2024-11-12",
-   "url": "https://web.archive.org/web/20241112041105/https://foxtrail.ch/kategorie/trails/graubuenden/"
+   "url": ""
   },
   {
    "slug": "luzern-und-umgebung/artemis",
@@ -1474,7 +1474,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2024-10-01",
-   "url": "https://web.archive.org/web/20240616180415/https://foxtrail.ch/produkte/trails/luzern-und-umgebung/artemis/"
+   "url": ""
   },
   {
    "slug": "graubuenden/tschiel",
@@ -1487,7 +1487,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 29.0,
    "zuletzt_gesehen": "2025-06-21",
-   "url": "https://web.archive.org/web/20250621053918/https://foxtrail.ch/kategorie/trails/page/5/"
+   "url": ""
   },
   {
    "slug": "luzern-und-umgebung/athena",
@@ -1500,7 +1500,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2025-02-08",
-   "url": "https://web.archive.org/web/20250129065646/https://foxtrail.ch/produkte/trails/luzern-und-umgebung/athena/"
+   "url": ""
   },
   {
    "slug": "luzern-und-umgebung/hermes",
@@ -1513,7 +1513,7 @@
    "dauer": "3.5-4.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2023-12-01",
-   "url": "https://web.archive.org/web/20231201095831/https://foxtrail.ch/kategorie/trails/luzern-und-umgebung/"
+   "url": ""
   },
   {
    "slug": "luzern-und-umgebung/poseidon",
@@ -1526,7 +1526,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2024-12-07",
-   "url": "https://web.archive.org/web/20241207105548/https://foxtrail.ch/kategorie/trails/page/3/"
+   "url": ""
   },
   {
    "slug": "ostschweiz/gallus-sport",
@@ -1539,7 +1539,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2023-11-29",
-   "url": "https://web.archive.org/web/20231129030936/https://foxtrail.ch/kategorie/trails/ostschweiz/"
+   "url": ""
   },
   {
    "slug": "bern-und-umgebung/castello-maxi",
@@ -1552,7 +1552,7 @@
    "dauer": "",
    "preis": null,
    "zuletzt_gesehen": "2025-02-08",
-   "url": "https://web.archive.org/web/20250129065646/https://foxtrail.ch/produkte/trails/bern-und-umgebung/castello-maxi/"
+   "url": ""
   },
   {
    "slug": "zuerich-und-umgebung/alban",
@@ -1565,7 +1565,7 @@
    "dauer": "3.5-4.5 Stunden",
    "preis": 36.0,
    "zuletzt_gesehen": "2023-12-01",
-   "url": "https://web.archive.org/web/20231201085148/https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/alban/"
+   "url": ""
   },
   {
    "slug": "wallis/dahu",
@@ -1578,7 +1578,7 @@
    "dauer": "1.5-2.5 Stunden",
    "preis": 29.0,
    "zuletzt_gesehen": "2024-10-06",
-   "url": "https://web.archive.org/web/20241006004559/https://foxtrail.ch/produkte/trails/wallis/dahu/"
+   "url": ""
   },
   {
    "slug": "zuerich-und-umgebung/aristoteles",
@@ -1591,7 +1591,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2025-02-08",
-   "url": "https://web.archive.org/web/20250129065641/https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/aristoteles/"
+   "url": ""
   },
   {
    "slug": "zuerich-und-umgebung/spartakus",
@@ -1604,7 +1604,7 @@
    "dauer": "2.5-3.5 Stunden",
    "preis": 32.0,
    "zuletzt_gesehen": "2025-07-18",
-   "url": "https://web.archive.org/web/20250622140948/https://foxtrail.ch/produkte/trails/zuerich-und-umgebung/spartakus/"
+   "url": ""
   }
  ]
 }

@@ -61,7 +61,10 @@ foxtrail.ch absichtlich unscharf.</sub>
 
 Die mitgelieferte Trail-Liste enthält auch 18 Trails, die foxtrail.ch früher angeboten hat
 (ermittelt aus archivierten Seiten im Internet Archive, 2023–2025). Noch nicht gemachte stehen
-im Archiv; wer einen davon gemacht hat, markiert ihn dort als „gemacht“.
+im Archiv; wer einen davon gemacht hat, markiert ihn dort als „gemacht“. Ist einer davon
+schon von Hand erfasst, wird er nicht doppelt angelegt; leere Felder (Route, Dauer, Region,
+Bewertung, Preis) werden aus dem Archivstand ergänzt. Den Schwierigkeitsgrad hat das Archiv
+nicht – den bei Bedarf selbst eintragen.
 
 | Situation | Ergebnis |
 |---|---|
@@ -72,10 +75,12 @@ im Archiv; wer einen davon gemacht hat, markiert ihn dort als „gemacht“.
 | Trail nicht mehr gelistet, **noch offen** | erscheint im **Archiv** |
 | Archivierter Trail wird als gemacht markiert | wandert zurück in die Hauptliste |
 | Archivierter Trail taucht wieder auf | wird reaktiviert |
+| Trail unter neuer Adresse, nur der Regionsteil geändert (z. B. `zuerich-und-umgebung/baccara` → `ostschweiz/baccara`) | bestehender Eintrag bekommt die neue Adresse, eigene Einträge und Fotos bleiben; kein Doppel |
 | Manuell erfasster Trail | wird vom Abgleich nie verändert |
 
 Schlüssel für den Abgleich ist der URL-Pfad des Trails auf foxtrail.ch (z. B.
-`wallis/allalin-maxi`), nicht der Name. Liefert der Scraper weniger als die Hälfte
+`wallis/allalin-maxi`), nicht der Name. Nur bei einem Umzug (gleicher letzter Adressteil und
+gleicher Name, alter Pfad nicht mehr gelistet) zählt der Name mit. Liefert der Scraper weniger als die Hälfte
 der bisher bekannten Trails (Website-Umbau, Störung), bricht der Abgleich ab und
 verändert nichts.
 
