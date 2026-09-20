@@ -502,6 +502,8 @@ form.sprachwahl button.on { opacity: 1; border-color: currentColor; }
 code.schluessel { display: inline-block; font-size: 15px; letter-spacing: .08em; word-break: break-all;
   background: var(--green-light); padding: 4px 8px; border-radius: 6px; margin-bottom: 10px; }
 button.voll { width: 100%; }
+[hidden] { display: none !important; }
+form label.chk.klein { font-size: 13px; color: var(--muted); margin: -4px 0 8px; }
 /* "oder mit Passwort": Trennlinie mit Text in der Mitte */
 .trenner { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; color: var(--muted); font-size: 13px; }
 .trenner::before, .trenner::after { content: ""; flex: 1; height: 1px; background: var(--line); }

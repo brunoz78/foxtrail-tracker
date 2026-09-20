@@ -1,3 +1,11 @@
 {# WebAuthn-Client mit uebersetzten Meldungen einbinden #}
-<script>window.WA_TEXT = {{ {"warten": _("Warte auf das Gerät …"), "gespeichert": _("Passkey gespeichert."), "angemeldet": _("Angemeldet."), "fehler": _("Fehlgeschlagen:")}|tojson }};</script>
+<script>window.WA_TEXT = {{ {
+  "warten": _("Warte auf das Gerät …"), "gespeichert": _("Passkey gespeichert."),
+  "angemeldet": _("Angemeldet."), "fehler": _("Fehlgeschlagen:"),
+  "abbruch": _("Abgebrochen."), "autoAus": _("Abgebrochen – dieses Gerät fragt nicht mehr von selbst."),
+  "unsicher": _("Die Anmeldung mit Passkey geht nur über HTTPS mit einem Hostnamen."),
+  "kein": _("Dieser Browser kann keine Passkeys."),
+  "adresse": _("Die Adresse passt nicht zum Passkey."),
+  "schon": _("Auf diesem Gerät gibt es schon einen Passkey für dieses Konto.")
+}|tojson }};</script>
 <script src="{{ url_for('static', filename='webauthn.js') }}"></script>

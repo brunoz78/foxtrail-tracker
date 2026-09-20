@@ -29,7 +29,18 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Passkey anmelden“ über dem Passwortformular, `GET /login/passkey/options` (Anfrage **ohne**
   `allowCredentials` – der Browser sucht selbst) und `POST /login/passkey/verify`. Dazu werden
   Passkeys als `resident_key=REQUIRED` angelegt; das user handle ist der Benutzername
-  (`users.by_passkey` sucht sonst über die Credential-ID in allen aktiven Konten). Mit 2FA-Pflicht und ohne
+  (`users.by_passkey` sucht sonst über die Credential-ID in allen aktiven Konten).
+  **Automatische Abfrage** (2026-09-21, Wunsch von Bruno): Wer sich mit Passkey angemeldet oder
+  einen registriert hat, merkt das im Browser (`localStorage` `foxtrail-passkey-geraet`); beim
+  nächsten Aufruf der Anmeldeseite startet die Abfrage von selbst. Kästchen „Beim Öffnen
+  automatisch fragen“ (`foxtrail-passkey-autofrage`, erscheint nur auf solchen Geräten) schaltet es
+  ab; ein Abbruch der automatischen Abfrage schaltet sie ebenfalls ab (der Knopf geht weiter). Nicht
+  automatisch gefragt wird nach einem Passwort-Fehlversuch (`auto` an die Vorlage) und direkt nach
+  dem Abmelden (`/logout` → `?abgemeldet=1`, das Skript nimmt den Parameter gleich aus der Adresse,
+  sonst schleppt ein Neuladen ihn mit). Die Feinheiten in `static/webauthn.js` stammen aus dem
+  Vorbild und sind hart erarbeitet – nicht vereinfachen: laufende Abfrage merken (Chromium lehnt
+  eine zweite sofort ab), Klick bricht die laufende ab, ein Fehlschlag ohne Fensterfokus bleibt
+  folgenlos, nach einem Seitenwechsel gilt eine alte Abfrage als tot. Mit 2FA-Pflicht und ohne
   Faktor führt der Login direkt zur Einrichtung. Admin kann 2FA zurücksetzen. Selbst gewählte
   Passwörter: mind. 8 Zeichen, Gross-/Kleinbuchstabe, Zahl, Sonderzeichen (`users.passwort_fehler`);
   der Admin setzt frei (mind. 8). **Anmelde-Protokoll** (`foxtrail/authlog.py`, Tabelle `authlog`,

@@ -9,6 +9,9 @@
   {% else %}
   {% if passkey_login %}
   <p><button type="button" id="pk-login" class="voll">{{ _('Mit Passkey anmelden') }}</button></p>
+  {# Kaestchen erscheint nur auf Geraeten, die schon einen Passkey benutzt haben (siehe webauthn.js) #}
+  <label class="chk klein" id="pk-autofrage" hidden>
+    <input type="checkbox" id="pk-autofrage-box"> {{ _('Beim Öffnen automatisch fragen') }}</label>
   <p class="pkmsg" id="pk-msg"></p>
   <div class="trenner">{{ _('oder mit Passwort') }}</div>
   {% endif %}
@@ -24,10 +27,20 @@
 {% if passkey_login %}
 {% include "_webauthn.html" %}
 <script>
-document.getElementById('pk-login').addEventListener('click', function () {
-  webauthnLogin({{ url_for('wa_login_options', next=request.args.get('next') or None)|tojson }},
-    {{ url_for('wa_login_verify')|tojson }}, document.getElementById('pk-msg'));
-});
+(function () {
+  var opt = {{ url_for('wa_login_options', next=request.args.get('next') or None)|tojson }},
+      pruef = {{ url_for('wa_login_verify')|tojson }},
+      msg = document.getElementById('pk-msg');
+  document.getElementById('pk-login').addEventListener('click', function () {
+    webauthnLogin(opt, pruef, msg);
+  });
+  passkeyAutoFrage(document.getElementById('pk-autofrage'), document.getElementById('pk-autofrage-box'));
+  {% if auto %}
+  // Nach einem Fehlversuch mit Passwort nicht von selbst fragen - dann will jemand tippen.
+  passkeyAutoLogin(opt, pruef, msg);
+  passkeyBeiRueckkehr(opt, pruef, msg);
+  {% endif %}
+})();
 </script>
 {% endif %}
 {% endblock %}

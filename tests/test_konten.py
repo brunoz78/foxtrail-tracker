@@ -183,6 +183,16 @@ def test_anmelden_mit_passkey_statt_passwort(app):
     r = c.post("/login/passkey/verify", data='{"id": "fremd", "response": {}}', headers=lokal)
     assert r.status_code == 400 and "keinem Konto" in r.json["error"]
     assert c.get("/").status_code == 302
+    # automatisch fragen: beim normalen Aufruf ja, nach einem Fehlversuch nicht
+    html = c.get("/login", headers=lokal).get_data(as_text=True)
+    assert "passkeyAutoLogin" in html and "Beim Öffnen automatisch fragen" in html
+    r = c.post("/login", data={"username": "gast", "password": "falsch"}, headers=lokal)
+    assert "Mit Passkey anmelden" in r.get_data(as_text=True)
+    assert "passkeyAutoLogin" not in r.get_data(as_text=True)
+    # nach dem Abmelden fragt die Seite dieses eine Mal nicht von selbst
+    t = app.test_client()
+    login(t, "gast")
+    assert t.get("/logout").headers["Location"].endswith("/login?abgemeldet=1")
     # Zuordnung: ueber das user handle und ueber die Credential-ID allein
     with db.session(app.config["DB_PATH"]) as conn:
         assert users.by_passkey(conn, "cred-1", "gast")[0]["username"] == "gast"

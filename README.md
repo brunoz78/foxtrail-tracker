@@ -56,7 +56,9 @@ foxtrail.ch absichtlich unscharf.</sub>
   darf nicht geändert werden“, **Zweitfaktor** mit Authenticator-App oder Passkey (optional als
   Pflicht), Anmelde-Protokoll für Admins
 * **Anmelden mit Passkey** statt Passwort (Fingerabdruck, Gesicht oder Geräte-PIN) – ohne
-  Benutzernamen, der Browser sucht den passenden Passkey selbst
+  Benutzernamen, der Browser sucht den passenden Passkey selbst. Auf einem Gerät, das schon einmal
+  einen Passkey benutzt hat, fragt die Anmeldeseite von selbst danach – abschaltbar mit dem
+  Kästchen „Beim Öffnen automatisch fragen“
 * **Darstellung** automatisch, hell oder dunkel (Knopf ◐ oben rechts)
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen) und drei Rollen:
   **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),

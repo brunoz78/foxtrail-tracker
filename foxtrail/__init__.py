@@ -244,7 +244,7 @@ def create_app(test_config=None):
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if users.count(get_conn()) == 0:
-            return render_template("login.html", kein_benutzer=True, passkey_login=False)
+            return render_template("login.html", kein_benutzer=True, passkey_login=False, auto=False)
         if session.get("2fa_user") and request.method == "GET":
             return redirect(url_for("login_2fa"))
         if request.method == "POST":
@@ -252,7 +252,7 @@ def create_app(test_config=None):
             if _locked(name):
                 flash(tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.", n=config.LOGIN_LOCK_SECONDS // 60),
                       "fehler")
-                return render_template("login.html", passkey_login=_passkey_login())
+                return render_template("login.html", passkey_login=_passkey_login(), auto=False)
             u = users.authenticate(get_conn(), name, request.form.get("password", ""))
             if u:
                 _neue_sitzung(login_next=request.args.get("next") or "")
@@ -267,7 +267,8 @@ def create_app(test_config=None):
                 return _fertig_anmelden(u["username"])
             _fail(name)
             flash(tr("Benutzername oder Passwort falsch."), "fehler")
-        return render_template("login.html", passkey_login=_passkey_login())
+        return render_template("login.html", passkey_login=_passkey_login(),
+                               auto=request.method == "GET")
 
     @app.route("/login/2fa", methods=["GET", "POST"])
     def login_2fa():
@@ -297,7 +298,8 @@ def create_app(test_config=None):
         session.clear()
         if sprache:
             session["sprache"] = sprache
-        return redirect(url_for("login"))
+        # abgemeldet=1: die Anmeldeseite fragt dieses eine Mal nicht von selbst nach dem Passkey
+        return redirect(url_for("login", abgemeldet=1))
 
     # ---- Anmelden mit Passkey statt Passwort --------------------------- #
     @app.route("/login/passkey/options")
