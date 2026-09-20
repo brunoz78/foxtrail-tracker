@@ -66,6 +66,19 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   `users.darf_schreiben`), Templates blenden Knöpfe über `darf_schreiben` aus. Eigenes Passwort und
   die eigene Spaltenauswahl darf auch „Nur lesen“ ändern. „Nur lesen“ sieht weder Archiv (403, Menü
   „Mehr“ ausgeblendet) noch Team-Code, Bestellnummer und Rechnungslink (`trails.SPALTEN_INTERN`).
+- **Sicherung** (2026-09-21, Wunsch von Bruno): `foxtrail/sicherung.py`, Seite `/admin/sicherung`
+  (⚙-Menü, nur Admin) und `manage.py sichern|einlesen`. Eine ZIP-Datei mit `meta.json`, der
+  **ganzen SQLite-Datenbank** (konsistente Kopie über die `backup`-API, also auch im laufenden
+  Betrieb) und den eigenen Fotos; Vorschaubilder (`fotos/klein/`) und Titelbilder (`fotos/titel/`)
+  bleiben bewusst draussen – die legt die App neu an. Der SECRET_KEY gehört zur Installation und
+  ist nicht dabei. Einlesen ersetzt Datenbank und Fotos vollständig: Datei prüfen
+  (`integrity_check`, Tabellen `trails`/`users`), `db.init_db` zieht eine ältere Sicherung auf den
+  neuen Stand, dann tauschen – die bisherige Datenbank bleibt als `<name>.alt-<zeit>` liegen,
+  `-wal`/`-shm` werden dabei gelöscht. Die Route schliesst vorher die offene Verbindung
+  (`g.pop("conn")`), leert danach die Sitzung (die Konten kommen jetzt aus der Sicherung) und
+  schreibt `backup`/`restore` ins Anmelde-Protokoll. Dateinamen aus der ZIP-Datei werden nie als
+  Pfad übernommen (`os.path.basename` + Muster). Nur für diese eine Route gilt
+  `config.max_sicherung()` (Default 1 GB) statt der 16 MB von `MAX_CONTENT_LENGTH`.
 - **Sprachen** (2026-09-19, Wunsch von Bruno): Oberfläche auf Deutsch, Französisch, Italienisch und
   Englisch, ohne zusätzliches Paket (`foxtrail/i18n.py`). Ausgangstext ist Deutsch: Templates
   `{{ _('Text') }}`, Python `tr("Text", platzhalter=...)` (str.format-Stil, `{name}`), Übersetzungen in
@@ -254,6 +267,7 @@ foxtrail/db.py         Schema trails / users / sync_log, ARCHIV_COND
 foxtrail/users.py      Benutzer, Hashing, Rollen, Passwort-Optionen, 2FA-Daten, UserError
 foxtrail/twofa.py      Zweitfaktor: TOTP und Passkeys (WebAuthn)
 foxtrail/authlog.py    Anmelde-Protokoll (Tabelle authlog)
+foxtrail/sicherung.py  Sicherung als ZIP (Datenbank + Fotos) erstellen und einlesen
 foxtrail/i18n.py       Übersetzungen (foxtrail/i18n/*.json)
 foxtrail/scraper.py    parse_page(html) rein + offline testbar, fetch_all() mit Netz
 foxtrail/sync.py       apply(conn, scraped, ausloeser) – die Regeln oben
@@ -270,12 +284,12 @@ foxtrail/fotos.py      Fotos pruefen/verkleinern (Pillow), Vorschaubilder, Titel
 foxtrail/zeitplan.py   woechentlicher Abgleich im Docker-Container (ersetzt den systemd-Timer)
 foxtrail/version.py    VERSION, Anzeige "Über", Update-Hinweis (GitHub-API, zwischengespeichert)
 foxtrail/templates/    base, login, index (Liste + Kacheln), statistik, archiv, trail_form, trail_new, profil,
-                       benutzer, sync, fehler, import (Upload + Probelauf + Bestaetigen),
+                       benutzer, sicherung, sync, fehler, import (Upload + Probelauf + Bestaetigen),
                        _macros (Typ-Badge, Sortier-Link, Spaltenfilter)
 data/trails_seed.json  Momentaufnahme (97 Trails, Stand 2026-09-17) für die Erstbefüllung
 scripts/manage.py      CLI: init-db, seed, sync, create-user, set-password, list-users,
                        stats, export-json, import-excel, import-bestellungen (Probelauf
-                       ohne --schreiben)
+                       ohne --schreiben), sichern, einlesen
 deploy/                install.sh (Debian-LXC), foxtrail.service, foxtrail-sync.service,
                        foxtrail-sync.timer, foxtrailctl, env-Beispiel,
                        dev-update.sh (Branch-Stand ohne Release in den Test-LXC)

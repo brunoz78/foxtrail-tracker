@@ -57,7 +57,7 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
     {% endif %}
     {{ themeknopf() }}
     <details class="dd">
-      <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'auth_protokoll', 'profil', 'pw_aendern') }}"
+      <summary class="{{ 'on' if ep in ('import_bestellungen', 'sync_admin', 'user_admin', 'sicherung_admin', 'auth_protokoll', 'profil', 'pw_aendern') }}"
                title="{{ _('Einstellungen') }}{% if update %} – {{ _('neue Version {version} verfügbar', version=update.version) }}{% endif %}" aria-label="{{ _('Einstellungen') }}"><span class="zahnrad" aria-hidden="true">⚙</span>{% if update %}<span class="upd-punkt" aria-hidden="true"></span>{% endif %}<span class="dd-text">{{ _('Einstellungen') }}</span></summary>
       <div class="dd-menu">
         <div class="dd-kopf">{{ _('Angemeldet als') }} <b>{{ anzeigename(me) }}</b>{% if me.is_admin %} ({{ _('Admin') }}){% elif not darf_schreiben %} ({{ _('nur lesen') }}){% endif %}</div>
@@ -72,6 +72,8 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
           <small>{{ _('Trail-Liste mit foxtrail.ch abgleichen') }}</small></a>
         <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}">{{ _('Benutzer') }}
           <small>{{ _('Benutzer anlegen und verwalten') }}</small></a>
+        <a href="{{ url_for('sicherung_admin') }}" class="{{ 'on' if ep == 'sicherung_admin' }}">{{ _('Sicherung') }}
+          <small>{{ _('alles sichern und wieder einlesen') }}</small></a>
         <a href="{{ url_for('auth_protokoll') }}" class="{{ 'on' if ep == 'auth_protokoll' }}">{{ _('Anmelde-Protokoll') }}
           <small>{{ _('Anmeldungen, Fehlversuche, Änderungen an Konten') }}</small></a>
         {% endif %}

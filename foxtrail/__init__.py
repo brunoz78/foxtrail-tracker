@@ -13,13 +13,15 @@ import base64
 import datetime
 import functools
 import json
+import os
+import tempfile
 import time
 
 from flask import (Flask, Response, abort, flash, g, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, session, url_for)
 
-from . import (authlog, bestellungen, config, db, fotos, i18n, sync, trails, twofa, users, version,
-               zeitplan)
+from . import (authlog, bestellungen, config, db, fotos, i18n, sicherung, sync, trails, twofa,
+               users, version, zeitplan)
 from .i18n import tr
 
 _ATTEMPTS = {}   # username -> [fails, lock_until_ts]
@@ -796,6 +798,73 @@ def create_app(test_config=None):
         except users.UserError as ex:
             flash(str(ex), "fehler")
         return redirect(url_for("user_admin"))
+
+    # ---- Sicherung: alles heraus und wieder hinein ---------------------- #
+    def _weg(pfad):
+        try:
+            os.remove(pfad)
+        except OSError:
+            pass
+
+    @app.route("/admin/sicherung")
+    @admin_required
+    def sicherung_admin():
+        return render_template("sicherung.html", stand=sicherung.stand(
+            get_conn(), app.config["FOTO_DIR"], app.config["DB_PATH"]))
+
+    @app.route("/admin/sicherung/datei")
+    @admin_required
+    def sicherung_datei():
+        fd, pfad = tempfile.mkstemp(prefix="foxtrail-", suffix=".zip")
+        os.close(fd)
+        try:
+            sicherung.erstellen(pfad, app.config["DB_PATH"], app.config["FOTO_DIR"])
+        except Exception as ex:                          # noqa: BLE001 - Meldung an den Benutzer
+            _weg(pfad)
+            flash(tr("Die Sicherung konnte nicht erstellt werden: {fehler}", fehler=str(ex)[:200]),
+                  "fehler")
+            return redirect(url_for("sicherung_admin"))
+        _log("backup", current_user()["username"])
+        antwort = send_file(pfad, as_attachment=True, download_name=sicherung.dateiname(),
+                            mimetype="application/zip")
+        antwort.call_on_close(lambda: _weg(pfad))        # Temp-Datei nach dem Senden weg
+        return antwort
+
+    @app.route("/admin/sicherung/einlesen", methods=["POST"])
+    @admin_required
+    def sicherung_einlesen():
+        # Eine Sicherung mit Fotos ist viel groesser als alles andere, was hochgeladen wird.
+        request.max_content_length = config.max_sicherung()
+        datei = request.files.get("datei")
+        if not (datei and datei.filename):
+            flash(tr("Bitte eine Sicherungsdatei wählen."), "fehler")
+            return redirect(url_for("sicherung_admin"))
+        if not request.form.get("bestaetigt"):
+            flash(tr("Bitte bestätigen, dass die jetzigen Daten ersetzt werden."), "fehler")
+            return redirect(url_for("sicherung_admin"))
+        wer = current_user()["username"]
+        fd, pfad = tempfile.mkstemp(prefix="foxtrail-", suffix=".zip")
+        os.close(fd)
+        try:
+            datei.save(pfad)
+            conn = g.pop("conn", None)                   # Datenbank wird gleich ersetzt
+            if conn is not None:
+                conn.commit()
+                conn.close()
+            zahlen = sicherung.einlesen(pfad, app.config["DB_PATH"], app.config["FOTO_DIR"])
+        except Exception as ex:                          # noqa: BLE001 - Meldung an den Benutzer
+            flash(tr("Die Sicherung konnte nicht eingelesen werden: {fehler}",
+                     fehler=str(ex)[:200]), "fehler")
+            return redirect(url_for("sicherung_admin"))
+        finally:
+            _weg(pfad)
+        g.pop("me", None)                                # die Konten kommen jetzt aus der Sicherung
+        _log("restore", wer, "{} Trails, {} Benutzer, {} Fotos".format(
+            zahlen["trails"], zahlen["benutzer"], zahlen["fotos"]))
+        _neue_sitzung()
+        flash(tr("Sicherung eingelesen: {t} Trails, {b} Benutzer, {f} Fotos. Bitte neu anmelden.",
+                 t=zahlen["trails"], b=zahlen["benutzer"], f=zahlen["fotos"]))
+        return redirect(url_for("login"))
 
     @app.route("/admin/protokoll")
     @admin_required

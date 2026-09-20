@@ -27,11 +27,14 @@ EREIGNISSE = {
     "twofa_on": "2FA eingerichtet",
     "twofa_off": "2FA entfernt",
     "twofa_reset": "2FA zurückgesetzt",
+    "backup": "Sicherung erstellt",
+    "restore": "Sicherung eingelesen",
 }
 GRUPPEN = [
     ("Anmeldung", ["login", "logout", "fail", "fail2fa", "lock", "denied"]),
     ("Konten und Rechte", ["user_add", "user_edit", "user_del", "pw_self", "pw_admin",
                            "twofa_on", "twofa_off", "twofa_reset"]),
+    ("Daten", ["backup", "restore"]),
 ]
 
 

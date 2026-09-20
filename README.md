@@ -60,6 +60,8 @@ foxtrail.ch absichtlich unscharf.</sub>
   Benutzername und Passwort; eine Authenticator-App kommt dagegen immer zum Passwort dazu. Auf einem Gerät, das schon einmal
   einen Passkey benutzt hat, fragt die Anmeldeseite von selbst danach – abschaltbar mit dem
   Kästchen „Beim Öffnen automatisch fragen“
+* **Sicherung:** alles in eine ZIP-Datei (Trails, Benutzer, Einstellungen, Protokolle, eigene
+  Fotos) und bei einer Neuinstallation wieder einlesen – im ⚙-Menü oder auf der Konsole
 * **Darstellung** automatisch, hell oder dunkel (Knopf ◐ oben rechts)
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen) und drei Rollen:
   **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),
@@ -267,11 +269,34 @@ foxtrailctl list-users
 foxtrailctl sync                         # Abgleich jetzt (macht der Timer sonst wöchentlich)
 foxtrailctl stats
 foxtrailctl export-json [datei]          # komplette Liste inkl. eigener Einträge
+foxtrailctl sichern [datei.zip]          # alles sichern: Datenbank, Einstellungen, Fotos
+foxtrailctl einlesen datei.zip           # Sicherung zurückspielen (ersetzt Datenbank und Fotos)
 foxtrailctl import-excel liste.xlsx      # "Gemacht?"-Spalte aus der Excel-Übersicht übernehmen
 foxtrailctl import-bestellungen datei    # eigene Bestellungen von foxtrail.ch übernehmen (s. unten)
 journalctl -u foxtrail -u foxtrail-sync  # Logs
 systemctl list-timers foxtrail-sync.timer
 ```
+
+### Sichern und wiederherstellen
+
+Im ⚙-Menü unter **Sicherung** lädt ein Admin eine ZIP-Datei mit allem herunter: Trail-Liste samt
+eigenen Einträgen, Benutzer, Einstellungen, Protokolle und die eigenen Fotos. Dieselbe Datei lässt
+sich dort nach einer Neuinstallation wieder einlesen – Datenbank und Fotos werden dabei vollständig
+ersetzt, die bisherige Datenbank bleibt als `<name>.alt-<Zeitpunkt>` liegen. Danach gelten die
+Benutzer und Passwörter aus der Sicherung, die App meldet dich deshalb ab.
+
+Auf der Konsole geht es auch ohne Anmeldung, zum Beispiel direkt nach einer Neuinstallation:
+
+```bash
+foxtrailctl sichern /root/foxtrail-sicherung.zip
+foxtrailctl einlesen /root/foxtrail-sicherung.zip
+# mit Docker:
+docker exec -it foxtrail-tracker foxtrailctl sichern /data/sicherung.zip
+```
+
+Die Datei enthält **alle** Daten, auch Passwort-Hashes und Zweitfaktor-Schlüssel – sie gehört an
+einen sicheren Ort. Nicht dabei sind Vorschaubilder und die Titelbilder von foxtrail.ch (die lädt
+die App bei Bedarf neu) sowie der `SECRET_KEY`, der zur Installation gehört.
 
 `import-excel` erwartet die Spalten `Ort / Region`, `Trail-Name`, `Gemacht?` (Ja/Nein),
 `Datum gemacht`, `Bemerkung` und optional `Mitspieler`; Zeilen unterhalb einer Zeile,
@@ -354,6 +379,7 @@ foxtrail/
   users.py      Benutzer, Passwort-Hashing (werkzeug), Rollen, Zweitfaktor-Daten
   twofa.py      Zweitfaktor: Authenticator-App (TOTP) und Passkeys
   authlog.py    Anmelde-Protokoll
+  sicherung.py  Sicherung als ZIP erstellen und einlesen
   scraper.py    foxtrail.ch abrufen und parsen (parse_page ist offline testbar)
   sync.py       Abgleich-Regeln
   trails.py     Lesen/Schreiben der Trail-Liste

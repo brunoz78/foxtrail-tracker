@@ -16,6 +16,8 @@ Verwaltungs-CLI fuer den Foxtrail-Tracker.
                                           Text, "-" = stdin) als gemacht eintragen; ohne
                                           --schreiben nur Probelauf
   manage.py export-json [datei]           Komplette Liste inkl. eigener Eintraege als JSON sichern
+  manage.py sichern [datei.zip]           Alles sichern: Datenbank, Einstellungen, Fotos
+  manage.py einlesen datei.zip            Sicherung zurueckspielen (ersetzt Datenbank und Fotos)
   manage.py stats
 
 Die Datenbank wird ueber $FOXTRAIL_DB gewaehlt (siehe foxtrail/config.py).
@@ -30,7 +32,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from foxtrail import bestellungen, config, db, sync, trails, users, zeitplan  # noqa: E402
+from foxtrail import bestellungen, config, db, sicherung, sync, trails, users, zeitplan  # noqa: E402
 
 
 def _pw(prompt="Passwort: "):
@@ -101,6 +103,26 @@ def cmd_list_users(a):
         for u in users.list_users(conn):
             print(f"{u['username']:20} {users.ROLLEN[users.rolle(u)]:14} "
                   f"{'aktiv' if u['active'] else 'inaktiv':8} letzte Anmeldung: {u['last_login'] or '-'}")
+
+
+def cmd_sichern(a):
+    ziel = a.datei or os.path.join(os.getcwd(), sicherung.dateiname())
+    meta = sicherung.erstellen(ziel)
+    print(f"{ziel}: {meta['trails']} Trails, {meta['benutzer']} Benutzer, {meta['fotos']} Fotos "
+          f"({os.path.getsize(ziel) / 1024 / 1024:.1f} MB)")
+
+
+def cmd_einlesen(a):
+    if not a.ja:
+        antwort = input("Datenbank und Fotos werden ersetzt. Weiter? [j/N] ").strip().lower()
+        if antwort not in ("j", "ja", "y", "yes"):
+            print("Abgebrochen.")
+            return
+    zahlen = sicherung.einlesen(a.datei)
+    print(f"Eingelesen: {zahlen['trails']} Trails, {zahlen['benutzer']} Benutzer, "
+          f"{zahlen['fotos']} Fotos")
+    if zahlen["alt"]:
+        print(f"Bisherige Datenbank: {zahlen['alt']}")
 
 
 def cmd_stats(a):
@@ -240,6 +262,10 @@ def main():
     s = sub.add_parser("set-password"); s.add_argument("name"); s.set_defaults(fn=cmd_set_password)
     sub.add_parser("list-users").set_defaults(fn=cmd_list_users)
     sub.add_parser("stats").set_defaults(fn=cmd_stats)
+    s = sub.add_parser("sichern"); s.add_argument("datei", nargs="?"); s.set_defaults(fn=cmd_sichern)
+    s = sub.add_parser("einlesen"); s.add_argument("datei")
+    s.add_argument("--ja", action="store_true", help="ohne Rueckfrage einlesen")
+    s.set_defaults(fn=cmd_einlesen)
     s = sub.add_parser("export-json"); s.add_argument("datei", nargs="?"); s.set_defaults(fn=cmd_export_json)
     s = sub.add_parser("import-excel"); s.add_argument("datei"); s.add_argument("--benutzer", default="import")
     s.set_defaults(fn=cmd_import_excel)

@@ -17,6 +17,7 @@ Konfiguration ueber Umgebungsvariablen (z. B. systemd EnvironmentFile).
   LOGIN_MAX_FAILS      Fehlversuche bis zur Sperre (Default 5)
   LOGIN_LOCK_SECONDS   Sperrdauer in Sekunden (Default 300)
   FOXTRAIL_UPDATE_CHECK  "0" -> nicht bei GitHub nach neuen Versionen fragen (Default 1)
+  FOXTRAIL_MAX_SICHERUNG_MB  Obergrenze fuer eine hochgeladene Sicherung (Default 1024)
 """
 
 import os
@@ -47,6 +48,12 @@ def secret_key():
 
 def force_https():
     return os.environ.get("FORCE_HTTPS", "") == "1"
+
+
+def max_sicherung():
+    """Groesste Sicherung, die eingelesen werden darf - mit vielen Fotos wird sie gross.
+    Fuer alles andere gilt die viel kleinere MAX_CONTENT_LENGTH der App."""
+    return int(os.environ.get("FOXTRAIL_MAX_SICHERUNG_MB", "1024")) * 1024 * 1024
 
 
 LIST_URL = os.environ.get("FOXTRAIL_LIST_URL", "https://foxtrail.ch/kategorie/trails/")

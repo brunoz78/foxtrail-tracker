@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Sicherung') }} – Foxtrail-Tracker{% endblock %}
+{% block content %}
+<div class="head"><h1>{{ _('Sicherung') }}</h1></div>
+
+<div class="card narrow">
+  <h2>{{ _('Sicherung herunterladen') }}</h2>
+  <p class="muted small">{{ _('Eine ZIP-Datei mit allem: Trail-Liste samt eigenen Einträgen, Benutzer, Einstellungen, Protokolle und die eigenen Fotos. Vorschau- und Titelbilder fehlen – die lädt die App bei Bedarf neu.') }}</p>
+  <dl class="lesen">
+    <dt>{{ _('Trails') }}</dt><dd>{{ stand.trails }} ({{ _('{n} gemacht', n=stand.gemacht) }})</dd>
+    <dt>{{ _('Benutzer') }}</dt><dd>{{ stand.benutzer }}</dd>
+    <dt>{{ _('Fotos') }}</dt><dd>{{ stand.fotos }}</dd>
+    <dt>{{ _('Datenbank') }}</dt><dd>{{ (stand.db_bytes / 1024 / 1024)|round(1) }} MB</dd>
+  </dl>
+  <div class="flash hinweis">{{ _('Die Datei enthält alle Daten, auch Passwort-Hashes und Zweitfaktor-Schlüssel. Bewahre sie so sicher auf wie die Anmeldedaten selbst.') }}</div>
+  <p><a class="btn" href="{{ url_for('sicherung_datei') }}">{{ _('Sicherung herunterladen') }}</a></p>
+</div>
+
+<div class="card narrow">
+  <h2>{{ _('Sicherung einlesen') }}</h2>
+  <p class="muted small">{{ _('Für eine Neuinstallation: die Datei auswählen und bestätigen. Datenbank und Fotos werden dabei vollständig ersetzt.') }}</p>
+  <div class="flash fehler" role="alert">{{ _('Alles, was jetzt in dieser Installation steht, geht dabei verloren. Die bisherige Datenbank bleibt als Datei „.alt-<Zeitpunkt>“ neben der aktuellen liegen.') }}</div>
+  <form method="post" action="{{ url_for('sicherung_einlesen') }}" enctype="multipart/form-data"
+        onsubmit='return confirm({{ _("Wirklich einlesen? Alle jetzigen Daten werden ersetzt.")|tojson }})'>
+    <label class="upload">{{ _('Datei wählen') }}
+      <input type="file" name="datei" accept=".zip,application/zip" required></label>
+    <label class="chk"><input type="checkbox" name="bestaetigt" value="1" required>
+      {{ _('Ja, alle jetzigen Daten ersetzen') }}</label>
+    <div class="actions"><button type="submit">{{ _('Einlesen') }}</button></div>
+  </form>
+  <p class="muted small">{{ _('Nach dem Einlesen meldet dich die App ab – danach gelten die Benutzer und Passwörter aus der Sicherung.') }}</p>
+</div>
+
+<div class="card narrow">
+  <h2>{{ _('Auf der Konsole') }}</h2>
+  <p class="muted small">{{ _('Geht auch ohne Anmeldung, zum Beispiel direkt nach einer Neuinstallation oder für sehr grosse Sicherungen:') }}</p>
+  <pre>foxtrailctl sichern /root/foxtrail-sicherung.zip
+foxtrailctl einlesen /root/foxtrail-sicherung.zip</pre>
+  <p class="muted small">{{ _('Mit Docker:') }} <code>docker exec -it foxtrail-tracker foxtrailctl sichern /data/sicherung.zip</code></p>
+</div>
+{% endblock %}
