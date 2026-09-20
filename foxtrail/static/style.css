@@ -88,6 +88,8 @@ form label.chk input { width: auto; margin: 0; }
 fieldset { border: 1px solid var(--line); border-radius: 6px; padding: 8px 14px 12px; margin: 12px 0; }
 legend { font-size: 12px; color: var(--muted); padding: 0 4px; }
 input, select, textarea, button { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; }
+/* Gesperrte Felder (z. B. der Benutzername beim Bearbeiten) sollen nicht nach Eingabe aussehen */
+input[readonly] { background: var(--bg); color: var(--muted); cursor: not-allowed; }
 button { background: var(--green); color: #fff; border-color: var(--green); cursor: pointer; }
 button:hover { background: var(--green-dark); }
 button.secondary { background: transparent; color: var(--text); border-color: var(--line); }

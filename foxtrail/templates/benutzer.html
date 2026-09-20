@@ -49,13 +49,16 @@
   <form method="post" action="{{ url_for('user_save') }}" autocomplete="off">
     <input type="hidden" name="modus" value="{{ 'bearbeiten' if edit else 'neu' }}">
     <div class="row">
-      <label>{{ _('Benutzername') }} <input name="username" value="{{ edit.username if edit else '' }}" required autocomplete="off"
-             pattern="[a-z0-9._\-]{2,32}" title="{{ _('a-z, 0-9, Punkt, Minus, Unterstrich') }}" {{ 'readonly' if edit }}></label>
-      {# autocomplete/placeholder halten Browser-Helfer davon ab, hier eine E-Mail-Adresse anzubieten #}
+      <label>{{ _('Benutzername') }} <input name="username" value="{{ edit.username if edit else '' }}" required autocomplete="username"
+             pattern="[a-z0-9._\-]{2,32}" {{ 'readonly' if edit }}
+             title="{{ _('Der Benutzername lässt sich nachträglich nicht ändern.') if edit else _('a-z, 0-9, Punkt, Minus, Unterstrich') }}"></label>
+      {# autocomplete="name": ohne festen Typ haelt Chromium/Brave das Feld vor dem Passwortfeld fuer
+         den Login-Namen und bietet eine E-Mail-Adresse an ("off" ignoriert Autofill absichtlich) #}
       <label>{{ _('Anzeigename') }} <input name="anzeigename" value="{{ (edit.anzeigename or '') if edit else '' }}" maxlength="60"
-             autocomplete="off" placeholder="{{ _('z. B. Vorname') }}"
+             autocomplete="name" placeholder="{{ _('z. B. Vorname') }}"
              title="{{ _('Frei wählbarer Name für Liste und Menü – keine E-Mail-Adresse nötig') }}"></label>
     </div>
+    {% if edit %}<p class="muted small">{{ _('Der Benutzername lässt sich nachträglich nicht ändern.') }}</p>{% endif %}
     <label>{{ _('Passwort') }}
       <input type="password" name="password" minlength="8" autocomplete="new-password" {{ '' if edit else 'required' }}
              placeholder="{{ _('leer lassen = unverändert') if edit else '' }}"></label>

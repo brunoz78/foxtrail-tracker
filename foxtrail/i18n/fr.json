@@ -113,6 +113,7 @@
  "Dauer": "Durée",
  "Den Import macht ein Admin.": "L'import est effectué par un admin.",
  "Den Link aus der Anmelde-Mail von foxtrail.ch einfügen. Er wird nur für diesen Abruf verwendet und nicht gespeichert. Achtung: Wer den Link hat, ist in eurem foxtrail.ch-Konto angemeldet – nicht weitergeben.": "Colle le lien de l'e-mail de connexion de foxtrail.ch. Il n'est utilisé que pour cette récupération et n'est pas enregistré. Attention : quiconque possède ce lien est connecté à votre compte foxtrail.ch – ne pas le transmettre.",
+ "Der Benutzername lässt sich nachträglich nicht ändern.": "Le nom d’utilisateur ne peut plus être modifié par la suite.",
  "Der Code stimmt nicht – bitte nochmals versuchen.": "Le code est incorrect – réessaie.",
  "Der Code stimmt nicht.": "Le code est incorrect.",
  "Der Zeitplan lässt sich hier nicht abfragen (kein systemd-Timer gefunden). In der Standardinstallation läuft der Abgleich jeden Montag um 04:30.": "Le planning ne peut pas être consulté ici (aucun timer systemd trouvé). Dans l'installation standard, la synchronisation a lieu chaque lundi à 04:30.",
