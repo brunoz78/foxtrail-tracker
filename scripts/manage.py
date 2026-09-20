@@ -10,7 +10,7 @@ Verwaltungs-CLI fuer den Foxtrail-Tracker.
   manage.py create-user NAME [--admin]    Benutzer anlegen (Passwort wird abgefragt oder aus
                                           $FOXTRAIL_PASSWORD gelesen)
   manage.py set-password NAME             Passwort neu setzen
-  manage.py list-users
+  manage.py list-users [--namen] [--nur-admins]
   manage.py import-excel DATEI.xlsx       "Gemacht?"-Spalte aus der Excel-Uebersicht uebernehmen
   manage.py import-bestellungen DATEI     Bestellungen von foxtrail.ch (Kontoseite als HTML oder
                                           Text, "-" = stdin) als gemacht eintragen; ohne
@@ -101,6 +101,11 @@ def cmd_set_password(a):
 def cmd_list_users(a):
     with db.session() as conn:
         for u in users.list_users(conn):
+            if a.nur_admins and not (u["is_admin"] and u["active"]):
+                continue
+            if a.namen:                      # fuer Scripts: nur der Name, eine Zeile je Benutzer
+                print(u["username"])
+                continue
             print(f"{u['username']:20} {users.ROLLEN[users.rolle(u)]:14} "
                   f"{'aktiv' if u['active'] else 'inaktiv':8} letzte Anmeldung: {u['last_login'] or '-'}")
 
@@ -260,7 +265,10 @@ def main():
     g.add_argument("--admin", action="store_true"); g.add_argument("--nur-lesen", action="store_true")
     s.set_defaults(fn=cmd_create_user)
     s = sub.add_parser("set-password"); s.add_argument("name"); s.set_defaults(fn=cmd_set_password)
-    sub.add_parser("list-users").set_defaults(fn=cmd_list_users)
+    s = sub.add_parser("list-users")
+    s.add_argument("--namen", action="store_true", help="nur die Benutzernamen (fuer Scripts)")
+    s.add_argument("--nur-admins", action="store_true", help="nur aktive Administratoren")
+    s.set_defaults(fn=cmd_list_users)
     sub.add_parser("stats").set_defaults(fn=cmd_stats)
     s = sub.add_parser("sichern"); s.add_argument("datei", nargs="?"); s.set_defaults(fn=cmd_sichern)
     s = sub.add_parser("einlesen"); s.add_argument("datei")

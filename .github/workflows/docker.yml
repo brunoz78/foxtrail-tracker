@@ -30,7 +30,7 @@ jobs:
         run: |
           set -x
           curl -fsS http://127.0.0.1:8080/login | grep -q Anmelden
-          docker exec ft foxtrailctl list-users | grep -q admin
+          docker exec ft foxtrailctl list-users --namen | grep -qx admin
           docker exec ft foxtrailctl stats | grep -q "^total  *97"
           for i in $(seq 1 10); do docker exec ft test -s /data/zeitplan.json && break; sleep 1; done
           docker exec ft cat /data/zeitplan.json
@@ -38,6 +38,15 @@ jobs:
           # keine Datei in /data darf root gehoeren (sonst kann die App sie nicht mehr schreiben)
           test -z "$(docker exec ft find /data -user 0)"
           docker top ft
+      - name: Neustart mit vorhandenem Admin
+        # Beim zweiten Start gibt es den Administrator schon, FOXTRAIL_ADMIN_PASSWORD ist aber
+        # weiterhin gesetzt: der Container muss trotzdem sauber hochkommen.
+        run: |
+          docker restart ft
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8080/healthz
+          test "$(docker inspect -f '{{.State.Restarting}}' ft)" = false
+          docker exec ft foxtrailctl list-users --namen | grep -qx admin
       - name: Log
         if: always()
         run: docker logs ft

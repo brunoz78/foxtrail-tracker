@@ -77,7 +77,7 @@ echo
 echo "== Fertig. Status:"
 systemctl --no-pager --lines=0 status foxtrail.service | head -3
 echo
-if ! foxtrailctl list-users | grep -q admin; then
+if [ -z "$(foxtrailctl list-users --namen --nur-admins)" ]; then
   echo "Noch kein Administrator vorhanden. Jetzt anlegen:"
   echo "   foxtrailctl create-user admin --admin"
 fi

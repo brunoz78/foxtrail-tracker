@@ -32,10 +32,14 @@ fi
 foxtrailctl init-db
 foxtrailctl seed
 
-if ! foxtrailctl list-users | grep -q ' admin '; then
+# Beim allerersten Start einen Administrator anlegen. Geprueft wird ueber die Namensliste
+# (--namen), nie ueber die formatierte Ausgabe - die darf sich aendern, ohne dass der Container
+# nicht mehr startet. Schlaegt das Anlegen fehl, laeuft der Container trotzdem weiter.
+if ! foxtrailctl list-users --namen | grep -qx admin; then
   if [ -n "${FOXTRAIL_ADMIN_PASSWORD:-}" ]; then
-    FOXTRAIL_PASSWORD="$FOXTRAIL_ADMIN_PASSWORD" foxtrailctl create-user admin --admin
-  elif [ -z "$(foxtrailctl list-users)" ]; then
+    FOXTRAIL_PASSWORD="$FOXTRAIL_ADMIN_PASSWORD" foxtrailctl create-user admin --admin \
+      || echo "Administrator 'admin' wurde nicht angelegt - der Container laeuft trotzdem weiter."
+  elif [ -z "$(foxtrailctl list-users --namen)" ]; then
     echo "Noch kein Benutzer vorhanden. Administrator anlegen mit:"
     echo "   docker exec -it <container> foxtrailctl create-user admin --admin"
   fi
