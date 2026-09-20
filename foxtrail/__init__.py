@@ -5,7 +5,8 @@ Foxtrail-Tracker - Flask-App.
 Login: Benutzer in SQLite mit gehashtem Passwort, signierte
 Session (reines Sitzungscookie), Sperre nach zu vielen Fehlversuchen (In-Memory), optional
 Zweitfaktor (Authenticator-App oder Passkey), Anmelde-Protokoll. Rollen: Administrator,
-Bearbeiten, Nur lesen.
+Bearbeiten, Nur lesen. Wer einen Passkey hinterlegt hat, kann sich damit auch ganz ohne Passwort
+anmelden - der Browser sucht den Passkey selbst.
 """
 
 import base64
@@ -145,12 +146,12 @@ def create_app(test_config=None):
         session.update(werte)
         session.permanent = False
 
-    def _fertig_anmelden(username):
+    def _fertig_anmelden(username, detail=""):
         nxt = session.get("login_next") or ""
         _neue_sitzung(user=username)
         _ATTEMPTS.pop(username, None)
         users.angemeldet(get_conn(), username)
-        _log("login", username)
+        _log("login", username, detail)
         return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
 
     def _offen():
@@ -236,10 +237,14 @@ def create_app(test_config=None):
         return render_template("fehler.html", fehler=tr("Die Datei ist zu gross (höchstens 15 MB).")), 413
 
     # ---- Login / Logout ------------------------------------------------ #
+    def _passkey_login():
+        """Anmeldung mit Passkey anbieten? Nur im sicheren Kontext und wenn es einen gibt."""
+        return twofa.passkey_possible(request) and bool(users.mit_passkey(get_conn()))
+
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if users.count(get_conn()) == 0:
-            return render_template("login.html", kein_benutzer=True)
+            return render_template("login.html", kein_benutzer=True, passkey_login=False)
         if session.get("2fa_user") and request.method == "GET":
             return redirect(url_for("login_2fa"))
         if request.method == "POST":
@@ -247,7 +252,7 @@ def create_app(test_config=None):
             if _locked(name):
                 flash(tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.", n=config.LOGIN_LOCK_SECONDS // 60),
                       "fehler")
-                return render_template("login.html")
+                return render_template("login.html", passkey_login=_passkey_login())
             u = users.authenticate(get_conn(), name, request.form.get("password", ""))
             if u:
                 _neue_sitzung(login_next=request.args.get("next") or "")
@@ -262,7 +267,7 @@ def create_app(test_config=None):
                 return _fertig_anmelden(u["username"])
             _fail(name)
             flash(tr("Benutzername oder Passwort falsch."), "fehler")
-        return render_template("login.html")
+        return render_template("login.html", passkey_login=_passkey_login())
 
     @app.route("/login/2fa", methods=["GET", "POST"])
     def login_2fa():
@@ -293,6 +298,40 @@ def create_app(test_config=None):
         if sprache:
             session["sprache"] = sprache
         return redirect(url_for("login"))
+
+    # ---- Anmelden mit Passkey statt Passwort --------------------------- #
+    @app.route("/login/passkey/options")
+    def wa_login_options():
+        """Anfrage ohne Liste: der Browser sucht selbst einen Passkey fuer diese Seite."""
+        if not twofa.passkey_possible(request):
+            return jsonify({"error": tr("Die Anmeldung mit Passkey geht nur über HTTPS mit einem "
+                                        "Hostnamen.")}), 400
+        opts_json, challenge = twofa.auth_options([], request)
+        session["pk_challenge"] = base64.urlsafe_b64encode(challenge).decode()
+        session["login_next"] = request.args.get("next") or ""
+        return Response(opts_json, mimetype="application/json")
+
+    @app.route("/login/passkey/verify", methods=["POST"])
+    def wa_login_verify():
+        if "pk_challenge" not in session:
+            return jsonify({"error": tr("Sitzung abgelaufen – bitte neu laden.")}), 400
+        challenge = base64.urlsafe_b64decode(session.pop("pk_challenge"))
+        body = request.get_data(as_text=True)
+        cid = twofa.credential_id_of(body)
+        u, stored = users.by_passkey(get_conn(), cid, twofa.user_handle_of(body))
+        if u is None:
+            _log("fail", "", "Passkey ohne Konto")
+            return jsonify({"error": tr("Dieser Passkey gehört zu keinem Konto.")}), 400
+        if _locked(u["username"]):
+            return jsonify({"error": tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.",
+                                        n=config.LOGIN_LOCK_SECONDS // 60)}), 429
+        try:
+            neu = twofa.auth_verify(request, challenge, body, stored)
+        except Exception as ex:                              # noqa: BLE001 - Meldung an den Browser
+            _fail(u["username"], "fail2fa")
+            return jsonify({"error": str(ex)[:200]}), 400
+        users.update_passkey_counter(get_conn(), u["username"], cid, neu)
+        return jsonify({"ok": True, "weiter": _fertig_anmelden(u["username"], "Passkey").location})
 
     # ---- Zweitfaktor: Einrichten und Passkeys -------------------------- #
     def _twofa_person():

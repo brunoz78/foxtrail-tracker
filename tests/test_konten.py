@@ -164,6 +164,35 @@ def test_protokoll(app):
     assert g.get("/admin/protokoll").status_code == 403
 
 
+def test_anmelden_mit_passkey_statt_passwort(app):
+    c = app.test_client()
+    lokal, ip = {"Host": "localhost:8080"}, {"Host": "10.0.1.5:8080"}
+    # ohne hinterlegten Passkey wird die Anmeldung mit Passkey nicht angeboten
+    assert "Mit Passkey anmelden" not in c.get("/login", headers=lokal).get_data(as_text=True)
+    with db.session(app.config["DB_PATH"]) as conn:
+        users.add_passkey(conn, "gast", {"id": "cred-1", "public_key": "xx",
+                                         "sign_count": 0, "name": "Handy",
+                                         "created": "2026-09-20"})
+    assert "Mit Passkey anmelden" in c.get("/login", headers=lokal).get_data(as_text=True)
+    assert "Mit Passkey anmelden" not in c.get("/login", headers=ip).get_data(as_text=True)
+    # Anfrage ohne allowCredentials: der Browser sucht den Passkey selbst
+    r = c.get("/login/passkey/options", headers=lokal)
+    assert r.status_code == 200 and not r.json.get("allowCredentials")
+    assert c.get("/login/passkey/options", headers=ip).status_code == 400
+    # unbekannter Passkey: saubere Meldung, niemand ist angemeldet
+    r = c.post("/login/passkey/verify", data='{"id": "fremd", "response": {}}', headers=lokal)
+    assert r.status_code == 400 and "keinem Konto" in r.json["error"]
+    assert c.get("/").status_code == 302
+    # Zuordnung: ueber das user handle und ueber die Credential-ID allein
+    with db.session(app.config["DB_PATH"]) as conn:
+        assert users.by_passkey(conn, "cred-1", "gast")[0]["username"] == "gast"
+        assert users.by_passkey(conn, "cred-1", "niemand")[0]["username"] == "gast"
+        assert users.by_passkey(conn, "cred-1")[1]["name"] == "Handy"
+        assert users.by_passkey(conn, "anderer") == (None, None)
+        users.aendern(conn, "gast", aktiv=False)
+        assert users.by_passkey(conn, "cred-1") == (None, None)      # gesperrtes Konto zaehlt nicht
+
+
 def test_darstellung_und_menue(app):
     c = app.test_client()
     html = c.get("/login").get_data(as_text=True)
@@ -171,3 +200,5 @@ def test_darstellung_und_menue(app):
     login(c)
     html = c.get("/").get_data(as_text=True)
     assert "Anmelde-Protokoll" in html and 'id="themebtn"' in html and "/profil" in html
+    # Schublade fuers Smartphone: Schatten zum Schliessen und Kopf mit Schliessen-Knopf
+    assert 'id="navoverlay"' in html and "navclose" in html and "Menü schliessen" in html

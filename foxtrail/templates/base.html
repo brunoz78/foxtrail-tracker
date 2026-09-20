@@ -23,16 +23,20 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
 {# Darstellung: Auto -> Hell -> Dunkel, gemerkt im Browser (localStorage) #}
 {% macro themeknopf() -%}
 <button type="button" class="themebtn" id="themebtn" data-auto="{{ _('Darstellung: automatisch') }}"
-        data-light="{{ _('Darstellung: hell') }}" data-dark="{{ _('Darstellung: dunkel') }}">◐</button>
+        data-light="{{ _('Darstellung: hell') }}" data-dark="{{ _('Darstellung: dunkel') }}"><span
+        class="ikon">◐</span><span class="btn-text"></span></button>
 {%- endmacro %}
 <header class="top" id="top">
   <a class="brand" href="{{ url_for('index') }}">🦊 Foxtrail-Tracker</a>
   {% if me %}
-  {# Auf dem Handy klappt ☰ das Menue auf; ohne JavaScript bleibt es immer offen #}
-  <button type="button" class="navtoggle" aria-controls="hauptnav" aria-expanded="false" aria-label="{{ _('Menü') }}"
-          onclick="var o=document.getElementById('top').classList.toggle('offen');this.setAttribute('aria-expanded',o)">☰</button>
+  {# Auf dem Handy fährt ☰ das Menü von links ein; ohne JavaScript bleibt es als Liste offen #}
+  <button type="button" class="navtoggle" aria-controls="hauptnav" aria-expanded="false"
+          aria-label="{{ _('Menü') }}">☰</button>
+  <div class="nav-overlay" id="navoverlay" aria-hidden="true"></div>
   {% set ep = request.endpoint %}
-  <nav id="hauptnav">
+  <nav id="hauptnav" aria-label="{{ _('Menü') }}">
+    <div class="nav-kopf"><b>🦊 Foxtrail-Tracker</b>
+      <button type="button" class="navclose" aria-label="{{ _('Menü schliessen') }}">✕</button></div>
     <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}">{{ _('Trails') }}
       {% if stats %}<span class="pill">{{ stats.gemacht }}/{{ stats.total }}</span>{% endif %}</a>
     <a href="{{ url_for('statistik') }}" class="{{ 'on' if ep == 'statistik' }}">{{ _('Statistik') }}</a>
@@ -81,6 +85,19 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
     </details>
   </nav>
   <script>
+  // Schublade (Smartphone): ☰ öffnet, Schatten, ✕ und Escape schliessen wieder.
+  (function () {
+    var top = document.getElementById('top'), knopf = top.querySelector('.navtoggle');
+    var schalten = function (auf) {
+      top.classList.toggle('offen', auf);
+      document.body.classList.toggle('nav-offen', auf);
+      knopf.setAttribute('aria-expanded', auf ? 'true' : 'false');
+    };
+    knopf.addEventListener('click', function () { schalten(!top.classList.contains('offen')); });
+    document.getElementById('navoverlay').addEventListener('click', function () { schalten(false); });
+    top.querySelector('.navclose').addEventListener('click', function () { schalten(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { schalten(false); } });
+  })();
   (function () {
     var dds = document.querySelectorAll('#hauptnav details.dd');
     document.addEventListener('click', function (e) {
@@ -111,18 +128,25 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
   {{ _('Dieses Projekt ist privat und nicht mit der Foxtrail AG verbunden.') }}
 </footer>
 <script>
-// Darstellung umschalten: auto -> hell -> dunkel
+// Darstellung umschalten: automatisch -> die andere Darstellung -> die dritte -> wieder automatisch.
+// Die Reihenfolge richtet sich nach der Einstellung des Systems, damit der erste Klick auf einem
+// hellen System nach dunkel führt (und umgekehrt) - sonst passiert scheinbar nichts.
 (function () {
   var root = document.documentElement, b = document.getElementById('themebtn');
   if (!b) { return; }
+  var ZEICHEN = { auto: '◐', light: '☀', dark: '☾' };
+  var dunkel = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  var jetzt = function () { return root.getAttribute('data-theme') || 'auto'; };
   var zeigen = function () {
-    var t = root.getAttribute('data-theme') || 'auto';
+    var t = jetzt(), ikon = b.querySelector('.ikon'), text = b.querySelector('.btn-text');
     b.title = b.getAttribute('data-' + t) || '';
     b.setAttribute('aria-label', b.title);
+    if (ikon) { ikon.textContent = ZEICHEN[t]; }
+    if (text) { text.textContent = b.title; }
   };
   b.addEventListener('click', function () {
-    var reihe = ['auto', 'light', 'dark'];
-    var t = reihe[(reihe.indexOf(root.getAttribute('data-theme') || 'auto') + 1) % 3];
+    var reihe = (dunkel && dunkel.matches) ? ['auto', 'light', 'dark'] : ['auto', 'dark', 'light'];
+    var t = reihe[(reihe.indexOf(jetzt()) + 1) % reihe.length];
     root.setAttribute('data-theme', t);
     try { localStorage.setItem('foxtrail-theme', t); } catch (e) {}
     zeigen();

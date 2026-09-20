@@ -55,6 +55,8 @@ foxtrail.ch absichtlich unscharf.</sub>
 * **Benutzerverwaltung:** Anzeigename, Sprache, „Passwort beim nächsten Login ändern“ oder „Passwort
   darf nicht geändert werden“, **Zweitfaktor** mit Authenticator-App oder Passkey (optional als
   Pflicht), Anmelde-Protokoll für Admins
+* **Anmelden mit Passkey** statt Passwort (Fingerabdruck, Gesicht oder Geräte-PIN) – ohne
+  Benutzernamen, der Browser sucht den passenden Passkey selbst
 * **Darstellung** automatisch, hell oder dunkel (Knopf ◐ oben rechts)
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen) und drei Rollen:
   **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),
@@ -63,8 +65,8 @@ foxtrail.ch absichtlich unscharf.</sub>
 * **Sprachen:** Deutsch, Français, Italiano, English – automatisch nach Browser, umschaltbar im ⚙-Menü
   (pro Benutzer gespeichert)
 * Keine externen Abhängigkeiten im Browser (kein CDN)
-* **Auf dem Smartphone** bedienbar: Menü hinter ☰, Liste und Archiv als kompakte
-  Karten statt breiter Tabelle, Sortier- und Filterleiste oben, grosse Tipp-Flächen
+* **Auf dem Smartphone** bedienbar: Menü hinter ☰ (fährt von links ein), Liste und Archiv als
+  kompakte Karten statt breiter Tabelle, Sortier- und Filterleiste oben, grosse Tipp-Flächen
 
 ## Abgleich-Regeln
 
@@ -168,8 +170,8 @@ Einstellungen. Zwei optionale Absicherungen in `/etc/foxtrail-tracker.env`, dana
   Nginx Proxy Manager, …), `BIND=0.0.0.0:8080` lassen und den direkten Zugriff bei Bedarf
   per Firewall auf die IP des Proxys beschränken (z. B. Proxmox-Firewall des LXC).
 
-**Passkeys** (Zweitfaktor) verlangt der Browser über HTTPS mit einem Hostnamen – über
-`http://<IP>:8080` bietet die App nur die Authenticator-App an. Der Proxy muss dafür
+**Passkeys** (Anmeldung ohne Passwort und Zweitfaktor) verlangt der Browser über HTTPS mit einem
+Hostnamen – über `http://<IP>:8080` bietet die App nur die Authenticator-App an. Der Proxy muss dafür
 `X-Forwarded-Host` und `X-Forwarded-Proto` weitergeben (Nginx Proxy Manager, Caddy und Traefik
 tun das von sich aus).
 

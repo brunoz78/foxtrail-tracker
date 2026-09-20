@@ -100,6 +100,26 @@ def passkeys(u):
         return []
 
 
+def mit_passkey(conn):
+    """Aktive Benutzer, die mindestens einen Passkey hinterlegt haben."""
+    return [dict(r) for r in conn.execute(
+        "SELECT * FROM users WHERE active = 1 AND COALESCE(passkeys, '[]') NOT IN ('', '[]')")]
+
+
+def by_passkey(conn, cred_id, user_handle=None):
+    """(Benutzer, Passkey) zu einer Credential-ID - fuer die Anmeldung ohne Benutzernamen.
+    Das user handle aus der Browser-Antwort ist der Benutzername; fehlt es oder passt es nicht,
+    wird in allen Konten gesucht. Ohne Treffer (None, None)."""
+    if not cred_id:
+        return None, None
+    zuerst = get(conn, user_handle) if user_handle else None
+    for u in ([zuerst] if zuerst and zuerst["active"] else []) + mit_passkey(conn):
+        for p in passkeys(u):
+            if p.get("id") == cred_id:
+                return u, p
+    return None, None
+
+
 def has_2fa(u):
     return bool(u and (u.get("totp_secret") or passkeys(u)))
 

@@ -263,14 +263,35 @@ dl.rekorde dd { margin: 0; }
   .head { gap: 4px 12px; }
   .kpis { gap: 10px; font-size: 13px; }
   .kpis b { font-size: 16px; }
-  /* Menue hinter ☰ */
+  /* Menue hinter ☰: faehrt als Schublade von links ein (ohne JavaScript bleibt es eine Liste) */
   .top { padding: 8px 12px; gap: 8px; }
-  .navtoggle { display: block; margin-left: auto; background: transparent; border: 1px solid rgba(255,255,255,.4);
+  .js .navtoggle { display: block; order: -1; margin: 0; background: transparent; border: 1px solid rgba(255,255,255,.4);
     color: #fff; font-size: 20px; line-height: 1; padding: 6px 11px; }
-  .js .top nav { display: none; }
-  .top.offen nav, .top nav { width: 100%; flex-direction: column; margin: 0; }
-  .js .top.offen nav { display: flex; }
+  .top .brand { margin-right: auto; }
+  .top nav { width: 100%; flex-direction: column; align-items: stretch; flex-wrap: nowrap; margin: 0; }
+  .top nav > * { flex: 0 0 auto; }   /* sonst rutscht ein aufgeklapptes Menue in eine zweite Spalte */
   .top nav a { padding: 10px 8px; font-size: 16px; }
+  .js .top nav { position: fixed; top: 0; left: 0; bottom: 0; z-index: 50; width: 290px; max-width: 84vw;
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); gap: 2px; background: var(--card);
+    overflow-y: auto; box-shadow: 6px 0 26px rgba(0,0,0,.35);
+    transform: translateX(-102%); visibility: hidden; transition: transform .22s ease, visibility .22s; }
+  .js .top.offen nav { transform: none; visibility: visible; }
+  .js .nav-overlay { position: fixed; inset: 0; z-index: 45; background: rgba(0,0,0,.45);
+    opacity: 0; visibility: hidden; transition: opacity .22s, visibility .22s; }
+  .js .top.offen .nav-overlay { opacity: 1; visibility: visible; }
+  .js .nav-kopf { display: flex; }
+  body.nav-offen { overflow: hidden; }
+  /* In der Schublade steht die Schrift auf hellem Grund - also nicht mehr weiss */
+  .js .top nav a, .js .top nav details.dd summary { color: var(--text); opacity: 1; }
+  .js .top nav > a, .js .top nav details.dd summary { padding: 12px 10px; border-radius: 8px; }
+  .js .top nav a:hover, .js .top nav a.on, .js .top nav details.dd summary:hover,
+  .js .top nav details.dd summary.on, .js .top nav details.dd[open] summary { background: var(--green-light); }
+  .js .top nav .pill { background: var(--green-light); color: var(--green); }
+  .js .top nav .pill.grey { background: var(--line); color: var(--muted); }
+  .js .top nav .themebtn { display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 12px 10px; border-color: var(--line); color: var(--text); font-size: 16px; }
+  .js .top nav .themebtn .btn-text { display: inline; }
+  .js .top nav .themebtn:hover { background: var(--green-light); }
   /* Suche und Umschalter: volle Breite, fingerfreundlich */
   .filter { gap: 8px; }
   .filter input[name=q] { min-width: 0; flex: 1 1 160px; }
@@ -459,6 +480,16 @@ form.sprachwahl button.on { opacity: 1; border-color: currentColor; }
 .themebtn { background: transparent; border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 6px;
   padding: 3px 9px; font-size: 15px; line-height: 1.2; }
 .themebtn:hover { background: rgba(255,255,255,.18); }
+.themebtn .btn-text { display: none; }                 /* Text nur in der Schublade (Smartphone) */
+
+/* Kopf der Schublade: Titel und ✕ - nur auf dem Smartphone sichtbar */
+.nav-overlay, .nav-kopf { display: none; }
+.nav-kopf { align-items: center; justify-content: space-between; gap: 8px; padding: 4px 4px 10px;
+  border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.nav-kopf b { color: var(--text); font-size: 16px; }
+.navclose { background: transparent; border: 0; border-radius: 8px; color: var(--muted);
+  font-size: 18px; line-height: 1; padding: 8px 10px; cursor: pointer; }
+.navclose:hover { background: var(--green-light); color: var(--text); }
 .kopf-rechts { margin-left: auto; display: flex; align-items: center; gap: 10px; color: #fff; }
 .kopf-rechts form.sprachwahl { margin-left: 0; }
 
@@ -468,6 +499,10 @@ form.sprachwahl button.on { opacity: 1; border-color: currentColor; }
 .totp .qr svg { width: 190px; height: 190px; }
 code.schluessel { display: inline-block; font-size: 15px; letter-spacing: .08em; word-break: break-all;
   background: var(--green-light); padding: 4px 8px; border-radius: 6px; margin-bottom: 10px; }
+button.voll { width: 100%; }
+/* "oder mit Passwort": Trennlinie mit Text in der Mitte */
+.trenner { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; color: var(--muted); font-size: 13px; }
+.trenner::before, .trenner::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .pkmsg { font-size: 13px; color: var(--muted); }
 .pkmsg.err { color: #c62828; }
 :root[data-theme="dark"] .pkmsg.err { color: #ef9a9a; }

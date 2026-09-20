@@ -24,14 +24,22 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Login ändern, erzwungen per `before_request`; `pw_fest` = darf nicht selbst ändern; beides zugleich
   verboten), `twofa_pflicht`. **Zweitfaktor** (`foxtrail/twofa.py`, Pakete pyotp, qrcode, webauthn):
   Authenticator-App (TOTP, `totp_secret`) und Passkeys (`passkeys` als JSON). Passkeys nur in einem
-  sicheren Kontext (HTTPS mit Hostname oder localhost), sonst nur TOTP. Mit 2FA-Pflicht und ohne
+  sicheren Kontext (HTTPS mit Hostname oder localhost), sonst nur TOTP. Ein Passkey ist zugleich
+  **die ganze Anmeldung** (2026-09-20, Wunsch von Bruno): Knopf „Mit
+  Passkey anmelden“ über dem Passwortformular, `GET /login/passkey/options` (Anfrage **ohne**
+  `allowCredentials` – der Browser sucht selbst) und `POST /login/passkey/verify`. Dazu werden
+  Passkeys als `resident_key=REQUIRED` angelegt; das user handle ist der Benutzername
+  (`users.by_passkey` sucht sonst über die Credential-ID in allen aktiven Konten). Mit 2FA-Pflicht und ohne
   Faktor führt der Login direkt zur Einrichtung. Admin kann 2FA zurücksetzen. Selbst gewählte
   Passwörter: mind. 8 Zeichen, Gross-/Kleinbuchstabe, Zahl, Sonderzeichen (`users.passwort_fehler`);
   der Admin setzt frei (mind. 8). **Anmelde-Protokoll** (`foxtrail/authlog.py`, Tabelle `authlog`,
   Seite `/admin/protokoll`): Anmeldungen, Fehlversuche, Sperren, verweigerte Zugriffe, Änderungen an
   Konten, Passwörtern und 2FA – keine Seitenaufrufe; behält die neuesten 20 000 Einträge.
-  **Darstellung** Auto/Hell/Dunkel: Knopf ◐ in der Kopfzeile, gemerkt im Browser (`localStorage`
-  `foxtrail-theme`, gesetzt im `<head>` vor dem Zeichnen); CSS-Regeln für dunkel stehen doppelt:
+  **Darstellung** Auto/Hell/Dunkel: Knopf in der Kopfzeile (◐/☀/☾ je nach Zustand), gemerkt im
+  Browser (`localStorage` `foxtrail-theme`, gesetzt im `<head>` vor dem Zeichnen). Die Reihenfolge
+  hängt vom System ab (`prefers-color-scheme`): auf einem hellen System auto → dunkel → hell → auto,
+  auf einem dunklen auto → hell → dunkel → auto, damit **jeder Klick sichtbar** etwas ändert
+  (2026-09-20, Bruno: „auf dunkel muss zweimal geklickt werden“). CSS-Regeln für dunkel stehen doppelt:
   `@media (prefers-color-scheme: dark) { :root[data-theme="auto"] … }` und `:root[data-theme="dark"] …`.
   Kein feingranulares Rechte-System. Drei feste
   Rollen (`users.ROLLEN`), gespeichert als zwei Flags: `is_admin` (Benutzerverwaltung, Abgleich
@@ -207,8 +215,14 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   (Import, Abgleich, Benutzer – alle drei nur Admin; Passwort ändern, Abmelden). Aufklappmenüs sind
   `<details class="dd">` in `base.html`, JS schliesst sie bei Klick daneben/Escape. Auf dem
   Handy klappen sie im ☰-Menü nach unten auf. Wunsch von Bruno (2026-09-18): Kopfzeile schlank halten.
-- **Smartphone** (unter 700 px, Block am Ende von `style.css`): Menü hinter ☰ (nur mit JS
-  eingeklappt, Klasse `js` am `<html>`). Liste und Archiv (`table.karten`) werden per CSS zu
+- **Smartphone** (unter 700 px, Block am Ende von `style.css`): Menü hinter ☰ als **Schublade von
+  links** (2026-09-20, Wunsch von Bruno): `#hauptnav` wird `position:
+  fixed` und fährt per `transform` ein, dahinter `.nav-overlay`, im Kopf ✕ (`.nav-kopf`), Escape und
+  Klick daneben schliessen, `body.nav-offen` sperrt das Scrollen. Alles nur mit JS (Klasse `js` am
+  `<html>`); ohne JS bleibt das Menü eine Liste in der Kopfzeile und ☰ ist ausgeblendet. In der
+  Schublade steht die Schrift auf hellem Grund – Farben und Polster dort gesondert setzen, und
+  `flex-wrap: nowrap` nicht entfernen (sonst rutscht ein aufgeklapptes Untermenü in eine zweite
+  Spalte). Liste und Archiv (`table.karten`) werden per CSS zu
   Karten: `thead` wird zur umbrechenden Sortier-/Filterleiste, jede Zeile ein Flex-Block,
   Anordnung über die Klassen `m-*` (Zellen) und `k-*` (Köpfe). Kein zweites Markup - sonst
   gäbe es die Filter-Checkboxen doppelt im selben Formular. Neue Spalten brauchen eine

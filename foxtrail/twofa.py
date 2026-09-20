@@ -2,6 +2,10 @@
 """
 Zweitfaktor: TOTP (Authenticator-App) und WebAuthn/Passkey.
 
+Ein Passkey kann beides sein: zweiter Faktor nach dem Passwort und die ganze Anmeldung. Dafuer wird er als "discoverable credential" angelegt (resident key): der Browser
+findet ihn selbst, ohne dass jemand einen Benutzernamen eintippt. Das user handle ist der
+Benutzername, damit die Antwort einem Konto zugeordnet werden kann.
+
 TOTP funktioniert ueberall (auch http im LAN). Fuer Passkeys verlangt der Browser einen
 "secure context": HTTPS oder http://localhost - eine nackte IP wie 10.0.1.245 lehnt er ab.
 passkey_possible() sagt, ob es aktuell geht; sonst zeigt die Oberflaeche nur TOTP.
@@ -100,7 +104,9 @@ def reg_options(user, passkeys, request):
         user_id=user["username"].encode("utf-8"),
         exclude_credentials=_descriptors(passkeys),
         authenticator_selection=AuthenticatorSelectionCriteria(
-            resident_key=ResidentKeyRequirement.PREFERRED,
+            # REQUIRED: der Passkey wird im Geraet gespeichert und taugt so auch fuer die
+            # Anmeldung ohne Benutzernamen (siehe auth_options ohne Liste).
+            resident_key=ResidentKeyRequirement.REQUIRED,
             user_verification=UserVerificationRequirement.PREFERRED),
     )
     return options_to_json(opts), opts.challenge
@@ -117,8 +123,10 @@ def reg_verify(request, challenge, response_json):
 
 
 def auth_options(passkeys, request):
+    """Mit Liste: nur diese Passkeys (zweiter Faktor). Ohne Liste: der Browser sucht selbst einen
+    passenden Passkey fuer diese Seite (Anmeldung ohne Benutzernamen)."""
     opts = generate_authentication_options(
-        rp_id=rp_id(request), allow_credentials=_descriptors(passkeys),
+        rp_id=rp_id(request), allow_credentials=_descriptors(passkeys) or None,
         user_verification=UserVerificationRequirement.PREFERRED,
     )
     return options_to_json(opts), opts.challenge
@@ -140,4 +148,13 @@ def credential_id_of(response_json):
     try:
         return json.loads(response_json)["id"]
     except (ValueError, KeyError, TypeError):
+        return None
+
+
+def user_handle_of(response_json):
+    """Benutzername aus dem user handle der Browser-Antwort (Anmeldung ohne Benutzernamen)."""
+    try:
+        roh = json.loads(response_json)["response"].get("userHandle")
+        return base64url_to_bytes(roh).decode("utf-8") if roh else None
+    except Exception:                                    # noqa: BLE001 - nur ein Hinweis, wer es ist
         return None

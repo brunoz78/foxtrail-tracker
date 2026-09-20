@@ -7,6 +7,11 @@
   <p>{{ _('Es ist noch kein Benutzer vorhanden. Lege den ersten Administrator auf der Konsole an:') }}</p>
   <pre>python3 scripts/manage.py create-user admin --admin</pre>
   {% else %}
+  {% if passkey_login %}
+  <p><button type="button" id="pk-login" class="voll">{{ _('Mit Passkey anmelden') }}</button></p>
+  <p class="pkmsg" id="pk-msg"></p>
+  <div class="trenner">{{ _('oder mit Passwort') }}</div>
+  {% endif %}
   <form method="post">
     <label>{{ _('Benutzername') }} <input name="username" autocomplete="username" autofocus required></label>
     <label>{{ _('Passwort') }} <input name="password" type="password" autocomplete="current-password" required></label>
@@ -14,4 +19,15 @@
   </form>
   {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+{% if passkey_login %}
+{% include "_webauthn.html" %}
+<script>
+document.getElementById('pk-login').addEventListener('click', function () {
+  webauthnLogin({{ url_for('wa_login_options', next=request.args.get('next') or None)|tojson }},
+    {{ url_for('wa_login_verify')|tojson }}, document.getElementById('pk-msg'));
+});
+</script>
+{% endif %}
 {% endblock %}
