@@ -20,6 +20,10 @@ a { color: var(--green); }
 main { max-width: 1400px; margin: 0 auto; padding: 16px; }
 /* Liste, Kacheln, Archiv: ganze Bildschirmbreite (viele Spalten); Textseiten bleiben schmaler */
 main.voll { max-width: none; padding-left: 24px; padding-right: 24px; }
+/* Anmelden, zweiter Faktor: schmale Karte mittig auf der Seite */
+main.mitte { max-width: 460px; padding-top: 6vh; }
+main.mitte .card { margin: 0; }
+main.mitte h1 { text-align: center; margin-bottom: 16px; }
 footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 16px; }
 
 .top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 10px 16px; background: var(--green); color: #fff; }

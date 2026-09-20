@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Zweiter Faktor') }} – Foxtrail-Tracker{% endblock %}
+{% block main_class %}mitte{% endblock %}
 {% block content %}
 <div class="card narrow">
   <h1>{{ _('Zweiter Faktor') }}</h1>
@@ -8,7 +9,7 @@
   <form method="post" autocomplete="off">
     <label>{{ _('Code aus der Authenticator-App') }}
       <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="8" autofocus required></label>
-    <button type="submit">{{ _('Anmelden') }}</button>
+    <button type="submit" class="voll">{{ _('Anmelden') }}</button>
   </form>
   {% endif %}
   {% if hat_passkey and passkey_ok %}
