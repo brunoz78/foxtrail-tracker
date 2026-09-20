@@ -49,9 +49,12 @@
   <form method="post" action="{{ url_for('user_save') }}" autocomplete="off">
     <input type="hidden" name="modus" value="{{ 'bearbeiten' if edit else 'neu' }}">
     <div class="row">
-      <label>{{ _('Benutzername') }} <input name="username" value="{{ edit.username if edit else '' }}" required
+      <label>{{ _('Benutzername') }} <input name="username" value="{{ edit.username if edit else '' }}" required autocomplete="off"
              pattern="[a-z0-9._\-]{2,32}" title="{{ _('a-z, 0-9, Punkt, Minus, Unterstrich') }}" {{ 'readonly' if edit }}></label>
-      <label>{{ _('Anzeigename') }} <input name="anzeigename" value="{{ (edit.anzeigename or '') if edit else '' }}" maxlength="60"></label>
+      {# autocomplete/placeholder halten Browser-Helfer davon ab, hier eine E-Mail-Adresse anzubieten #}
+      <label>{{ _('Anzeigename') }} <input name="anzeigename" value="{{ (edit.anzeigename or '') if edit else '' }}" maxlength="60"
+             autocomplete="off" placeholder="{{ _('z. B. Vorname') }}"
+             title="{{ _('Frei wählbarer Name für Liste und Menü – keine E-Mail-Adresse nötig') }}"></label>
     </div>
     <label>{{ _('Passwort') }}
       <input type="password" name="password" minlength="8" autocomplete="new-password" {{ '' if edit else 'required' }}
