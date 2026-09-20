@@ -139,6 +139,7 @@
  "Du kannst dich nicht selbst deaktivieren.": "You cannot deactivate yourself.",
  "Du kannst dich nicht selbst löschen.": "You cannot delete yourself.",
  "Eigene Spaltenauswahl aktiv": "Custom column selection active",
+ "Ein Passkey ersetzt die Anmeldung mit Benutzername und Passwort – entweder das eine oder das andere. Die Authenticator-App kommt immer zusätzlich zum Passwort dazu.": "A passkey replaces signing in with user name and password – one or the other. The authenticator app is always used in addition to the password.",
  "Einfach": "Easy",
  "Eingetragen werden Datum, Mitspieler, Start- und Zielzeit, Team-Code, Bestellnummer und Schlussfoto. Bei bereits gemachten Trails werden fehlende Angaben ergänzt und ein abweichendes Datum korrigiert; die Vorschau zeigt vorher genau, was passiert.": "Date, players, start and finish time, team code, order number and finish photo are recorded. For trails already done, missing details are added and a different date is corrected; the preview shows exactly what will happen beforehand.",
  "Einrichten": "Set up",

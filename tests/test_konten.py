@@ -203,6 +203,30 @@ def test_anmelden_mit_passkey_statt_passwort(app):
         assert users.by_passkey(conn, "cred-1") == (None, None)      # gesperrtes Konto zaehlt nicht
 
 
+def test_passkey_ersetzt_passwort_app_kommt_dazu(app):
+    with db.session(app.config["DB_PATH"]) as conn:
+        users.add_passkey(conn, "gast", {"id": "cred-1", "public_key": "xx", "sign_count": 0,
+                                         "name": "Handy", "created": "2026-09-21"})
+    # entweder Passkey oder Passwort: nach richtigem Passwort kommt kein zweiter Schritt
+    t = app.test_client()
+    r = login(t, "gast")
+    assert "Zweiter Faktor" not in r.get_data(as_text=True) and t.get("/").status_code == 200
+    # mit Zweitfaktor-Pflicht wird der Passkey nach dem Passwort trotzdem verlangt
+    with db.session(app.config["DB_PATH"]) as conn:
+        users.aendern(conn, "gast", twofa_pflicht=True)
+        assert users.zweitfaktor_noetig(users.get(conn, "gast"))
+    t = app.test_client()
+    assert "Mit Passkey anmelden" in login(t, "gast").get_data(as_text=True)
+    assert t.get("/").status_code == 302
+    # die Authenticator-App ist immer zweiter Faktor, auch ohne Pflicht
+    with db.session(app.config["DB_PATH"]) as conn:
+        users.aendern(conn, "gast", twofa_pflicht=False)
+        users.set_totp(conn, "gast", pyotp.random_base32())
+    t = app.test_client()
+    assert "Code aus der Authenticator-App" in login(t, "gast").get_data(as_text=True)
+    assert t.get("/").status_code == 302
+
+
 def test_darstellung_und_menue(app):
     c = app.test_client()
     html = c.get("/login").get_data(as_text=True)

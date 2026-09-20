@@ -256,10 +256,10 @@ def create_app(test_config=None):
             u = users.authenticate(get_conn(), name, request.form.get("password", ""))
             if u:
                 _neue_sitzung(login_next=request.args.get("next") or "")
-                if users.has_2fa(u):
+                if users.zweitfaktor_noetig(u):
                     session["2fa_user"] = u["username"]
                     return redirect(url_for("login_2fa"))
-                if u["twofa_pflicht"]:
+                if u["twofa_pflicht"] and not users.has_2fa(u):
                     session["2fa_user"] = u["username"]
                     session["2fa_einrichten"] = True
                     flash(tr("Für dieses Konto ist ein zweiter Faktor Pflicht – bitte jetzt einrichten."), "hinweis")
@@ -308,7 +308,7 @@ def create_app(test_config=None):
         if not twofa.passkey_possible(request):
             return jsonify({"error": tr("Die Anmeldung mit Passkey geht nur über HTTPS mit einem "
                                         "Hostnamen.")}), 400
-        opts_json, challenge = twofa.auth_options([], request)
+        opts_json, challenge = twofa.auth_options([], request, uv=True)
         session["pk_challenge"] = base64.urlsafe_b64encode(challenge).decode()
         session["login_next"] = request.args.get("next") or ""
         return Response(opts_json, mimetype="application/json")
@@ -328,7 +328,7 @@ def create_app(test_config=None):
             return jsonify({"error": tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.",
                                         n=config.LOGIN_LOCK_SECONDS // 60)}), 429
         try:
-            neu = twofa.auth_verify(request, challenge, body, stored)
+            neu = twofa.auth_verify(request, challenge, body, stored, uv=True)
         except Exception as ex:                              # noqa: BLE001 - Meldung an den Browser
             _fail(u["username"], "fail2fa")
             return jsonify({"error": str(ex)[:200]}), 400

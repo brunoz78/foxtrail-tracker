@@ -124,6 +124,20 @@ def has_2fa(u):
     return bool(u and (u.get("totp_secret") or passkeys(u)))
 
 
+def zweitfaktor_noetig(u):
+    """Nach richtigem Passwort noch einen zweiten Faktor verlangen?
+
+    Die Authenticator-App ist immer nur zweiter Faktor - sie wird also verlangt, sobald sie
+    eingerichtet ist. Ein Passkey ist dagegen fuer sich schon eine vollstaendige Anmeldung
+    (Geraet + Fingerabdruck/PIN): entweder Passkey oder Passwort. Verlangt wird er nach dem
+    Passwort nur, wenn der Zweitfaktor fuer das Konto Pflicht ist."""
+    if not u:
+        return False
+    if u.get("totp_secret"):
+        return True
+    return bool(u.get("twofa_pflicht") and passkeys(u))
+
+
 def authenticate(conn, username, password):
     """Aktiver Benutzer mit passendem Passwort, sonst None (gleiche Laufzeit, auch wenn es den
     Namen nicht gibt). last_login setzt erst die fertige Anmeldung (angemeldet())."""

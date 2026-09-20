@@ -29,7 +29,13 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Passkey anmelden“ über dem Passwortformular, `GET /login/passkey/options` (Anfrage **ohne**
   `allowCredentials` – der Browser sucht selbst) und `POST /login/passkey/verify`. Dazu werden
   Passkeys als `resident_key=REQUIRED` angelegt; das user handle ist der Benutzername
-  (`users.by_passkey` sucht sonst über die Credential-ID in allen aktiven Konten).
+  (`users.by_passkey` sucht sonst über die Credential-ID in allen aktiven Konten). **Entweder
+  Passkey oder Passwort** (2026-09-21, Bruno: sonst musste er beides zeigen): nach richtigem
+  Passwort verlangt `users.zweitfaktor_noetig` einen zweiten Faktor nur, wenn eine
+  Authenticator-App eingerichtet ist (die ist immer nur zweiter Faktor) oder wenn der Zweitfaktor
+  Pflicht ist – ein Passkey allein ist eine vollständige Anmeldung. Damit das stimmt, verlangt
+  die passwortlose Anmeldung die Prüfung am Gerät (`auth_options`/`auth_verify` mit `uv=True`:
+  Besitz und Merkmal); als zweiter Faktor bleibt sie `PREFERRED`.
   **Automatische Abfrage** (2026-09-21, Wunsch von Bruno): Wer sich mit Passkey angemeldet oder
   einen registriert hat, merkt das im Browser (`localStorage` `foxtrail-passkey-geraet`); beim
   nächsten Aufruf der Anmeldeseite startet die Abfrage von selbst. Kästchen „Beim Öffnen

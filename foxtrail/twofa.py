@@ -122,23 +122,27 @@ def reg_verify(request, challenge, response_json):
             "sign_count": v.sign_count}
 
 
-def auth_options(passkeys, request):
+def auth_options(passkeys, request, uv=False):
     """Mit Liste: nur diese Passkeys (zweiter Faktor). Ohne Liste: der Browser sucht selbst einen
-    passenden Passkey fuer diese Seite (Anmeldung ohne Benutzernamen)."""
+    passenden Passkey fuer diese Seite (Anmeldung ohne Benutzernamen).
+
+    uv=True verlangt die Pruefung am Geraet (Fingerabdruck, Gesicht, PIN). Das gilt fuer die
+    Anmeldung ohne Passwort: erst damit ist der Passkey zwei Faktoren (Besitz und Merkmal)."""
     opts = generate_authentication_options(
         rp_id=rp_id(request), allow_credentials=_descriptors(passkeys) or None,
-        user_verification=UserVerificationRequirement.PREFERRED,
+        user_verification=(UserVerificationRequirement.REQUIRED if uv
+                           else UserVerificationRequirement.PREFERRED),
     )
     return options_to_json(opts), opts.challenge
 
 
-def auth_verify(request, challenge, response_json, stored):
+def auth_verify(request, challenge, response_json, stored, uv=False):
     v = verify_authentication_response(
         credential=response_json, expected_challenge=challenge,
         expected_rp_id=rp_id(request), expected_origin=origin(request),
         credential_public_key=base64url_to_bytes(stored["public_key"]),
         credential_current_sign_count=stored.get("sign_count", 0),
-        require_user_verification=False,
+        require_user_verification=uv,
     )
     return v.new_sign_count
 

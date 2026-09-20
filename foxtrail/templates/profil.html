@@ -13,6 +13,7 @@
   {% endif %}
 
   <h2>{{ _('Zweitfaktor') }}</h2>
+  <p class="muted small">{{ _('Ein Passkey ersetzt die Anmeldung mit Benutzername und Passwort – entweder das eine oder das andere. Die Authenticator-App kommt immer zusätzlich zum Passwort dazu.') }}</p>
   {% if u.twofa_pflicht and not (u.totp_secret or passkeys) %}
   <div class="flash hinweis">{{ _('Für dieses Konto ist ein zweiter Faktor Pflicht – bitte mindestens einen einrichten.') }}</div>
   {% endif %}
