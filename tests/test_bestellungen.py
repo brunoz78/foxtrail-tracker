@@ -375,6 +375,16 @@ def test_abrufen_mit_konto_link():
 
 
 MAIL_LINK = "https://r.send.foxtrail.ch/tr/cl/Abc_123-xyz"
+TOKEN = LINK.split("=", 1)[1]
+# So antwortet der Klickzaehler (Brevo) wirklich: 200 mit Weiterleitungsseite direkt auf die
+# Anmelde-Adresse der API, einmal HTML-maskiert, einmal als JavaScript-String.
+BREVO_SEITE = (
+    '<!DOCTYPE html><html><head><title>Redirection</title></head><body><noscript>'
+    '<meta http-equiv="refresh" content="0.0;https://api.foxtrail.ch/auth/magic/login?token=' + TOKEN +
+    '&amp;utm_source=brevo&amp;utm_medium=email&amp;utm_campaign=Bestellbesttigung%20DE"></noscript>'
+    '<iframe src="https://sibautomation.com/cm.html?id=1#message_id=x&amp;trans=1" style="display:none;">'
+    '</iframe></body><script>var t = setTimeout(function(){ top.location=\'https:\\/\\/api.foxtrail.ch'
+    '\\/auth\\/magic\\/login?token=' + TOKEN + '\\u0026utm_source=brevo\' }, 3000)</script></html>')
 
 
 def _abruf_scheitert(link, sitzung):
@@ -393,9 +403,15 @@ def test_abrufen_mit_link_aus_der_mail():
     assert [a[0] for a in s.aufrufe] == [MAIL_LINK, "https://api.foxtrail.ch/auth/magic/login",
                                           "https://api.foxtrail.ch/account"]
     assert s.aufrufe[1][1] == {"token": LINK.split("=", 1)[1]}
-    # ... oder per Seite (meta refresh) statt Weiterleitung
-    seite = f'<html><meta http-equiv="refresh" content="0;url={LINK}"></html>'
-    s = _Sitzung(konto=MUSTER_JSON, zaehler=_Weiterleitung(status=200, text=seite))
+    # ... oder, wie Brevo es wirklich macht, per Seite auf die Anmelde-Adresse der API
+    s = _Sitzung(konto=MUSTER_JSON, zaehler=_Weiterleitung(status=200, text=BREVO_SEITE))
+    assert bestellungen.abrufen(MAIL_LINK, session=s)["orders"]
+    assert [a[0] for a in s.aufrufe][1:] == ["https://api.foxtrail.ch/auth/magic/login",
+                                             "https://api.foxtrail.ch/account"]
+    assert s.aufrufe[1][1] == {"token": TOKEN}                        # ohne utm-Parameter
+    # nur mit dem Skript (ohne noscript-Teil) geht es auch
+    nur_skript = BREVO_SEITE.split("<noscript>")[0] + BREVO_SEITE.split("</noscript>")[1]
+    s = _Sitzung(konto=MUSTER_JSON, zaehler=_Weiterleitung(status=200, text=nur_skript))
     assert bestellungen.abrufen(MAIL_LINK, session=s)["orders"]
     # fremdes Ziel, kein Ziel, Endlosschleife: verstaendliche Meldung, keine Anmeldung, kein Token
     for antwort, anfragen in ((_Weiterleitung(location="https://evil.example/?foxtrail_magic=eyJa.eyJb.c"), 1),
@@ -405,6 +421,16 @@ def test_abrufen_mit_link_aus_der_mail():
         meldung = _abruf_scheitert(MAIL_LINK, s)
         assert "eyJ" not in meldung and "r.send" not in meldung
         assert len(s.aufrufe) == anfragen and "connect.sid" not in s.cookies
+    # beide Konto-Adressen gelten, aehnliche fremde nicht
+    assert bestellungen.token_aus_link(f"https://api.foxtrail.ch/auth/magic/login?token={TOKEN}&utm_x=1") == TOKEN
+    for fremd in (f"https://api.foxtrail.ch/andere/seite?token={TOKEN}",
+                  f"https://evil.example/auth/magic/login?token={TOKEN}",
+                  f"http://api.foxtrail.ch/auth/magic/login?token={TOKEN}"):
+        try:
+            bestellungen.token_aus_link(fremd)
+            raise AssertionError(fremd)
+        except bestellungen.AbrufFehler:
+            pass
     # andere Adressen werden gar nicht erst angefragt
     s = _Sitzung()
     _abruf_scheitert("https://r.send.evil.example/tr/cl/x", s)

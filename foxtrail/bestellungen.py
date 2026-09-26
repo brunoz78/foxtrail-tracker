@@ -5,11 +5,13 @@ Import der eigenen Bestellungen von foxtrail.ch ("Account -> Deine Bestellungen"
 Am bequemsten: abrufen(link) mit dem Konto-Link aus der Mail von foxtrail.ch
 (https://foxtrail.ch/account/?foxtrail_magic=<JWT>, gilt laut Bruno ein Jahr, mehrfach nutzbar).
 Der Knopf "MyAccount öffnen" in der Mail zeigt aber auf den Klickzaehler des Mailversands
-(https://r.send.foxtrail.ch/tr/cl/...), und die Kontoseite nimmt den Token nach dem Anmelden sofort
-aus der Adresszeile. Deshalb nimmt abrufen() auch diesen Link an: link_aufloesen() holt nur die
-Weiterleitungen des Zaehlers ab (ohne ihnen zu folgen, hoechstens drei) und liest den Konto-Link aus
-der Zieladresse - foxtrail.ch selbst wird dabei nicht aufgerufen. Mit Bruno am 2026-09-26 so
-vereinbart.
+(Brevo, https://r.send.foxtrail.ch/tr/cl/...). Der antwortet mit einer kleinen Weiterleitungsseite
+(meta refresh und Skript) direkt auf https://api.foxtrail.ch/auth/magic/login?token=<JWT>&utm_...;
+der Browser landet danach auf .../account/ ohne Token in der Adresse. Deshalb nimmt abrufen() auch
+den Zaehler-Link: link_aufloesen() fragt nur den Zaehler an (ohne Weiterleitungen zu folgen,
+hoechstens drei Schritte), sucht in Location bzw. in der Seite eine der beiden Konto-Adressen und
+nimmt daraus nur den Token - api.foxtrail.ch wird danach wie gewohnt selbst angefragt, ohne die
+utm-Parameter. Mit Bruno am 2026-09-26 so vereinbart.
 Ablauf wie im Browser: api.foxtrail.ch/auth/magic/login?token=<JWT> setzt das Session-Cookie
 connect.sid, danach liefert api.foxtrail.ch/account die Kontodaten als JSON (Form 1 unten).
 Der Link wird nur fuer diesen einen Abruf benutzt: nie gespeichert, nie geloggt, in keiner
@@ -58,6 +60,7 @@ Schlussfoto einmalig nach config.foto_dir() (oeffentliche URL, kein Login noetig
 """
 
 import datetime
+import html
 import json
 import os
 import re
@@ -76,7 +79,7 @@ _JWT_RE = re.compile(r"[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
 # Klickzaehler im Mail ("MyAccount öffnen"); leitet auf den Konto-Link weiter
 TRACKER_HOSTS = ("r.send.foxtrail.ch",)
 _MAX_WEITERLEITUNGEN = 3
-_KONTO_URL_RE = re.compile(r"https://(?:www\.)?foxtrail\.ch/[^\s\"'<>]*?foxtrail_magic=[A-Za-z0-9_\-.]+")
+_URL_RE = re.compile(r"https://[^\s\"'<>\\]+")
 
 
 class AbrufFehler(Exception):
@@ -85,9 +88,18 @@ class AbrufFehler(Exception):
 
 
 def token_aus_link(link):
+    """Token aus einer der beiden Konto-Adressen:
+    https://foxtrail.ch/account/?foxtrail_magic=<JWT>  (Adresse der Kontoseite) oder
+    https://api.foxtrail.ch/auth/magic/login?token=<JWT>  (Ziel des Knopfs in der Mail)."""
     u = urlparse((link or "").strip())
-    token = (parse_qs(u.query).get("foxtrail_magic") or [""])[0]
-    if u.scheme != "https" or u.netloc not in ("foxtrail.ch", "www.foxtrail.ch") or not _JWT_RE.fullmatch(token):
+    q = parse_qs(u.query)
+    if u.netloc in ("foxtrail.ch", "www.foxtrail.ch"):
+        token = (q.get("foxtrail_magic") or [""])[0]
+    elif u.netloc == "api.foxtrail.ch" and u.path == "/auth/magic/login":
+        token = (q.get("token") or [""])[0]
+    else:
+        token = ""
+    if u.scheme != "https" or not _JWT_RE.fullmatch(token):
         raise AbrufFehler(tr("Das ist kein Konto-Link von foxtrail.ch. Erwartet wird der Link „MyAccount öffnen“ "
                              "aus einer Mail von foxtrail.ch oder https://foxtrail.ch/account/?foxtrail_magic=…."))
     return token
@@ -96,6 +108,22 @@ def token_aus_link(link):
 def _ist_tracker(link):
     u = urlparse(link or "")
     return u.scheme == "https" and u.netloc in TRACKER_HOSTS
+
+
+def _ziel_in_seite(text):
+    """Erste Konto-Adresse (oder weitere Zaehler-Adresse) in einer Weiterleitungsseite.
+    Die Adressen stehen dort HTML-maskiert (&amp;) bzw. im Skript als https:\\/\\/...\\u0026."""
+    text = html.unescape(text or "").replace("\\/", "/").replace("\\u0026", "&")
+    for m in _URL_RE.finditer(text):
+        kandidat = m.group(0)
+        if _ist_tracker(kandidat):
+            return kandidat
+        try:
+            token_aus_link(kandidat)
+            return kandidat
+        except AbrufFehler:
+            continue
+    return None
 
 
 def link_aufloesen(link, session):
@@ -110,9 +138,8 @@ def link_aufloesen(link, session):
         r = session.get(link, allow_redirects=False, timeout=30)
         try:
             ziel = r.headers.get("Location") if 300 <= r.status_code < 400 else None
-            if not ziel:
-                m = _KONTO_URL_RE.search((r.text or "")[:65536])
-                ziel = m.group(0) if m else None
+            if not ziel and r.status_code == 200:
+                ziel = _ziel_in_seite((r.text or "")[:65536])
         finally:
             r.close()
         if not ziel:

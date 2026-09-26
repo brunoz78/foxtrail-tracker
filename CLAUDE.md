@@ -143,8 +143,12 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   Klickzähler des Mailversands (`https://r.send.foxtrail.ch/tr/cl/…`), und die Kontoseite kürzt die
   Adresse nach dem Anmelden auf `/account/` – den langen Link sieht man also nie. `abrufen` nimmt
   darum auch den Zähler-Link: `link_aufloesen` fragt nur Hosts aus `TRACKER_HOSTS` an, ohne
-  Weiterleitungen zu folgen (`allow_redirects=False`, höchstens drei), liest den Konto-Link aus
-  `Location` (oder aus einer Weiterleitungsseite) und ruft foxtrail.ch dabei nie auf. Alles andere
+  Weiterleitungen zu folgen (`allow_redirects=False`, höchstens drei), und nimmt nur den Token. Der
+  Zähler (Brevo) antwortet mit **200 und einer Weiterleitungsseite** (meta refresh mit `&amp;`, dazu
+  Skript mit `https:\/\/…\u0026`) direkt auf `https://api.foxtrail.ch/auth/magic/login?token=<JWT>&utm_…`
+  – nicht auf die Kontoseite. `token_aus_link` akzeptiert deshalb beide Formen; `_ziel_in_seite`
+  entmaskiert die Seite und nimmt die erste gültige Adresse. Ein 302 mit `Location` ginge ebenso.
+  foxtrail.ch selbst (die Kontoseite) wird nie aufgerufen, die utm-Parameter fallen weg. Alles andere
   wie beim Konto-Link: nur auf Klick, nichts speichern oder loggen. Ein zweites Konto (andere
   Mailadresse) ist für foxtrail.ch ein eigenes Konto – seine Bestellungen kommen mit dessen Link.
   Bereits gemachte Trails ergänzt der Import (`_ergaenzungen`): leere Felder (Mitspieler, Start/Ziel,
