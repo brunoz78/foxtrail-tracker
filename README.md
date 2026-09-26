@@ -45,6 +45,10 @@ foxtrail.ch absichtlich unscharf.</sub>
 * **Fotos** pro Trail: hochladen, ersetzen, löschen (JPEG/PNG/WebP bis 15 MB). Beim
   Speichern wird das Bild gedreht, auf höchstens 2560 px verkleinert und ohne
   EXIF-Daten (also ohne GPS-Position) abgelegt. In der Liste erscheint eine Vorschau
+* **Bestellungen von foxtrail.ch importieren:** Link „MyAccount öffnen“ aus einer Mail von
+  foxtrail.ch einfügen – Datum, Mitspieler, Start- und Zielzeit, Team-Code, Bestellnummer und
+  Schlussfoto kommen automatisch, mit Vorschau vor dem Eintragen
+  ([Anleitung](#bestellungen-von-foxtrailch-importieren))
 * **Statistik**: gemacht von gesamt (davon im laufenden Jahr), erkundete Regionen, Spielzeit gesamt und im Schnitt,
   schnellster und längster Trail, Trails pro Jahr sowie Fortschritt je Region, Typ und
   Schwierigkeit (ein Klick auf einen Balken öffnet die passende Liste)
@@ -62,6 +66,7 @@ foxtrail.ch absichtlich unscharf.</sub>
   Kästchen „Beim Öffnen automatisch fragen“
 * **Sicherung:** alles in eine ZIP-Datei (Trails, Benutzer, Einstellungen, Protokolle, eigene
   Fotos) und bei einer Neuinstallation wieder einlesen – im ⚙-Menü oder auf der Konsole
+  ([Anleitung](#sichern-und-wiederherstellen))
 * **Darstellung** automatisch, hell oder dunkel (Knopf ◐ oben rechts)
 * Mehrere Benutzer mit Login (gehashte Passwörter, Sperre nach 5 Fehlversuchen) und drei Rollen:
   **Administrator** (verwaltet Benutzer, löst den Abgleich aus, importiert Bestellungen),
@@ -99,6 +104,77 @@ Schlüssel für den Abgleich ist der URL-Pfad des Trails auf foxtrail.ch (z. B.
 gleicher Name, alter Pfad nicht mehr gelistet) zählt der Name mit. Liefert der Scraper weniger als die Hälfte
 der bisher bekannten Trails (Website-Umbau, Störung), bricht der Abgleich ab und
 verändert nichts.
+
+## Bestellungen von foxtrail.ch importieren
+
+Was ihr auf foxtrail.ch gebucht und gespielt habt, übernimmt die App auf Knopfdruck: Datum,
+Anzahl Mitspieler, Start- und Zielzeit (daraus die **Spielzeit**), Team-Code, Bestellnummer
+und das **Schlussfoto**.
+
+1. Eine Mail von foxtrail.ch öffnen, zum Beispiel eine Buchungsbestätigung.
+2. Beim Knopf **„MyAccount öffnen“** Rechtsklick → **Link-Adresse kopieren**.
+3. In der App ⚙ → **Import** (nur Administratoren) den Link einfügen und **Bestellungen abrufen**.
+4. Die Vorschau zeigt für jeden Trail, was passiert. Erst **Jetzt eintragen** speichert.
+
+Gut zu wissen:
+
+* **Mehrere Mailadressen = mehrere Konten.** Wer mit verschiedenen Adressen bucht, hat bei
+  foxtrail.ch getrennte Konten – dann die Links aus den Mails an jede Adresse nacheinander
+  importieren.
+* **Trails in der Zukunft** werden übersprungen. Nach dem Spielen nochmals importieren, dann
+  kommen auch Zeiten und Schlussfoto mit. Stornierte Bestellungen werden ebenfalls übersprungen.
+* **Bereits gemachte Trails** werden um fehlende Angaben ergänzt (Mitspieler, Zeiten, Team-Code,
+  Bestellnummer, Foto). Ein abweichendes Datum wird auf das Bestelldatum korrigiert, sofern es
+  nur eine Bestellung für den Trail gibt. Eigene Einträge wie die Bemerkung bleiben.
+* Zuordnung über den **genauen Trail-Namen** („Trail Columban“ → Columban, nicht Columban Mini);
+  unbekannte Namen listet die Vorschau auf. Mitspieler = Erwachsene plus Kinder, mehrere Teams
+  zusammengezählt. Alles aus dem Import steht unter „Erfasst von: Import“.
+* Ein von Hand gelöschtes oder durch ein eigenes ersetztes Foto lädt der Import nicht neu; auf
+  der Detailseite holt „Schlussfoto von foxtrail.ch laden“ es bei Bedarf.
+
+**Datenschutz:** Der Link ist ein Schlüssel zum foxtrail.ch-Konto, mit dem sich auch Buchungen
+ändern lassen – nicht weitergeben. Die App verwendet ihn nur für diesen einen Abruf und speichert
+ihn nicht. Sie fragt beim Klickzähler des Mailversands nur ab, wohin der Link führt, meldet sich
+damit bei foxtrail.ch an und holt die Bestellungen; Name, Adresse und die übrigen Kontodaten
+verwirft sie sofort. Die Adresse `https://foxtrail.ch/account/?foxtrail_magic=…` geht ebenso –
+im Browser sieht man sie meist nicht, weil die Kontoseite sie nach dem Anmelden sofort auf
+`…/account/` kürzt.
+
+**Ohne Link** geht es auch: im Browser angemeldet die Adresse
+`https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account` öffnen, mit Ctrl+S als `konto.json`
+speichern und auf der Import-Seite unter „Stattdessen Datei hochladen oder Text einfügen“
+hochladen. Die Bestellseite als „Webseite, vollständig“ oder ihr kopierter Text gehen auch,
+dann aber ohne Zeiten und Foto. Auf der Kommandozeile:
+
+```bash
+foxtrailctl import-bestellungen konto.json              # Probelauf, zeigt nur an
+foxtrailctl import-bestellungen konto.json --schreiben  # trägt ein (--ohne-fotos: keine Fotos laden)
+```
+
+Mit `-` statt Dateiname liest der Befehl von der Standardeingabe. Die Fotos liegen unter
+`/var/lib/foxtrail-tracker/fotos` (Docker: `/data/fotos`).
+
+## Sichern und wiederherstellen
+
+Im ⚙-Menü unter **Sicherung** lädt ein Admin eine ZIP-Datei mit allem herunter: Trail-Liste samt
+eigenen Einträgen, Benutzer, Einstellungen, Protokolle und die eigenen Fotos. Dieselbe Datei lässt
+sich dort nach einer Neuinstallation wieder einlesen – Datenbank und Fotos werden dabei vollständig
+ersetzt, die bisherige Datenbank bleibt als `<name>.alt-<Zeitpunkt>` liegen. Danach gelten die
+Benutzer und Passwörter aus der Sicherung, die App meldet dich deshalb ab.
+
+Auf der Konsole geht es auch ohne Anmeldung, zum Beispiel direkt nach einer Neuinstallation:
+
+```bash
+foxtrailctl sichern /root/foxtrail-sicherung.zip
+foxtrailctl einlesen /root/foxtrail-sicherung.zip
+# mit Docker:
+docker exec -it foxtrail foxtrailctl sichern /data/sicherung.zip
+docker cp foxtrail:/data/sicherung.zip .       # Datei aus dem Container holen
+```
+
+Die Datei enthält **alle** Daten, auch Passwort-Hashes und Zweitfaktor-Schlüssel – sie gehört an
+einen sicheren Ort. Nicht dabei sind Vorschaubilder und die Titelbilder von foxtrail.ch (die lädt
+die App bei Bedarf neu) sowie der `SECRET_KEY`, der zur Installation gehört.
 
 ## Installation im Proxmox-LXC
 
@@ -203,15 +279,16 @@ docker run -d --name foxtrail --restart unless-stopped -p 8080:8080 \
 ```
 
 * **Daten:** Datenbank, Fotos und der Session-Schlüssel liegen im Volume `/data`
-  (in der Compose-Datei der Ordner `./foxtrail-daten`). Für ein Backup diesen Ordner sichern.
+  (in der Compose-Datei der Ordner `./foxtrail-daten`). Für ein Backup diesen Ordner sichern
+  oder in der App ⚙ → **Sicherung** eine ZIP-Datei herunterladen.
 * **Abgleich:** Ein Hintergrundprozess im Container gleicht wie der systemd-Timer jeden
   Montag um 04:30 ab (bis zu 30 Min. später) und holt verpasste Termine nach dem Start nach
   (nicht bei einer Neuinstallation – dann ist der erste Lauf der nächste Montag).
   Die Seite Abgleich zeigt den nächsten Lauf; dort lässt sich die Häufigkeit auf monatlich
   oder aus stellen. Den Hintergrundprozess ganz abschalten: `FOXTRAIL_ZEITPLAN=0`.
 * **Administrator beim ersten Start:** statt `docker exec` geht auch
-  `FOXTRAIL_ADMIN_PASSWORD` (legt `admin` an, solange es keinen Administrator gibt; danach
-  die Variable wieder entfernen).
+  `FOXTRAIL_ADMIN_PASSWORD` (legt `admin` an, falls es ihn noch nicht gibt). Gebraucht wird die
+  Variable nur beim ersten Start; danach entfernen, damit das Passwort nicht im Stack steht.
 * **Rechte:** Der Container gibt nach dem Start die root-Rechte ab und läuft als
   `PUID`/`PGID` (Standard 1000). Bei einem eingebundenen Host-Ordner passend zu dessen
   Besitzer setzen (`id -u`, `id -g`).
@@ -272,74 +349,14 @@ foxtrailctl export-json [datei]          # komplette Liste inkl. eigener Einträ
 foxtrailctl sichern [datei.zip]          # alles sichern: Datenbank, Einstellungen, Fotos
 foxtrailctl einlesen datei.zip           # Sicherung zurückspielen (ersetzt Datenbank und Fotos)
 foxtrailctl import-excel liste.xlsx      # "Gemacht?"-Spalte aus der Excel-Übersicht übernehmen
-foxtrailctl import-bestellungen datei    # eigene Bestellungen von foxtrail.ch übernehmen (s. unten)
+foxtrailctl import-bestellungen datei    # Bestellungen aus konto.json übernehmen (s. Import)
 journalctl -u foxtrail -u foxtrail-sync  # Logs
 systemctl list-timers foxtrail-sync.timer
 ```
 
-### Sichern und wiederherstellen
-
-Im ⚙-Menü unter **Sicherung** lädt ein Admin eine ZIP-Datei mit allem herunter: Trail-Liste samt
-eigenen Einträgen, Benutzer, Einstellungen, Protokolle und die eigenen Fotos. Dieselbe Datei lässt
-sich dort nach einer Neuinstallation wieder einlesen – Datenbank und Fotos werden dabei vollständig
-ersetzt, die bisherige Datenbank bleibt als `<name>.alt-<Zeitpunkt>` liegen. Danach gelten die
-Benutzer und Passwörter aus der Sicherung, die App meldet dich deshalb ab.
-
-Auf der Konsole geht es auch ohne Anmeldung, zum Beispiel direkt nach einer Neuinstallation:
-
-```bash
-foxtrailctl sichern /root/foxtrail-sicherung.zip
-foxtrailctl einlesen /root/foxtrail-sicherung.zip
-# mit Docker:
-docker exec -it foxtrail-tracker foxtrailctl sichern /data/sicherung.zip
-```
-
-Die Datei enthält **alle** Daten, auch Passwort-Hashes und Zweitfaktor-Schlüssel – sie gehört an
-einen sicheren Ort. Nicht dabei sind Vorschaubilder und die Titelbilder von foxtrail.ch (die lädt
-die App bei Bedarf neu) sowie der `SECRET_KEY`, der zur Installation gehört.
-
 `import-excel` erwartet die Spalten `Ort / Region`, `Trail-Name`, `Gemacht?` (Ja/Nein),
 `Datum gemacht`, `Bemerkung` und optional `Mitspieler`; Zeilen unterhalb einer Zeile,
 die mit „Manuell ergänzte Trails“ beginnt, werden als manuelle Trails angelegt.
-
-### Eigene Bestellungen von foxtrail.ch übernehmen
-
-Auf foxtrail.ch unter **Account → Deine Bestellungen** stehen alle gebuchten
-Trails. Am einfachsten: In der App unter ⚙ → **Import** (nur Administratoren) den Link
-**„MyAccount öffnen“ aus einer Mail von foxtrail.ch** einfügen (Rechtsklick → Link-Adresse
-kopieren) und „Bestellungen abrufen“. Die Adresse `https://foxtrail.ch/account/?foxtrail_magic=…`
-geht ebenso – im Browser sieht man sie meist nicht, weil die Kontoseite sie nach dem Anmelden sofort
-auf `…/account/` kürzt. Die App meldet sich damit einmalig bei foxtrail.ch an, holt die
-Bestellungen und zeigt einen Probelauf; nach Bestätigung trägt sie ein. Der Link wird nicht
-gespeichert, von den Kontodaten (Name, Adresse usw.) behält die App nichts. Wer mit mehreren
-Mailadressen bucht, hat bei foxtrail.ch mehrere Konten – dann die Links nacheinander importieren.
-Wer den Link hat, ist im foxtrail.ch-Konto angemeldet – nicht weitergeben.
-
-Ohne Link geht es auch: im Browser angemeldet die Adresse
-`https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account` öffnen, mit Ctrl+S als `konto.json`
-speichern und auf der Import-Seite hochladen, oder die Bestellseite als „Webseite, vollständig“
-speichern bzw. den Seitentext einfügen (dann ohne Zeiten und Foto). Dasselbe auf der
-Kommandozeile:
-
-```bash
-foxtrailctl import-bestellungen konto.json              # Probelauf, zeigt nur an
-foxtrailctl import-bestellungen konto.json --schreiben  # trägt ein (--ohne-fotos: keine Fotos laden)
-```
-
-Aus dem JSON kommen zusätzlich Start- und Zielzeit (daraus die **Spielzeit**,
-sortierbare Spalte „Zeit“), Team-Code und Bestellnummer. Das **Schlussfoto** wird
-einmalig heruntergeladen, unter `/var/lib/foxtrail-tracker/fotos` abgelegt und auf
-der Detailseite gezeigt. Bereits gemachte Trails werden um fehlende Angaben ergänzt, ein
-abweichendes Datum wird auf das Bestelldatum korrigiert (sofern es nur eine Bestellung für den
-Trail gibt); die Vorschau nennt jede Änderung. Ein von Hand gelöschtes oder durch ein eigenes
-ersetztes Foto lädt der Import nicht; auf der Detailseite lässt sich das Schlussfoto mit
-„Schlussfoto von foxtrail.ch laden“ holen.
-
-Zuordnung über den genauen Trail-Namen („Trail Columban“ → Columban, nicht
-Columban Mini). Eingetragen werden Datum (Startzeit) und Mitspieler (Erwachsene
-plus Kinder, mehrere Teams zusammengezählt). Bereits gemachte Trails, stornierte
-Bestellungen und Startzeiten in der Zukunft werden übersprungen, unbekannte Namen
-aufgelistet. Mit `-` statt Dateiname liest der Befehl von der Standardeingabe.
 
 ## Lokal entwickeln
 
@@ -366,6 +383,7 @@ Alles über Umgebungsvariablen (siehe `deploy/foxtrail-tracker.env.example`):
 | `SCRAPER_DELAY` | `1.0` | Pause zwischen Seitenabrufen (Sekunden) |
 | `LOGIN_MAX_FAILS` / `LOGIN_LOCK_SECONDS` | `5` / `300` | Sperre nach Fehlversuchen |
 | `FOXTRAIL_UPDATE_CHECK` | `1` | `0` = nicht bei GitHub nach neuen Versionen fragen |
+| `FOXTRAIL_MAX_SICHERUNG_MB` | `1024` | grösste Sicherung, die sich in der App einlesen lässt |
 
 Nur im Docker-Image: `PUID`/`PGID` (1000), `TZ` (`Europe/Zurich`), `FOXTRAIL_ZEITPLAN`
 (`1` = wöchentlicher Abgleich im Container), `FOXTRAIL_ADMIN_PASSWORD` (Administrator beim
@@ -377,15 +395,20 @@ ersten Start). `SECRET_KEY` wird dort beim ersten Start erzeugt und in `/data/se
 foxtrail/
   __init__.py   Flask-App: Login, Trail-Liste, Archiv, Bearbeiten, Admin
   config.py     Umgebungsvariablen
-  db.py         SQLite-Schema (trails, users, sync_log)
+  db.py         SQLite-Schema (trails, users, sync_log, authlog, einstellungen)
   users.py      Benutzer, Passwort-Hashing (werkzeug), Rollen, Zweitfaktor-Daten
   twofa.py      Zweitfaktor: Authenticator-App (TOTP) und Passkeys
   authlog.py    Anmelde-Protokoll
   sicherung.py  Sicherung als ZIP erstellen und einlesen
   scraper.py    foxtrail.ch abrufen und parsen (parse_page ist offline testbar)
   sync.py       Abgleich-Regeln
-  trails.py     Lesen/Schreiben der Trail-Liste
-  templates/, static/style.css
+  trails.py     Lesen/Schreiben der Trail-Liste, Statistik
+  bestellungen.py  Import der Bestellungen von foxtrail.ch (Link aus der Mail, JSON, HTML, Text)
+  fotos.py      Fotos verkleinern, Vorschaubilder, Titelbilder
+  zeitplan.py   Abgleich-Zeitplan im Docker-Container und Häufigkeit
+  version.py    Versionsnummer und Update-Hinweis
+  i18n.py, i18n/  Übersetzungen (Französisch, Italienisch, Englisch)
+  templates/, static/ (style.css, webauthn.js)
 data/trails_seed.json   Momentaufnahme der Trail-Liste für die Erstbefüllung
 scripts/manage.py       Verwaltungs-CLI
 deploy/                 install.sh, systemd-Units, foxtrailctl, env-Beispiel
