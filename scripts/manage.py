@@ -70,6 +70,8 @@ def cmd_sync(a):
         print(f"ok: {res['gefunden']} gefunden, {res['neu']} neu, {res['aktualisiert']} aktualisiert, "
               f"{res['reaktiviert']} reaktiviert, {res['archiviert']} archiviert, "
               f"{res['nicht_mehr_im_angebot']} gemachte nicht mehr im Angebot")
+        for a in res["aenderungen"]:
+            print("  " + sync.aenderung_text(a))
     else:
         print("FEHLER:", res["meldung"], file=sys.stderr)
         sys.exit(1)

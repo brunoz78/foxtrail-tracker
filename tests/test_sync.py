@@ -336,3 +336,54 @@ def test_seed_ehemalig_entfernt(tmp_path):
     trails.seed_from_file(c, str(p))
     # unberuehrter wird entfernt, einer mit eigener Eintragung bleibt
     assert [r[0] for r in c.execute("SELECT slug FROM trails")] == ["bern/y"]
+
+
+def test_protokoll_haelt_aenderungen_fest():
+    c = conn_mem()
+    sync.apply(c, [mk("a/bleibt"), mk("a/offen"), mk("a/gemacht"), mk("a/zurueck")], "test")
+    sync.apply(c, [mk("a/bleibt"), mk("a/offen"), mk("a/gemacht")], "test")     # zurueck -> Archiv
+    trails.update_done(c, 3, {"gemacht": "1", "gemacht_datum": "2024-01-01"}, "u")
+    r = sync.apply(c, [mk("a/bleibt", bewertung=4.2, preis=36.0), mk("a/zurueck", dauer="1-2 Stunden"),
+                       mk("a/neu", name="Zeus", ort="Aarau")], "test")
+    assert {(a["art"], a["name"]) for a in r["aenderungen"]} == {
+        ("aktualisiert", "Bleibt"), ("reaktiviert", "Zurueck"), ("neu", "Zeus"),
+        ("archiviert", "Offen"), ("weg", "Gemacht")}
+    bleibt = next(a for a in r["aenderungen"] if a["name"] == "Bleibt")
+    assert bleibt["felder"] == [["bewertung", 4.5, 4.2], ["preis", 32.0, 36.0]]
+    zurueck = next(a for a in r["aenderungen"] if a["name"] == "Zurueck")
+    assert zurueck["felder"] == [["dauer", "2-3 Stunden", "1-2 Stunden"]]
+    # gespeichert und wieder gelesen, als Text fuer CLI/Log
+    assert sync.last_runs(c)[0]["aenderungen"] == json.loads(json.dumps(r["aenderungen"]))
+    assert sync.aenderung_text(bleibt) == "aktualisiert: Bleibt (Ort): bewertung 4.5 -> 4.2; preis 32.0 -> 36.0"
+    # nichts geaendert -> leere Liste; eine fehlende Schwierigkeit ist keine Aenderung
+    r = sync.apply(c, [mk("a/bleibt", bewertung=4.2, preis=36.0, schwierigkeit=None),
+                       mk("a/zurueck", dauer="1-2 Stunden"), mk("a/neu", name="Zeus", ort="Aarau")], "test")
+    assert r["aenderungen"] == [] and r["aktualisiert"] == 0
+
+
+def test_protokoll_migration():
+    c = conn_mem()
+    c.execute("ALTER TABLE sync_log DROP COLUMN aenderungen")                  # Stand vor 2026-09-26
+    c.execute("INSERT INTO sync_log (ts, ausloeser, ok) VALUES ('2026-09-21 09:20:02', 'timer', 1)")
+    db.init_db(c)
+    assert sync.last_runs(c)[0]["aenderungen"] == []
+
+
+def test_protokoll_auf_der_seite():
+    from tests.test_app import app as _app_fixture, login  # noqa: F401
+    import foxtrail
+    import tempfile
+    pfad = os.path.join(tempfile.mkdtemp(), "t.db")
+    app = foxtrail.create_app({"DB_PATH": pfad, "TESTING": True, "SECRET_KEY": "test"})
+    with db.session(pfad) as conn:
+        from foxtrail import users
+        users.add(conn, "admin", "geheim123", is_admin=True)
+        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae")], "test")
+        sync.apply(conn, [mk("aargau/aquae", ort="Baden", name="Aquae", bewertung=4.3,
+                             schwierigkeit="schwierig", preis=35.5)], "test")
+    c = app.test_client()
+    login(c)
+    html = c.get("/admin/sync").get_data(as_text=True)
+    assert "1 Änderung" in html and "Geändert" in html and "Aquae" in html
+    assert "Bewertung 4.5 → 4.3" in html and "Schwierigkeit Mittel → Schwierig" in html
+    assert "Preis CHF 32 → CHF 35.5" in html

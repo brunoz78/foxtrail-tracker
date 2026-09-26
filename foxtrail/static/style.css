@@ -512,6 +512,11 @@ form label.chk.klein { font-size: 13px; color: var(--muted); margin: -4px 0 8px;
 .trenner { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; color: var(--muted); font-size: 13px; }
 .trenner::before, .trenner::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .pkmsg { font-size: 13px; color: var(--muted); }
+/* Abgleich: Aenderungen eines Laufs unter seiner Zeile */
+tr.aenderungen td { padding-top: 0; }
+tr.aenderungen summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+tr.aenderungen ul { margin: 6px 0 4px; padding-left: 18px; }
+tr.aenderungen li { margin: 3px 0; }
 .pkmsg.err { color: #c62828; }
 :root[data-theme="dark"] .pkmsg.err { color: #ef9a9a; }
 @media (prefers-color-scheme: dark) { :root[data-theme="auto"] .pkmsg.err { color: #ef9a9a; } }

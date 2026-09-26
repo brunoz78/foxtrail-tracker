@@ -54,7 +54,9 @@ foxtrail.ch absichtlich unscharf.</sub>
   Schwierigkeit (ein Klick auf einen Balken öffnet die passende Liste)
 * Manuell erfasste Trails für früher gemachte Trails, die nicht mehr angeboten werden
 * Abgleich mit foxtrail.ch – automatisch (auf der Seite Abgleich wählbar: wöchentlich, monatlich
-  oder aus) und per Knopfdruck
+  oder aus) und per Knopfdruck. Das Protokoll zeigt je Lauf, was sich geändert hat: neue Trails,
+  geänderte Angaben mit altem und neuem Wert (z. B. „Bewertung 4.3 → 4.2“) und was ins Archiv
+  gewandert ist
 * Archiv: nicht mehr angebotene, noch nicht gemachte Trails, mit Suche und Sortierung (Ort, Trail, Region, zuletzt gesehen)
 * **Benutzerverwaltung:** Anzeigename, Sprache, „Passwort beim nächsten Login ändern“ oder „Passwort
   darf nicht geändert werden“, **Zweitfaktor** mit Authenticator-App oder Passkey (optional als

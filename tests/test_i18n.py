@@ -15,7 +15,7 @@ from jinja2 import Environment, nodes
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from foxtrail import authlog, bestellungen, db, i18n, trails, users, zeitplan  # noqa: E402
+from foxtrail import authlog, bestellungen, db, i18n, sync, trails, users, zeitplan  # noqa: E402
 from tests.test_app import app  # noqa: E402,F401  (Fixture)
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,6 +42,7 @@ def texte():
     gefunden |= set(users.ROLLEN.values()) | set(zeitplan.ZYKLEN.values()) | set(i18n.WOCHENTAGE)
     gefunden |= set(bestellungen._STATUS_LABEL.values()) | {"ohne Angabe", "nicht erfasst"}   # trails.filter_options
     gefunden |= set(authlog.EREIGNISSE.values()) | {g for g, _ in authlog.GRUPPEN}
+    gefunden |= set(sync.ARTEN.values()) | set(sync.FELD_LABEL.values())
     return gefunden
 
 

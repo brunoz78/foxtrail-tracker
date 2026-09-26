@@ -44,6 +44,16 @@
   </form>
 </div>
 
+{# Wert eines Feldes im Protokoll lesbar machen #}
+{% macro wert(feld, w) -%}
+  {%- if w is none or w == '' -%}–
+  {%- elif feld == 'typ' -%}{{ _(typen.get(w, w)) }}
+  {%- elif feld == 'schwierigkeit' -%}{{ _(grade.get(w, w)) }}
+  {%- elif feld == 'region' -%}{{ _(regionen.get(w, w)) }}
+  {%- elif feld == 'preis' -%}CHF {{ w|chf }}
+  {%- elif feld == 'url' -%}{{ w|replace('https://foxtrail.ch/', '') }}
+  {%- else -%}{{ w }}{%- endif -%}
+{%- endmacro %}
 <h2>{{ _('Letzte Läufe') }}</h2>
 <div class="tablewrap"><table class="trails">
   <thead><tr><th>{{ _('Zeit') }}</th><th>{{ _('Auslöser') }}</th><th>{{ _('Status') }}</th><th class="r">{{ _('Gefunden') }}</th><th class="r">{{ _('Neu') }}</th>
@@ -56,6 +66,20 @@
     <td class="r">{{ r.reaktiviert }}</td><td class="r">{{ r.archiviert }}</td><td class="r">{{ r.nicht_mehr_im_angebot }}</td>
     <td class="muted">{{ r.meldung }}</td>
   </tr>
+  {% if r.aenderungen %}
+  {# Was sich geaendert hat; beim neuesten Lauf aufgeklappt #}
+  <tr class="aenderungen"><td colspan="10">
+    <details {{ 'open' if loop.first }}>
+      <summary>{{ _('1 Änderung') if r.aenderungen|length == 1 else _('{n} Änderungen', n=r.aenderungen|length) }}</summary>
+      <ul>
+      {% for a in r.aenderungen %}
+        <li><span class="tag">{{ _(arten.get(a.art, a.art)) }}</span> <b>{{ a.name }}</b> <span class="muted">({{ a.ort }})</span>
+          {%- if a.felder %}: {% for f, alt, neu in a.felder %}{{ _(feld_label.get(f, f)) }} {{ wert(f, alt) }} → {{ wert(f, neu) }}{{ '; ' if not loop.last }}{% endfor %}{% endif %}</li>
+      {% endfor %}
+      </ul>
+    </details>
+  </td></tr>
+  {% endif %}
   {% else %}
   <tr><td colspan="10" class="empty">{{ _('Noch kein Abgleich gelaufen.') }}</td></tr>
   {% endfor %}

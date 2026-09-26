@@ -20,12 +20,17 @@ Regeln (siehe README):
     Fotos usw. bleiben), statt dass ein Doppel entsteht und der alte ins Archiv wandert.
   * Es wird NIE ein Trail geloescht.
 
+Protokoll: Jeder Lauf schreibt in sync_log.aenderungen (JSON), was sich geaendert hat - neue,
+geaenderte (mit altem und neuem Wert je Feld), wieder angebotene, archivierte und gemachte, die
+nicht mehr angeboten werden. Die Seite Abgleich zeigt das je Lauf an.
+
 Sicherung: liefert der Scraper deutlich weniger Trails als bisher im Angebot
 (< 50 %), wird der Abgleich abgebrochen, damit ein Website-Umbau nicht die
 halbe Liste ins Archiv schiebt.
 """
 
 import datetime
+import json
 import re
 import subprocess
 
@@ -37,6 +42,14 @@ META_FIELDS = ("ort", "name", "route", "typ", "region", "bewertung", "dauer", "p
 # bild_url wird mitgefuehrt, zaehlt aber nicht als Aenderung (ein neues Titelbild ist keine
 # Meldung wert) und None ueberschreibt einen bekannten Wert nie.
 MIN_RATIO = 0.5
+
+# Protokoll: Beschriftungen der Felder und Arten von Aenderungen (deutsch; die Seite Abgleich
+# uebersetzt sie, CLI und Log nehmen die Schluessel)
+FELD_LABEL = {"ort": "Ort", "name": "Name", "route": "Route", "typ": "Typ", "region": "Region",
+              "bewertung": "Bewertung", "dauer": "Dauer", "preis": "Preis", "url": "Adresse",
+              "schwierigkeit": "Schwierigkeit"}
+ARTEN = {"neu": "Neu", "aktualisiert": "Geändert", "reaktiviert": "Wieder im Angebot",
+         "archiviert": "Ins Archiv", "weg": "Gemacht, nicht mehr im Angebot"}
 
 
 class SyncAbort(Exception):
@@ -60,18 +73,20 @@ def apply(conn, scraped, ausloeser="manual"):
     Gibt das Ergebnis-dict zurueck. scraped = Liste von dicts (siehe scraper.fetch_all)."""
     ts = now()
     res = {"gefunden": len(scraped), "neu": 0, "aktualisiert": 0, "reaktiviert": 0,
-           "archiviert": 0, "nicht_mehr_im_angebot": 0, "meldung": ""}
+           "archiviert": 0, "nicht_mehr_im_angebot": 0, "meldung": "", "aenderungen": []}
     try:
         _apply(conn, scraped, ts, res)
         ok = 1
     except SyncAbort as ex:
         ok = 0
         res["meldung"] = str(ex)
+        res["aenderungen"] = []
     conn.execute(
         "INSERT INTO sync_log (ts, ausloeser, ok, gefunden, neu, aktualisiert, reaktiviert, "
-        "archiviert, nicht_mehr_im_angebot, meldung) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        "archiviert, nicht_mehr_im_angebot, meldung, aenderungen) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
         (ts, ausloeser, ok, res["gefunden"], res["neu"], res["aktualisiert"], res["reaktiviert"],
-         res["archiviert"], res["nicht_mehr_im_angebot"], res["meldung"]))
+         res["archiviert"], res["nicht_mehr_im_angebot"], res["meldung"],
+         json.dumps(res["aenderungen"], ensure_ascii=False)))
     res["ok"] = bool(ok)
     return res
 
@@ -110,15 +125,21 @@ def _apply(conn, scraped, ts, res):
                  t.get("region", ""), t.get("bewertung"), t.get("dauer", ""), t.get("preis"),
                  t.get("url", ""), t.get("schwierigkeit"), t.get("bild_url"), ts, ts, ts[:10]))
             res["neu"] += 1
+            res["aenderungen"].append({"art": "neu", "name": t["name"], "ort": t["ort"]})
             continue
         # Schwierigkeit None = "diesmal nicht ermittelt" (z. B. Filter-Abruf gescheitert):
         # bekannter Wert bleibt, zaehlt nicht als Aenderung.
-        changed = any((old.get(f) or "") != (t.get(f) or "") for f in META_FIELDS
-                      if not (f == "schwierigkeit" and t.get(f) is None))
+        felder = [[f, old.get(f), t.get(f)] for f in META_FIELDS
+                  if (old.get(f) or "") != (t.get(f) or "")
+                  and not (f == "schwierigkeit" and t.get(f) is None)]
         if not old["im_angebot"]:
             res["reaktiviert"] += 1
-        elif changed:
+            res["aenderungen"].append({"art": "reaktiviert", "name": t["name"], "ort": t["ort"],
+                                       "felder": felder})
+        elif felder:
             res["aktualisiert"] += 1
+            res["aenderungen"].append({"art": "aktualisiert", "name": t["name"], "ort": t["ort"],
+                                       "felder": felder})
         conn.execute(
             "UPDATE trails SET ort=?, name=?, route=?, typ=?, region=?, bewertung=?, dauer=?, "
             "preis=?, url=?, schwierigkeit=COALESCE(?, schwierigkeit), bild_url=COALESCE(?, bild_url), "
@@ -138,6 +159,16 @@ def _apply(conn, scraped, ts, res):
             res["nicht_mehr_im_angebot"] += 1
         else:
             res["archiviert"] += 1
+        res["aenderungen"].append({"art": "weg" if old["gemacht"] else "archiviert",
+                                   "name": old["name"], "ort": old["ort"]})
+
+
+def aenderung_text(a):
+    """Eine Aenderung als Textzeile fuer CLI und Log (Schluessel statt Beschriftungen)."""
+    zeile = f"{a['art']}: {a['name']} ({a['ort']})"
+    felder = "; ".join(f"{f} {'-' if alt in (None, '') else alt} -> {'-' if neu in (None, '') else neu}"
+                       for f, alt, neu in a.get("felder") or [])
+    return f"{zeile}: {felder}" if felder else zeile
 
 
 TIMER = "foxtrail-sync.timer"
@@ -208,8 +239,15 @@ def timer_status(ausgabe=None):
 
 
 def last_runs(conn, limit=20):
-    return [dict(r) for r in conn.execute(
-        "SELECT * FROM sync_log ORDER BY id DESC LIMIT ?", (limit,))]
+    runs = []
+    for r in conn.execute("SELECT * FROM sync_log ORDER BY id DESC LIMIT ?", (limit,)):
+        d = dict(r)
+        try:
+            d["aenderungen"] = json.loads(d.get("aenderungen") or "[]")
+        except ValueError:
+            d["aenderungen"] = []
+        runs.append(d)
+    return runs
 
 
 def run(conn, ausloeser="manual", scraped=None):

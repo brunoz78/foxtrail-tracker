@@ -910,7 +910,8 @@ def create_app(test_config=None):
         return render_template("sync.html", runs=sync.last_runs(conn), list_url=config.LIST_URL,
                                timer=zeitplan.mit_zyklus(conn, sync.timer_status()
                                                          or zeitplan.status(zeitplan.datei(app.config["DB_PATH"]))),
-                               letzter_auto=letzter_auto, zyklus=zeitplan.zyklus(conn), zyklen=zeitplan.ZYKLEN)
+                               letzter_auto=letzter_auto, zyklus=zeitplan.zyklus(conn), zyklen=zeitplan.ZYKLEN,
+                               arten=sync.ARTEN, feld_label=sync.FELD_LABEL)
 
     @app.route("/healthz")
     def healthz():

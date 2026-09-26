@@ -183,6 +183,14 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   --ausloeser timer` und im Docker-Zeitplan), ob abgeglichen wird. Monatlich = erster erfolgreicher
   Timer-Lauf im Kalendermonat, Fehlläufe zählen nicht (nächster Montag versucht es wieder).
   Ausgelassene Termine landen nicht im `sync_log`. „Jetzt abgleichen“ geht immer.
+  **Protokoll mit Änderungen** (2026-09-26, Wunsch von Bruno: „ist immer interessant, wenn sich
+  etwas geändert hat“): `sync_log.aenderungen` (JSON) hält je Lauf fest, welche Trails neu,
+  geändert (mit altem und neuem Wert je Feld aus `META_FIELDS`), wieder im Angebot, ins Archiv
+  gewandert oder gemacht und nicht mehr angeboten sind. Die Seite Abgleich zeigt das unter der
+  Zeile des Laufs (`<details>`, der neueste aufgeklappt), `manage.py sync` gibt es aus (landet beim
+  Timer im Journal). Schlüssel und Beschriftungen: `sync.ARTEN`, `sync.FELD_LABEL`. Ältere Läufe
+  haben `[]`. Was „aktualisiert“ in der Praxis meist ist: Bewertungen, die sich mit neuen
+  Rezensionen um 0.1 verschieben.
   Die Seite Abgleich zeigt Zeitplan und nächsten Lauf (`sync.timer_status`: liest
   `systemctl show foxtrail-sync.timer`, ohne Rechte; ohne systemd → Hinweis auf den Standardplan).
 - **Docker** (seit 2026-09-18, Wunsch von Bruno): `Dockerfile`, `docker/entrypoint.sh`,

@@ -106,7 +106,8 @@ CREATE TABLE IF NOT EXISTS sync_log (
     reaktiviert          INTEGER NOT NULL DEFAULT 0,
     archiviert           INTEGER NOT NULL DEFAULT 0,
     nicht_mehr_im_angebot INTEGER NOT NULL DEFAULT 0,
-    meldung              TEXT NOT NULL DEFAULT ''
+    meldung              TEXT NOT NULL DEFAULT '',
+    aenderungen          TEXT NOT NULL DEFAULT '[]'   -- JSON: was sich geaendert hat (sync.py)
 );
 """
 
@@ -147,6 +148,9 @@ def _migrate(conn):
     for spalte, typ in (('anzeigename', 'TEXT'), ('pw_wechsel', 'INTEGER NOT NULL DEFAULT 0'), ('pw_fest', 'INTEGER NOT NULL DEFAULT 0'), ('twofa_pflicht', 'INTEGER NOT NULL DEFAULT 0'), ('totp_secret', 'TEXT'), ('passkeys', "TEXT NOT NULL DEFAULT '[]'")):
         if spalte not in u_spalten:
             conn.execute(f"ALTER TABLE users ADD COLUMN {spalte} {typ}")
+    if "aenderungen" not in {r[1] for r in conn.execute("PRAGMA table_info(sync_log)")}:
+        # 2026-09: Protokoll haelt fest, welche Trails sich wie geaendert haben
+        conn.execute("ALTER TABLE sync_log ADD COLUMN aenderungen TEXT NOT NULL DEFAULT '[]'")
     spalten = {r[1] for r in conn.execute("PRAGMA table_info(trails)")}
     if "neu_seit" not in spalten:
         # 2026-09: "Neu ab MM/JJ" fuer Trails, die ein Abgleich neu angelegt hat. Rueckwirkend
