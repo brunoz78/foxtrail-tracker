@@ -16,7 +16,7 @@ import re
 import threading
 import time
 
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 REPO = "brunoz78/foxtrail-tracker"
 REPO_URL = f"https://github.com/{REPO}"
 API_URL = f"https://api.github.com/repos/{REPO}/releases/latest"
