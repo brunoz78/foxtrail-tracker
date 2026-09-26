@@ -9,8 +9,8 @@
   <form method="post" autocomplete="off">
     <label>{{ _('Konto-Link aus der Mail von foxtrail.ch') }}
       <input type="password" name="link" required autocomplete="off" spellcheck="false"
-             placeholder="https://foxtrail.ch/account/?foxtrail_magic=…"></label>
-    <p class="muted small">{{ _('Den Link aus der Anmelde-Mail von foxtrail.ch einfügen. Er wird nur für diesen Abruf verwendet und nicht gespeichert. Achtung: Wer den Link hat, ist in eurem foxtrail.ch-Konto angemeldet – nicht weitergeben.') }}</p>
+             placeholder="{{ _('Link „MyAccount öffnen“ aus der Mail') }}"></label>
+    <p class="muted small">{{ _('Den Link „MyAccount öffnen“ aus einer Mail von foxtrail.ch einfügen (Rechtsklick → Link-Adresse kopieren). Er wird nur für diesen Abruf verwendet und nicht gespeichert. Wer mit mehreren Mailadressen bucht, hat mehrere Konten – dann die Links nacheinander importieren. Achtung: Wer den Link hat, ist in eurem foxtrail.ch-Konto angemeldet – nicht weitergeben.') }}</p>
     <div class="actions">
       <button type="submit">{{ _('Bestellungen abrufen') }}</button>
       <span class="muted small">{{ _('Es wird noch nichts gespeichert.') }}</span>

@@ -139,6 +139,14 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   (Fehler ohne Exception-Kette, requests schreibt sonst die URL samt Token in die Meldung), Konto-
   daten (`user`) sofort verwerfen, nur `orders` weiter. Kein automatischer/periodischer Abruf und
   kein Speichern des Links ohne neue Absprache (der Link kann auch Buchungen ändern/stornieren).
+  **Link aus der Mail** (2026-09-26, Wunsch von Bruno): Der Knopf „MyAccount öffnen“ zeigt auf den
+  Klickzähler des Mailversands (`https://r.send.foxtrail.ch/tr/cl/…`), und die Kontoseite kürzt die
+  Adresse nach dem Anmelden auf `/account/` – den langen Link sieht man also nie. `abrufen` nimmt
+  darum auch den Zähler-Link: `link_aufloesen` fragt nur Hosts aus `TRACKER_HOSTS` an, ohne
+  Weiterleitungen zu folgen (`allow_redirects=False`, höchstens drei), liest den Konto-Link aus
+  `Location` (oder aus einer Weiterleitungsseite) und ruft foxtrail.ch dabei nie auf. Alles andere
+  wie beim Konto-Link: nur auf Klick, nichts speichern oder loggen. Ein zweites Konto (andere
+  Mailadresse) ist für foxtrail.ch ein eigenes Konto – seine Bestellungen kommen mit dessen Link.
   Bereits gemachte Trails ergänzt der Import (`_ergaenzungen`): leere Felder (Mitspieler, Start/Ziel,
   Team-Code, Bestellnummer, Foto) und ein **abweichendes Datum wird auf das Bestelldatum korrigiert**,
   sofern die Datei nur eine Bestellung für diesen Trail enthält (Wunsch von Bruno, 2026-09-19). Die

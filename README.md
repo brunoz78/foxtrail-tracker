@@ -305,13 +305,15 @@ die mit „Manuell ergänzte Trails“ beginnt, werden als manuelle Trails angel
 ### Eigene Bestellungen von foxtrail.ch übernehmen
 
 Auf foxtrail.ch unter **Account → Deine Bestellungen** stehen alle gebuchten
-Trails. Am einfachsten: In der App unter ⚙ → **Import** (nur Administratoren) den
-**Konto-Link aus der Anmelde-Mail** von foxtrail.ch einfügen
-(`https://foxtrail.ch/account/?foxtrail_magic=…`) und „Bestellungen abrufen“. Die App meldet
-sich damit einmalig bei foxtrail.ch an, holt die Bestellungen und zeigt einen Probelauf; nach
-Bestätigung trägt sie ein. Der Link wird nicht gespeichert, von den Kontodaten (Name, Adresse
-usw.) behält die App nichts. Wer den Link hat, ist im foxtrail.ch-Konto angemeldet – nicht
-weitergeben.
+Trails. Am einfachsten: In der App unter ⚙ → **Import** (nur Administratoren) den Link
+**„MyAccount öffnen“ aus einer Mail von foxtrail.ch** einfügen (Rechtsklick → Link-Adresse
+kopieren) und „Bestellungen abrufen“. Die Adresse `https://foxtrail.ch/account/?foxtrail_magic=…`
+geht ebenso – im Browser sieht man sie meist nicht, weil die Kontoseite sie nach dem Anmelden sofort
+auf `…/account/` kürzt. Die App meldet sich damit einmalig bei foxtrail.ch an, holt die
+Bestellungen und zeigt einen Probelauf; nach Bestätigung trägt sie ein. Der Link wird nicht
+gespeichert, von den Kontodaten (Name, Adresse usw.) behält die App nichts. Wer mit mehreren
+Mailadressen bucht, hat bei foxtrail.ch mehrere Konten – dann die Links nacheinander importieren.
+Wer den Link hat, ist im foxtrail.ch-Konto angemeldet – nicht weitergeben.
 
 Ohne Link geht es auch: im Browser angemeldet die Adresse
 `https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account` öffnen, mit Ctrl+S als `konto.json`

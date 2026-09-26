@@ -324,14 +324,28 @@ class _JsonAntwort:
         return self._daten
 
 
+class _Weiterleitung:
+    """Antwort des Klickzaehlers aus der Mail."""
+    def __init__(self, status=302, location=None, text=""):
+        self.status_code, self.text = status, text
+        self.headers = {"Location": location} if location else {}
+
+    def close(self):
+        pass
+
+
 class _Sitzung:
     """Nachgebildete requests.Session fuer abrufen(): Anmeldung setzt connect.sid."""
-    def __init__(self, login_status=302, konto=None):
+    def __init__(self, login_status=302, konto=None, zaehler=None):
         self.headers, self.cookies, self.aufrufe = {}, {}, []
-        self.login_status, self.konto = login_status, konto
+        self.login_status, self.konto, self.zaehler = login_status, konto, zaehler
 
     def get(self, url, params=None, **kw):
         self.aufrufe.append((url, dict(params or {})))
+        if url.startswith("https://r.send.foxtrail.ch/"):
+            assert kw.get("allow_redirects") is False          # nie selbst weiterleiten lassen
+            return self.zaehler
+        assert not url.startswith("https://foxtrail.ch/")        # die Kontoseite wird nie aufgerufen
         if url.endswith("/auth/magic/login"):
             if self.login_status == 302:
                 self.cookies["connect.sid"] = "s%3Aabc"
@@ -358,6 +372,43 @@ def test_abrufen_mit_konto_link():
             raise AssertionError("AbrufFehler erwartet")
         except bestellungen.AbrufFehler as ex:
             assert "eyJ" not in str(ex)
+
+
+MAIL_LINK = "https://r.send.foxtrail.ch/tr/cl/Abc_123-xyz"
+
+
+def _abruf_scheitert(link, sitzung):
+    try:
+        bestellungen.abrufen(link, session=sitzung)
+    except bestellungen.AbrufFehler as ex:
+        return str(ex)
+    raise AssertionError("AbrufFehler erwartet")
+
+
+def test_abrufen_mit_link_aus_der_mail():
+    # Klickzaehler leitet per 302 auf den Konto-Link weiter
+    s = _Sitzung(konto=MUSTER_JSON, zaehler=_Weiterleitung(location=LINK))
+    daten = bestellungen.abrufen(MAIL_LINK, session=s)
+    assert len(daten["orders"]) == len(MUSTER_JSON["orders"])
+    assert [a[0] for a in s.aufrufe] == [MAIL_LINK, "https://api.foxtrail.ch/auth/magic/login",
+                                          "https://api.foxtrail.ch/account"]
+    assert s.aufrufe[1][1] == {"token": LINK.split("=", 1)[1]}
+    # ... oder per Seite (meta refresh) statt Weiterleitung
+    seite = f'<html><meta http-equiv="refresh" content="0;url={LINK}"></html>'
+    s = _Sitzung(konto=MUSTER_JSON, zaehler=_Weiterleitung(status=200, text=seite))
+    assert bestellungen.abrufen(MAIL_LINK, session=s)["orders"]
+    # fremdes Ziel, kein Ziel, Endlosschleife: verstaendliche Meldung, keine Anmeldung, kein Token
+    for antwort, anfragen in ((_Weiterleitung(location="https://evil.example/?foxtrail_magic=eyJa.eyJb.c"), 1),
+                              (_Weiterleitung(status=404), 1),
+                              (_Weiterleitung(location=MAIL_LINK), 3)):
+        s = _Sitzung(zaehler=antwort)
+        meldung = _abruf_scheitert(MAIL_LINK, s)
+        assert "eyJ" not in meldung and "r.send" not in meldung
+        assert len(s.aufrufe) == anfragen and "connect.sid" not in s.cookies
+    # andere Adressen werden gar nicht erst angefragt
+    s = _Sitzung()
+    _abruf_scheitert("https://r.send.evil.example/tr/cl/x", s)
+    assert s.aufrufe == []
 
 
 def test_bekannte_trails_als_import_kennzeichnen():

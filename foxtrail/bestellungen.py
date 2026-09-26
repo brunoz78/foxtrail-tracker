@@ -4,6 +4,12 @@ Import der eigenen Bestellungen von foxtrail.ch ("Account -> Deine Bestellungen"
 
 Am bequemsten: abrufen(link) mit dem Konto-Link aus der Mail von foxtrail.ch
 (https://foxtrail.ch/account/?foxtrail_magic=<JWT>, gilt laut Bruno ein Jahr, mehrfach nutzbar).
+Der Knopf "MyAccount öffnen" in der Mail zeigt aber auf den Klickzaehler des Mailversands
+(https://r.send.foxtrail.ch/tr/cl/...), und die Kontoseite nimmt den Token nach dem Anmelden sofort
+aus der Adresszeile. Deshalb nimmt abrufen() auch diesen Link an: link_aufloesen() holt nur die
+Weiterleitungen des Zaehlers ab (ohne ihnen zu folgen, hoechstens drei) und liest den Konto-Link aus
+der Zieladresse - foxtrail.ch selbst wird dabei nicht aufgerufen. Mit Bruno am 2026-09-26 so
+vereinbart.
 Ablauf wie im Browser: api.foxtrail.ch/auth/magic/login?token=<JWT> setzt das Session-Cookie
 connect.sid, danach liefert api.foxtrail.ch/account die Kontodaten als JSON (Form 1 unten).
 Der Link wird nur fuer diesen einen Abruf benutzt: nie gespeichert, nie geloggt, in keiner
@@ -56,7 +62,7 @@ import json
 import os
 import re
 import time
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -67,6 +73,10 @@ from .i18n import tr
 
 API_URL = "https://api.foxtrail.ch"
 _JWT_RE = re.compile(r"[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+")
+# Klickzaehler im Mail ("MyAccount öffnen"); leitet auf den Konto-Link weiter
+TRACKER_HOSTS = ("r.send.foxtrail.ch",)
+_MAX_WEITERLEITUNGEN = 3
+_KONTO_URL_RE = re.compile(r"https://(?:www\.)?foxtrail\.ch/[^\s\"'<>]*?foxtrail_magic=[A-Za-z0-9_\-.]+")
 
 
 class AbrufFehler(Exception):
@@ -78,18 +88,54 @@ def token_aus_link(link):
     u = urlparse((link or "").strip())
     token = (parse_qs(u.query).get("foxtrail_magic") or [""])[0]
     if u.scheme != "https" or u.netloc not in ("foxtrail.ch", "www.foxtrail.ch") or not _JWT_RE.fullmatch(token):
-        raise AbrufFehler(tr("Das ist kein Konto-Link von foxtrail.ch. Erwartet wird der Link aus der Mail "
-                             "(https://foxtrail.ch/account/?foxtrail_magic=…)."))
+        raise AbrufFehler(tr("Das ist kein Konto-Link von foxtrail.ch. Erwartet wird der Link „MyAccount öffnen“ "
+                             "aus einer Mail von foxtrail.ch oder https://foxtrail.ch/account/?foxtrail_magic=…."))
     return token
 
 
+def _ist_tracker(link):
+    u = urlparse(link or "")
+    return u.scheme == "https" and u.netloc in TRACKER_HOSTS
+
+
+def link_aufloesen(link, session):
+    """Link aus der Mail (Klickzaehler) -> Konto-Link; jeder andere Link bleibt, wie er ist.
+
+    Fragt nur den Klickzaehler selbst an, folgt keiner Weiterleitung automatisch und hoert auf,
+    sobald eine andere Adresse kommt: foxtrail.ch wird hier nie aufgerufen. Leitet der Zaehler per
+    Seite statt per Weiterleitung weiter, wird der Konto-Link in deren Inhalt gesucht."""
+    for _ in range(_MAX_WEITERLEITUNGEN):
+        if not _ist_tracker(link):
+            return link
+        r = session.get(link, allow_redirects=False, timeout=30)
+        try:
+            ziel = r.headers.get("Location") if 300 <= r.status_code < 400 else None
+            if not ziel:
+                m = _KONTO_URL_RE.search((r.text or "")[:65536])
+                ziel = m.group(0) if m else None
+        finally:
+            r.close()
+        if not ziel:
+            break
+        link = urljoin(link, ziel)
+    if _ist_tracker(link) or not ziel:
+        raise AbrufFehler(tr("Der Link aus der Mail führt nicht zum Konto bei foxtrail.ch. Vielleicht ist er "
+                             "zu alt – auf foxtrail.ch unter „Konto“ einen neuen Link per Mail anfordern."))
+    return link
+
+
 def abrufen(link, session=None):
-    """Bestellungen mit dem Konto-Link holen -> {"orders": [...]} (fuer parse())."""
-    token = token_aus_link(link)
+    """Bestellungen mit dem Konto-Link holen -> {"orders": [...]} (fuer parse()).
+
+    link: Konto-Link (…/account/?foxtrail_magic=…) oder der Link "MyAccount öffnen" aus der Mail."""
+    link = (link or "").strip()
+    if not _ist_tracker(link):
+        token_aus_link(link)                 # fremde Adressen gar nicht erst anfragen
     s = session or requests.Session()
     s.headers["User-Agent"] = config.USER_AGENT
     fehler = None
     try:
+        token = token_aus_link(link_aufloesen(link, s))
         r = s.get(f"{API_URL}/auth/magic/login", params={"token": token}, allow_redirects=False, timeout=30)
         if r.status_code in (400, 401, 403):
             fehler = tr("foxtrail.ch hat den Link nicht angenommen – vielleicht ist er abgelaufen. "
