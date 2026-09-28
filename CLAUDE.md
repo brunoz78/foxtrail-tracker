@@ -178,6 +178,9 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   fragt nie direkt bei foxtrail.ch an. Nur URLs unter `https://foxtrail.ch/`. Mit Bruno
   am 2026-09-18 so vereinbart und ausdrücklich bestätigt („Titelbilder sollen geladen werden“).
   Gemachte Kacheln: Ring und hellgrüner Textbereich im MINI-Grün (`--gemacht*` in style.css).
+  Textbereich in zwei festen Zeilen (2026-09-28, Wunsch von Bruno): `.kmeta` = Angaben von
+  foxtrail.ch (Typ, Stufe, Dauer, Bewertung), `.kmeta.keigen` = eigene Angaben (Spielzeit ⏱,
+  Mitspieler 👥), rechts in dieser Zeile der Link zu foxtrail.ch (`a.kfox`, absolut unten rechts).
 - **Abgleich mit foxtrail.ch** automatisch (systemd-Timer, wöchentlich) **und**
   manuell (Button im Admin-Bereich).
   **Häufigkeit** (2026-09-19, Wunsch von Bruno): Auswahl auf der Seite Abgleich, nur

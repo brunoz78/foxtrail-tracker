@@ -142,13 +142,18 @@
     <div class="ktext">
       <div class="ktitel"><span class="kname"><b>{{ t.name }}</b> <span class="muted">· {{ t.ort }}</span></span>
         {% if t.neu and t.im_angebot and t.quelle != 'manual' %}<span class="tag new">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span>{% endif %}</div>
+      {# Zeile 1: Angaben von foxtrail.ch; Zeile 2: eigene Angaben, rechts daneben der Link #}
       <div class="kmeta">{{ typ_badge(t) }}
         {% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}
         {% if t.dauer %}<span>{{ t.dauer|dauer }}</span>{% endif %}
         {% if t.bewertung %}<span>★ {{ t.bewertung }}</span>{% endif %}
+      </div>
+      {% if t.spielzeit or t.mitspieler or t.url %}
+      <div class="kmeta keigen">
         {% if t.spielzeit %}<span title="{{ _('Unsere Spielzeit') }}">⏱ {{ t.spielzeit }}</span>{% endif %}
         {% if t.mitspieler %}<span title="{{ _('Mitspieler') }}">👥 {{ t.mitspieler }}</span>{% endif %}
       </div>
+      {% endif %}
     </div>
   </a>
   {% if t.url %}<a class="kfox" href="{{ t.url }}" target="_blank" rel="noopener"
