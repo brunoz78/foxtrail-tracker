@@ -35,7 +35,7 @@
 {%- elif k == 'bewertung' %}<td class="r m-bew">{% if t.bewertung %}{{ t.bewertung }}{% else %}<span class="leer">–</span>{% endif %}</td>
 {%- elif k == 'dauer' %}<td class="nowrap m-dauer">{{ t.dauer|dauer }}</td>
 {%- elif k == 'preis' %}<td class="r m-preis">{{ t.preis|chf }}</td>
-{%- elif k == 'neu' %}<td class="nowrap m-neu">{{ t.neu_seit|mmjj if t.neu_seit }}</td>
+{%- elif k == 'neu' %}<td class="nowrap m-neu">{{ t.neu_seit|mmjj if t.neu }}</td>
 {%- elif k == 'datum' %}<td class="nowrap m-datum">{{ t.gemacht_datum|datum }}</td>
 {%- elif k == 'start' %}<td class="nowrap m-start">{{ t.start_zeit[11:16] if t.start_zeit }}</td>
 {%- elif k == 'ziel' %}<td class="nowrap m-ziel">{{ t.ziel_zeit[11:16] if t.ziel_zeit }}</td>
@@ -136,12 +136,13 @@
       {% if t.foto %}<img src="{{ url_for('foto', tid=t.id, g='klein', v=t.foto) }}" alt="{{ _('Schlussfoto') }} {{ t.name }}" loading="lazy" onerror="this.remove()">
       {% elif t.bild_url %}<img class="titel" src="{{ url_for('titelbild', tid=t.id) }}" alt="" loading="lazy" onerror="this.remove()">{% endif %}
       {% if t.gemacht %}<span class="khaken" title="{{ _('Gemacht') }}">✔{% if t.gemacht_datum %} {{ t.gemacht_datum|datum }}{% endif %}</span>{% endif %}
-      {% if t.quelle == 'manual' %}<span class="kstatus tag">{{ _('manuell') }}</span>
-      {% elif not t.im_angebot %}<span class="kstatus tag warn">{{ _('nicht mehr im Angebot') }}</span>{% endif %}
+      {% if t.quelle == 'manual' %}<span class="kstatus tag">{{ _('manuell') }}</span>{% endif %}
     </div>
     <div class="ktext">
       <div class="ktitel"><span class="kname"><b>{{ t.name }}</b> <span class="muted">· {{ t.ort }}</span></span>
-        {% if t.neu and t.im_angebot and t.quelle != 'manual' %}<span class="tag new">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span>{% endif %}</div>
+        {# rechts vom Ort: "nicht mehr im Angebot" hat Vorrang vor "Neu ab" #}
+        {% if not t.im_angebot and t.quelle != 'manual' %}<span class="tag warn" title="{{ _('Aktuell nicht mehr auf foxtrail.ch gelistet, zuletzt gesehen {datum}', datum=(t.last_seen or '')[:10]|datum) }}">{{ _('nicht mehr im Angebot') }}{% if t.last_seen %} {{ _('seit') }} {{ t.last_seen|mmjj }}{% endif %}</span>
+        {% elif t.neu %}<span class="tag new">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span>{% endif %}</div>
       {# Zeile 1: Angaben von foxtrail.ch; Zeile 2: eigene Angaben, rechts daneben der Link #}
       <div class="kmeta">{{ typ_badge(t) }}
         {% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}

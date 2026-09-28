@@ -131,7 +131,9 @@ def _row(r):
     d["typ_label"] = TYP_LABEL.get(d["typ"], d["typ"])
     d["region_label"] = region_label(d["region"])
     d["dauer_von"], d["dauer_bis"] = parse_dauer(d["dauer"])
-    d["neu"] = bool(d.get("neu_seit"))      # "Neu ab MM/JJ": bleibt, solange neu_seit gesetzt ist
+    # "Neu ab MM/JJ" bleibt, solange neu_seit gesetzt und der Trail im Angebot ist - nie zusammen
+    # mit "nicht mehr im Angebot", das hat Vorrang (Wunsch von Bruno, 2026-09-28)
+    d["neu"] = bool(d.get("neu_seit") and d.get("im_angebot") and d.get("quelle") == "foxtrail")
     d["grad_label"] = tr(GRAD_LABEL.get(d.get("schwierigkeit") or "", ""))
     d["spielzeit_min"] = spielzeit_min(d.get("start_zeit"), d.get("ziel_zeit"))
     d["spielzeit"] = spielzeit_label(d["spielzeit_min"])
@@ -197,7 +199,7 @@ def list_active(conn, filter_="alle", q="", typ=(), region=(), dauer=(), grad=()
     elif filter_ == "gemacht":
         sql += " AND gemacht = 1"
     elif filter_ == "neu":
-        sql += " AND neu_seit IS NOT NULL"
+        sql += " AND neu_seit IS NOT NULL AND im_angebot = 1"
     for spalte, werte in (("typ", [t for t in _liste(typ) if t in TYPEN]),
                           ("region", _liste(region)), ("dauer", _liste(dauer)),
                           ("schwierigkeit", [g for g in _liste(grad) if g in GRADE or g == LEER]),
@@ -263,7 +265,7 @@ def stats(conn):
     s["archiv"] = conn.execute(f"SELECT COUNT(*) FROM trails WHERE {ARCHIV_COND}").fetchone()[0]
     s["im_angebot"] = conn.execute("SELECT COUNT(*) FROM trails WHERE im_angebot = 1").fetchone()[0]
     s["neu"] = conn.execute(
-        f"SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL AND NOT {ARCHIV_COND}").fetchone()[0]
+        "SELECT COUNT(*) FROM trails WHERE neu_seit IS NOT NULL AND im_angebot = 1").fetchone()[0]
     s["mitspieler"] = conn.execute(
         "SELECT COALESCE(SUM(mitspieler),0) FROM trails WHERE gemacht = 1").fetchone()[0]
     return s

@@ -223,7 +223,10 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Es wird nie ein Trail gelöscht.** Regeln in `foxtrail/sync.py`:
   - neu auf der Website → anlegen (offen, `neu_seit` = Datum; Liste zeigt dauerhaft
     „Neu ab MM/JJ“, Filter `f=neu` listet alle mit `neu_seit`, Standard-Sortierung dort
-    neueste zuerst – bewusst keine Frist, Bruno will alle Zugänge sehen). Manuelle Trails haben `neu_seit`
+    neueste zuerst – bewusst keine Frist, Bruno will alle Zugänge sehen). Nur solange der Trail
+    im Angebot ist (`trails._row` → `neu`, Filter und Zähler ebenso): „Neu ab“ und „nicht mehr im
+    Angebot“ erscheinen nie zusammen, „nicht mehr im Angebot“ hat Vorrang und steht auf der Kachel
+    an derselben Stelle rechts vom Ort (2026-09-28, Wunsch von Bruno). Manuelle Trails haben `neu_seit`
     NULL. Der Seed auch, ausser bei Trails, die laut foxtrail.ch/thema/neuigkeiten/ kürzlich
     eröffnet wurden (Datum des Blog-Beitrags, von Hand gepflegt, kein Scraping – die
     Seite ist ein Blog ohne Trail-Links, das NEW-Badge ist wie MINI/MAXI nur im Bild).

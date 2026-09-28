@@ -387,3 +387,33 @@ def test_protokoll_auf_der_seite():
     assert "1 Änderung" in html and "Geändert" in html and "Aquae" in html
     assert "Bewertung 4.5 → 4.3" in html and "Schwierigkeit Mittel → Schwierig" in html
     assert "Preis CHF 32 → CHF 35.5" in html
+
+
+def test_neu_ab_nie_zusammen_mit_nicht_mehr_im_angebot():
+    c = conn_mem()
+    sync.apply(c, [mk("a/alt"), mk("a/zeus", name="Zeus")], "test")         # beide mit neu_seit
+    trails.update_done(c, 2, {"gemacht": "1", "gemacht_datum": "2026-09-01"}, "u")
+    assert trails.get(c, 2)["neu"] and trails.stats(c)["neu"] == 2
+    sync.apply(c, [mk("a/alt")], "test")                  # Zeus verschwindet, gemacht -> Hauptliste
+    t = trails.get(c, 2)
+    assert t["neu_seit"] and not t["im_angebot"] and not t["neu"]
+    assert trails.stats(c)["neu"] == 1
+    assert [x["slug"] for x in trails.list_active(c, "neu")] == ["a/alt"]
+    # Kachel: "nicht mehr im Angebot" rechts vom Ort, kein "Neu ab"
+    from tests.test_app import login
+    import foxtrail
+    import tempfile
+    from foxtrail import users
+    pfad = os.path.join(tempfile.mkdtemp(), "t.db")
+    app = foxtrail.create_app({"DB_PATH": pfad, "TESTING": True, "SECRET_KEY": "test"})
+    with db.session(pfad) as conn:
+        users.add(conn, "admin", "geheim123", is_admin=True)
+        sync.apply(conn, [mk("a/alt"), mk("a/zeus", name="Zeus")], "test")
+        trails.update_done(conn, 2, {"gemacht": "1", "gemacht_datum": "2026-09-01"}, "u")
+        sync.apply(conn, [mk("a/alt")], "test")
+    cl = app.test_client()
+    login(cl)
+    html = cl.get("/?ansicht=kacheln").get_data(as_text=True)
+    zeus = next(k for k in html.split('class="kzelle') if "<b>Zeus</b>" in k)
+    titel = zeus.split('class="ktitel"')[1].split('class="kmeta"')[0]
+    assert "nicht mehr im Angebot" in titel and "Neu ab" not in zeus and "kstatus" not in zeus

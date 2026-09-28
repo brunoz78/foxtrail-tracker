@@ -9,7 +9,7 @@
     {% if t.url %}· <a href="{{ t.url }}" target="_blank" rel="noopener">foxtrail.ch ↗</a>{% endif %}<br>
     {% if t.quelle == 'manual' %}<span class="tag">{{ _('manuell erfasst') }}</span>
     {% elif not t.im_angebot %}<span class="tag warn">{{ _('nicht mehr im Angebot') }}{% if t.last_seen %} {{ _('seit') }} {{ t.last_seen|mmjj }}{% endif %}</span> ({{ _('zuletzt gesehen {datum}', datum=(t.last_seen or '')[:10]|datum) }})
-    {% elif t.neu_seit %}<span class="tag new">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span> ({{ _('vom Abgleich am {datum} neu gefunden', datum=t.neu_seit|datum) }})
+    {% elif t.neu %}<span class="tag new">{{ _('Neu ab') }} {{ t.neu_seit|mmjj }}</span> ({{ _('vom Abgleich am {datum} neu gefunden', datum=t.neu_seit|datum) }})
     {% endif %}
   </p>
 
