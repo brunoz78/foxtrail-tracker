@@ -123,7 +123,11 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
 - **Schwierigkeit** (`schwierigkeit`: `einfach | mittel | schwierig | NULL`) steht nicht in den
   Karten der Übersicht. Statt 97 Detailseiten liest der Scraper die Übersicht dreimal
   gefiltert (`?filters=difficulty[<id>]`, IDs aus dem Filter-Widget auf Seite 1, ~8 Seiten).
-  Steht ein Trail in zwei Stufen (Varianten), zählt die höhere. `None` vom Scraper heisst
+  Steht ein Trail in zwei Stufen (Varianten), gilt die Stufe seiner **Detailseite**
+  (`.ft_trail_difficulty .price_summary_row`: Einfach/Mittel/Schwer; das Produkt bündelt Varianten
+  mit eigener Stufe, angezeigt wird die der ersten). Nur für diese Fälle lädt der Abgleich die
+  Detailseite (2026-09-28 mit Bruno vereinbart, damals Zeus und Quarz, also 2 Seiten mehr pro Lauf;
+  höchstens `scraper.MAX_DETAILSEITEN`); klappt das nicht, zählt die höhere. `None` vom Scraper heisst
   „nicht ermittelt“: der Abgleich überschreibt einen bekannten Wert nie mit NULL (COALESCE).
   GO-Trails haben keine Stufe. Mit Bruno am 2026-09-17 besprochen.
 - **Import-Daten** (`start_zeit`, `ziel_zeit`, `team_code`, `bestellung`, `foto_url`, `foto`)
@@ -347,7 +351,8 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
 - Der Scraper darf foxtrail.ch nicht öfter als nötig abrufen (Standard: wöchentlich,
   1 s Pause zwischen Seiten, sprechender User-Agent). Keine weiteren Seiten als die
   Kategorie-Übersicht und deren Schwierigkeits-Filteransichten abgrasen, ohne dass das
-  besprochen wurde (insbesondere keine Detailseiten).
+  besprochen wurde. Detailseiten nur für Trails, die im Filter unter mehreren Stufen stehen
+  (siehe Schwierigkeit), sonst keine.
 - **Neue Texte** in der Oberfläche immer übersetzbar schreiben (`_()` / `tr()`) und in `fr.json`,
   `it.json`, `en.json` eintragen – sonst schlägt `tests/test_i18n.py` fehl.
 - **Umlaute:** Alles, was im Browser erscheint (Templates, Flash-Meldungen, Fehlertexte,

@@ -44,8 +44,21 @@ def test_schwierigkeits_filter_und_next():
     assert scraper.next_page_url("<html></html>") is None
 
 
+DETAIL = ("<div class='ft_trail_difficulty'><div class='price_summary_row'>{}</div>"
+          "<div class='price_summary_row'>Spielende bewerten diesen Trail als ...</div></div>")
+
+
+def test_detailseite_stufe():
+    assert scraper.parse_detail_difficulty(DETAIL.format("Einfach")) == "einfach"
+    assert scraper.parse_detail_difficulty(DETAIL.format("Mittel")) == "mittel"
+    assert scraper.parse_detail_difficulty(DETAIL.format("Schwer")) == "schwierig"
+    assert scraper.parse_detail_difficulty(DETAIL.format("Unbekannt")) is None
+    assert scraper.parse_detail_difficulty("<html></html>") is None
+
+
 def test_fetch_difficulty(monkeypatch):
-    # Zwei gefilterte Durchlaeufe (einfach: 2 Seiten, mittel: 1 Seite), Zeus in beiden -> mittel
+    # Zwei gefilterte Durchlaeufe (einfach: 2 Seiten, mittel: 1 Seite), Zeus in beiden ->
+    # die Detailseite entscheidet (nur fuer Zeus wird sie geladen)
     first = open(os.path.join(HERE, "fixture_page.html"), encoding="utf-8").read()
     def card(slug):
         return (f"<li class='product product_cat-trails product_cat-x'><a class='woocommerce-LoopProduct-link' "
@@ -57,10 +70,27 @@ def test_fetch_difficulty(monkeypatch):
         "B/page/2/?filters=difficulty%5B1304%5D": f"<ul>{card('a/emma')}</ul>",
         "B/?filters=difficulty%5B1305%5D": f"<ul>{card('a/zeus')}{card('a/aquae')}</ul>",
         "B/?filters=difficulty%5B1306%5D": "<ul></ul>",
+        "https://foxtrail.ch/produkte/trails/a/zeus/": DETAIL.format("Einfach"),
     }
-    monkeypatch.setattr(scraper, "fetch_page", lambda url, session=None: pages[url])
+    abgerufen = []
+
+    def holen(url, session=None):
+        abgerufen.append(url)
+        return pages[url]
+    monkeypatch.setattr(scraper, "fetch_page", holen)
     assert scraper.fetch_difficulty("B", first, None, 0) == {
-        "a/zeus": "mittel", "a/anda": "einfach", "a/emma": "einfach", "a/aquae": "mittel"}
+        "a/zeus": "einfach", "a/anda": "einfach", "a/emma": "einfach", "a/aquae": "mittel"}
+    assert [u for u in abgerufen if "/produkte/trails/" in u] == ["https://foxtrail.ch/produkte/trails/a/zeus/"]
+    # Detailseite ohne Stufe oder nicht erreichbar: die hoehere Stufe gilt
+    pages["https://foxtrail.ch/produkte/trails/a/zeus/"] = "<html></html>"
+    assert scraper.fetch_difficulty("B", first, None, 0)["a/zeus"] == "mittel"
+
+    def detail_weg(url, session=None):
+        if "/produkte/trails/" in url:
+            raise scraper.requests.ConnectionError("weg")
+        return pages[url]
+    monkeypatch.setattr(scraper, "fetch_page", detail_weg)
+    assert scraper.fetch_difficulty("B", first, None, 0)["a/zeus"] == "mittel"
     # Netzfehler: bisher Gesammeltes zurueckgeben statt abbrechen
     def kaputt(url, session=None):
         if "1305" in url:

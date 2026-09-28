@@ -434,8 +434,10 @@ Dabei wird nichts übertragen ausser der Anfrage selbst; abschalten mit
 ## Hinweis zum Scraper
 
 Der Abgleich ruft die öffentliche Trail-Übersicht ab (ca. 9 Seiten) und zusätzlich
-die nach Schwierigkeit gefilterte Übersicht je Stufe (ca. 8 Seiten) – insgesamt rund
-17 Seitenabrufe, eine Sekunde Pause dazwischen, standardmässig einmal pro Woche. Er
+die nach Schwierigkeit gefilterte Übersicht je Stufe (ca. 8 Seiten). Steht ein Trail dort unter
+zwei Stufen (derzeit Zeus und Quarz), liest er für ihn die Stufe von der Detailseite – so
+stimmt sie mit foxtrail.ch überein. Insgesamt rund 19 Seitenabrufe, eine Sekunde Pause
+dazwischen, standardmässig einmal pro Woche. Er
 nennt sich im User-Agent.
 Bitte die Frequenz nicht unnötig erhöhen.
 

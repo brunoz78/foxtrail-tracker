@@ -21,6 +21,13 @@ dem Filter-Widget "Schwierigkeit" (BeRocket, Taxonomie pa_difficulty) einschraen
 Die Term-IDs stehen im Widget auf Seite 1. Drei gefilterte Durchlaeufe (~8 Seiten)
 liefern die Stufe fuer alle Foxtrail-Trails; GO-Trails haben keine (None).
 
+Einige Trails stehen in zwei Stufen (2026-09: Zeus Einfach+Mittel, Quarz Mittel+Schwierig):
+das Produkt buendelt mehrere Varianten mit eigener Stufe, die Detailseite zeigt die der ersten
+(div.ft_trail_difficulty > .price_summary_row: "Einfach" | "Mittel" | "Schwer"). Nur fuer
+diese Faelle laedt der Abgleich die Detailseite (hoechstens MAX_DETAILSEITEN je Lauf) und nimmt
+die Stufe von dort; klappt das nicht, gilt die hoehere. Mit Bruno am 2026-09-28 vereinbart -
+sonst ruft der Abgleich keine Detailseiten ab.
+
 fetch_all() liefert eine Liste von dicts mit den Feldern
   slug, ort, name, route, typ ('foxtrail'|'mini'|'maxi'|'go'), region, bewertung, dauer, preis, url,
   bild_url (None wenn keins), schwierigkeit ('einfach'|'mittel'|'schwierig'|None)
@@ -42,6 +49,9 @@ _SLUG_RE = re.compile(r"/produkte/trails/([^/]+/[^/]+)/?$")
 _RATING_RE = re.compile(r"([\d.]+)")
 _PRICE_RE = re.compile(r"([\d]+(?:[.,]\d+)?)")
 GO_BADGE = "Digitale Schnitzeljagd"
+# Beschriftung der Stufe auf der Detailseite -> unser Wert
+DETAIL_STUFE = {"einfach": "einfach", "mittel": "mittel", "schwer": "schwierig", "schwierig": "schwierig"}
+MAX_DETAILSEITEN = 10          # Sicherung, falls sich der Filter aendert und alles mehrdeutig wird
 
 
 class ScrapeError(Exception):
@@ -128,11 +138,18 @@ def parse_difficulty_filter(html):
     return out
 
 
+def parse_detail_difficulty(html):
+    """Stufe, wie die Detailseite eines Trails sie anzeigt, sonst None."""
+    el = BeautifulSoup(html, "html.parser").select_one(".ft_trail_difficulty .price_summary_row")
+    return DETAIL_STUFE.get(_text(el).lower()) if el else None
+
+
 def fetch_difficulty(base, first_html, session, delay):
     """{slug: stufe} ueber die gefilterten Uebersichten. Steht ein Trail in mehreren Stufen
-    (Varianten), zaehlt die hoehere. Bei Netzfehlern wird abgebrochen und das bisher
-    Gesammelte zurueckgegeben - der Abgleich ueberschreibt bekannte Stufen nie mit None."""
-    grade = {}
+    (Varianten), gilt die Stufe seiner Detailseite (nur dann wird sie geladen, hoechstens
+    MAX_DETAILSEITEN); klappt das nicht, zaehlt die hoehere. Bei Netzfehlern wird abgebrochen und
+    das bisher Gesammelte zurueckgegeben - der Abgleich ueberschreibt bekannte Stufen nie mit None."""
+    grade, urls, mehrere = {}, {}, set()
     for level in GRADE:                       # aufsteigend, spaetere (hoehere) Stufe gewinnt
         tid = parse_difficulty_filter(first_html).get(level)
         if not tid:
@@ -147,10 +164,25 @@ def fetch_difficulty(base, first_html, session, delay):
                 return grade
             items, _ = parse_page(html)
             for t in items:
+                if grade.get(t["slug"], level) != level:
+                    mehrere.add(t["slug"])
                 grade[t["slug"]] = level
+                urls[t["slug"]] = t["url"]
             url = next_page_url(html)
             if not items or not url:
                 break
+    for slug in sorted(mehrere)[:MAX_DETAILSEITEN]:
+        url = urls.get(slug, "")
+        if not url.startswith("https://foxtrail.ch/produkte/trails/"):
+            continue
+        if delay:
+            time.sleep(delay)
+        try:
+            stufe = parse_detail_difficulty(fetch_page(url, session))
+        except requests.RequestException:
+            break                             # dann bleibt fuer die restlichen die hoehere Stufe
+        if stufe:
+            grade[slug] = stufe
     return grade
 
 
