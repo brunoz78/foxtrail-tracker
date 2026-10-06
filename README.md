@@ -94,7 +94,7 @@ nicht – den bei Bedarf selbst eintragen.
 | Trail neu auf foxtrail.ch | wird angelegt (offen), in der Liste dauerhaft „Neu ab MM/JJ“; Filter **Neu** zeigt alle, neueste zuerst |
 | Trail schon im Seed, aber laut [Neuigkeiten](https://foxtrail.ch/thema/neuigkeiten/) kürzlich eröffnet | „Neu ab“ aus dem Seed (`neu_seit`), `foxtrailctl seed` trägt es auch in bestehende Datenbanken nach |
 | Trail weiterhin gelistet | Metadaten (Preis, Dauer, Bewertung, Route) aktualisiert – eigene Einträge bleiben |
-| Bewertung verschwindet von foxtrail.ch | foxtrail.ch blendet Bewertungen von 4.0 und tiefer offenbar aus; der Trail zeigt dann „≤ 4.0“, der Tooltip nennt Datum und letzten Wert |
+| Trail ohne Bewertung auf foxtrail.ch | foxtrail.ch blendet Bewertungen von 4.0 und tiefer offenbar aus; der Trail zeigt „≤ 4.0“ (ausser GO-Trails, die haben nie eine). Ist die Bewertung erst weggefallen, nennt der Tooltip Datum und letzten Wert |
 | Trail nicht mehr gelistet, **bereits gemacht** | bleibt in der Hauptliste, markiert „nicht mehr im Angebot seit MM/JJ“ |
 | Trail nicht mehr gelistet, **noch offen** | erscheint im **Archiv** |
 | Archivierter Trail wird als gemacht markiert | wandert zurück in die Hauptliste |

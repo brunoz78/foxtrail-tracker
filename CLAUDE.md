@@ -240,8 +240,9 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
     (NULL), das Protokoll zeigt sachlich „4.1 → –“. Anzeige „≤ 4.0“ (Liste, Kachel, Detail) mit
     Tooltip „seit … (zuletzt 4.1)“, Sortierung direkt unter 4.1 (`trails.BEWERTUNG_TIEF`). Kommt
     wieder eine Bewertung, gilt die und beide Felder werden geleert. Die Migration füllt sie
-    rückwirkend aus `sync_log.aenderungen`. Trails, die nie eine Bewertung hatten (neu oder GO),
-    bleiben „–“ – dort lässt sich „noch keine“ nicht von „zu tief“ unterscheiden.
+    rückwirkend aus `sync_log.aenderungen`. **Alle** Website-Trails ohne Bewertung gelten als
+    „≤ 4.0“ (2026-10-06, Wunsch von Bruno), auch ohne bekannten früheren Wert (dann Tooltip ohne
+    Datum) – ausser GO-Trails (haben nie eine) und manuell erfasste (`trails._row` → `bewertung_tief`).
   - nicht mehr gelistet + gemacht → bleibt in der Hauptliste, „nicht mehr im Angebot
     seit MM/JJ“ (Monat aus `last_seen`, keine eigene Spalte)
   - nicht mehr gelistet + offen → **Archiv**

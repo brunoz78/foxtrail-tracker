@@ -159,8 +159,9 @@ def test_sortieren_und_filtern():
     assert names() == ["Aquae", "Simplon", "Baccara Mini"]                  # Standard: Ort
     assert names(sort="preis") == ["Baccara Mini", "Aquae", "Simplon"]
     assert names(sort="preis", richtung="desc") == ["Simplon", "Aquae", "Baccara Mini"]
-    assert names(sort="bewertung", richtung="desc") == ["Simplon", "Aquae", "Baccara Mini"]  # ohne Wert am Ende
-    assert names(sort="bewertung") == ["Aquae", "Simplon", "Baccara Mini"]
+    # ohne Bewertung (kein GO) gilt als <= 4.0, steht also unter den bewerteten
+    assert names(sort="bewertung", richtung="desc") == ["Simplon", "Aquae", "Baccara Mini"]
+    assert names(sort="bewertung") == ["Baccara Mini", "Aquae", "Simplon"]
     assert names(sort="dauer") == ["Baccara Mini", "Aquae", "Simplon"]
     assert names(sort="typ") == ["Aquae", "Simplon", "Baccara Mini"]
     assert names(sort="region") == ["Aquae", "Baccara Mini", "Simplon"]      # Aargau, Ostschweiz, Wallis
@@ -423,17 +424,17 @@ def test_ausgeblendete_bewertung_bleibt_sichtbar():
     # foxtrail.ch blendet Bewertungen <= 4.0 offenbar aus: die letzte bekannte bleibt erhalten
     c = conn_mem()
     sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=4.1), mk("a/gut", bewertung=4.1),
-                   mk("a/ohne", bewertung=None)], "test")
+                   mk("a/ohne", bewertung=None, typ="go")], "test")
     r = sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=None), mk("a/gut", bewertung=4.1),
-                       mk("a/ohne", bewertung=None)], "test")
+                       mk("a/ohne", bewertung=None, typ="go")], "test")
     assert r["aenderungen"][0]["felder"] == [["bewertung", 4.1, None]]   # Protokoll bleibt sachlich
     g = trails.get(c, 1)
     assert g["bewertung"] is None and g["bewertung_alt"] == 4.1 and g["bewertung_tief"]
     assert g["bewertung_weg"] == db.now()[:10]
-    assert not trails.get(c, 3)["bewertung_tief"]                         # nie eine gehabt
+    assert not trails.get(c, 3)["bewertung_tief"]                         # GO: nie eine Bewertung
     c.execute("UPDATE trails SET bewertung_weg = '2026-10-01' WHERE id = 1")
     sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=None), mk("a/gut", bewertung=4.1),
-                   mk("a/ohne", bewertung=None)], "test")
+                   mk("a/ohne", bewertung=None, typ="go")], "test")
     g = trails.get(c, 1)
     assert g["bewertung_alt"] == 4.1 and g["bewertung_weg"] == "2026-10-01"  # Datum bleibt
     # Sortierung: 4.1, dann "<= 4.0", dann ohne Bewertung
@@ -441,7 +442,7 @@ def test_ausgeblendete_bewertung_bleibt_sichtbar():
     assert reihe == ["a/gut", "ti/galileo", "a/ohne"]
     # kommt wieder eine Bewertung, gilt nur noch die
     sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=4.2), mk("a/gut", bewertung=4.1),
-                   mk("a/ohne", bewertung=None)], "test")
+                   mk("a/ohne", bewertung=None, typ="go")], "test")
     g = trails.get(c, 1)
     assert g["bewertung"] == 4.2 and g["bewertung_alt"] is None and g["bewertung_weg"] is None
     assert not g["bewertung_tief"]
@@ -489,3 +490,32 @@ def test_ausgeblendete_bewertung_migration_und_anzeige():
     assert "≤ 4.0</span>" in liste and erkl in liste
     detail = cl.get("/trail/1").get_data(as_text=True)
     assert "★ ≤ 4.0" in detail and erkl in detail
+
+
+def test_ohne_bewertung_gilt_als_tief_ausser_go():
+    # Auch ohne bekannten frueheren Wert: Website-Trails ohne Bewertung gelten als <= 4.0,
+    # GO-Trails und manuell erfasste nicht
+    c = conn_mem()
+    sync.apply(c, [mk("a/neu", name="Neu", bewertung=None), mk("a/klein", name="Klein Mini", typ="mini",
+                   bewertung=None), mk("a/go", name="Go", typ="go", bewertung=None),
+                   mk("a/top", name="Top", bewertung=4.6)], "test")
+    tid = trails.add_manual(c, {"ort": "O", "name": "Eigen"}, "u")
+    tief = {t["name"]: t["bewertung_tief"] for t in trails.list_active(c)}
+    assert tief == {"Neu": True, "Klein Mini": True, "Go": False, "Top": False, "Eigen": False}
+    assert trails.get(c, tid)["bewertung_alt"] is None
+    reihe = [t["name"] for t in trails.list_active(c, sort="bewertung", richtung="desc")]
+    assert reihe[0] == "Top" and set(reihe[1:3]) == {"Neu", "Klein Mini"} and set(reihe[3:]) == {"Go", "Eigen"}
+
+    from tests.test_app import login
+    import foxtrail
+    import tempfile
+    from foxtrail import users
+    pfad = os.path.join(tempfile.mkdtemp(), "t.db")
+    app = foxtrail.create_app({"DB_PATH": pfad, "TESTING": True, "SECRET_KEY": "test"})
+    with db.session(pfad) as conn:
+        users.add(conn, "admin", "geheim123", is_admin=True)
+        sync.apply(conn, [mk("a/neu", name="Neu", bewertung=None)], "test")
+    cl = app.test_client()
+    login(cl)
+    detail = cl.get("/trail/1").get_data(as_text=True)
+    assert "★ ≤ 4.0" in detail and "foxtrail.ch zeigt keine Bewertung – vermutlich 4.0 oder tiefer" in detail
