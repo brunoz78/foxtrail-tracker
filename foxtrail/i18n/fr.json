@@ -464,6 +464,7 @@
  "foxtrail.ch hat den Link nicht angenommen – vielleicht ist er abgelaufen. Auf foxtrail.ch unter „Konto“ einen neuen Link per Mail anfordern.": "foxtrail.ch n'a pas accepté le lien – il a peut-être expiré. Demander un nouveau lien par e-mail sur foxtrail.ch sous « Konto ».",
  "foxtrail.ch hat die Bestellungen nicht geliefert (Status {status}).": "foxtrail.ch n'a pas fourni les commandes (statut {status}).",
  "foxtrail.ch ist gerade nicht erreichbar. Bitte später nochmals versuchen.": "foxtrail.ch n'est pas joignable pour le moment. Veuillez réessayer plus tard.",
+ "foxtrail.ch zeigt seit {datum} keine Bewertung mehr (zuletzt {wert}) – vermutlich 4.0 oder tiefer": "foxtrail.ch n'affiche plus de note depuis le {datum} (dernière {wert}) – probablement 4.0 ou moins",
  "für Trails, die es nicht mehr gibt": "pour les trails qui n'existent plus",
  "gemacht": "faits",
  "gesperrt": "bloqué",

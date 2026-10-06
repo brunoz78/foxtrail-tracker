@@ -134,6 +134,8 @@ def _row(r):
     # "Neu ab MM/JJ" bleibt, solange neu_seit gesetzt und der Trail im Angebot ist - nie zusammen
     # mit "nicht mehr im Angebot", das hat Vorrang (Wunsch von Bruno, 2026-09-28)
     d["neu"] = bool(d.get("neu_seit") and d.get("im_angebot") and d.get("quelle") == "foxtrail")
+    # foxtrail.ch zeigt keine Bewertung mehr, vorher gab es eine: vermutlich <= BEWERTUNG_TIEF
+    d["bewertung_tief"] = bool(not d.get("bewertung") and d.get("bewertung_alt"))
     d["grad_label"] = tr(GRAD_LABEL.get(d.get("schwierigkeit") or "", ""))
     d["spielzeit_min"] = spielzeit_min(d.get("start_zeit"), d.get("ziel_zeit"))
     d["spielzeit"] = spielzeit_label(d["spielzeit_min"])
@@ -146,6 +148,11 @@ def get(conn, trail_id):
     return _row(r) if r else None
 
 
+# Bewertungen bis hierhin blendet foxtrail.ch offenbar aus (Beobachtung 2026-10: keine sichtbare
+# unter 4.1, Galileo fiel von 4.1 auf "keine"). Anzeige "≤ 4.0", sortiert direkt unter 4.1.
+BEWERTUNG_TIEF = 4.0
+
+
 # ---- Sortierung (in Python, die Liste hat ~100 Zeilen) ------------------------- #
 SORTS = {
     "ort": lambda t: (t["ort"].lower(), t["name"].lower()),
@@ -154,7 +161,7 @@ SORTS = {
     "typ": lambda t: (_TYP_ORDER.get(t["typ"], 99), t["ort"].lower(), t["name"].lower()),
     "schwierigkeit": lambda t: ((_GRAD_ORDER[t["schwierigkeit"]], t["ort"].lower(), t["name"].lower())
                                 if t.get("schwierigkeit") in _GRAD_ORDER else None),
-    "bewertung": lambda t: t["bewertung"],
+    "bewertung": lambda t: t["bewertung"] or (BEWERTUNG_TIEF if t["bewertung_tief"] else None),
     "dauer": lambda t: (t["dauer_von"], t["dauer_bis"]) if t["dauer_von"] is not None else None,
     "preis": lambda t: t["preis"],
     "datum": lambda t: t["gemacht_datum"],

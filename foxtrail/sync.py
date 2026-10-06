@@ -140,12 +140,20 @@ def _apply(conn, scraped, ts, res):
             res["aktualisiert"] += 1
             res["aenderungen"].append({"art": "aktualisiert", "name": t["name"], "ort": t["ort"],
                                        "felder": felder})
+        # foxtrail.ch blendet Bewertungen von 4.0 und tiefer offenbar aus: faellt eine bekannte
+        # Bewertung weg, bleibt sie mit Datum in bewertung_alt/_weg; kommt wieder eine, gilt die.
+        # (SET-Ausdruecke sehen in SQLite die alten Werte der Zeile.)
+        bew = t.get("bewertung")
         conn.execute(
-            "UPDATE trails SET ort=?, name=?, route=?, typ=?, region=?, bewertung=?, dauer=?, "
+            "UPDATE trails SET ort=?, name=?, route=?, typ=?, region=?, bewertung=?, "
+            "bewertung_alt = CASE WHEN ? IS NOT NULL THEN NULL WHEN bewertung IS NOT NULL THEN bewertung "
+            "ELSE bewertung_alt END, "
+            "bewertung_weg = CASE WHEN ? IS NOT NULL THEN NULL WHEN bewertung IS NOT NULL THEN ? "
+            "ELSE bewertung_weg END, dauer=?, "
             "preis=?, url=?, schwierigkeit=COALESCE(?, schwierigkeit), bild_url=COALESCE(?, bild_url), "
             "im_angebot=1, last_seen=? WHERE id=?",
             (t["ort"], t["name"], t.get("route", ""), t.get("typ", "foxtrail"), t.get("region", ""),
-             t.get("bewertung"), t.get("dauer", ""), t.get("preis"), t.get("url", ""),
+             bew, bew, bew, ts[:10], t.get("dauer", ""), t.get("preis"), t.get("url", ""),
              t.get("schwierigkeit"), t.get("bild_url"), ts, old["id"]))
 
     if umzuege:

@@ -417,3 +417,75 @@ def test_neu_ab_nie_zusammen_mit_nicht_mehr_im_angebot():
     zeus = next(k for k in html.split('class="kzelle') if "<b>Zeus</b>" in k)
     titel = zeus.split('class="ktitel"')[1].split('class="kmeta"')[0]
     assert "nicht mehr im Angebot" in titel and "Neu ab" not in zeus and "kstatus" not in zeus
+
+
+def test_ausgeblendete_bewertung_bleibt_sichtbar():
+    # foxtrail.ch blendet Bewertungen <= 4.0 offenbar aus: die letzte bekannte bleibt erhalten
+    c = conn_mem()
+    sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=4.1), mk("a/gut", bewertung=4.1),
+                   mk("a/ohne", bewertung=None)], "test")
+    r = sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=None), mk("a/gut", bewertung=4.1),
+                       mk("a/ohne", bewertung=None)], "test")
+    assert r["aenderungen"][0]["felder"] == [["bewertung", 4.1, None]]   # Protokoll bleibt sachlich
+    g = trails.get(c, 1)
+    assert g["bewertung"] is None and g["bewertung_alt"] == 4.1 and g["bewertung_tief"]
+    assert g["bewertung_weg"] == db.now()[:10]
+    assert not trails.get(c, 3)["bewertung_tief"]                         # nie eine gehabt
+    c.execute("UPDATE trails SET bewertung_weg = '2026-10-01' WHERE id = 1")
+    sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=None), mk("a/gut", bewertung=4.1),
+                   mk("a/ohne", bewertung=None)], "test")
+    g = trails.get(c, 1)
+    assert g["bewertung_alt"] == 4.1 and g["bewertung_weg"] == "2026-10-01"  # Datum bleibt
+    # Sortierung: 4.1, dann "<= 4.0", dann ohne Bewertung
+    reihe = [t["slug"] for t in trails.list_active(c, sort="bewertung", richtung="desc")]
+    assert reihe == ["a/gut", "ti/galileo", "a/ohne"]
+    # kommt wieder eine Bewertung, gilt nur noch die
+    sync.apply(c, [mk("ti/galileo", name="Galileo", bewertung=4.2), mk("a/gut", bewertung=4.1),
+                   mk("a/ohne", bewertung=None)], "test")
+    g = trails.get(c, 1)
+    assert g["bewertung"] == 4.2 and g["bewertung_alt"] is None and g["bewertung_weg"] is None
+    assert not g["bewertung_tief"]
+
+
+def test_ausgeblendete_bewertung_migration_und_anzeige():
+    # Bestehende DB ohne die Spalten: rueckwirkend aus dem Protokoll
+    c = conn_mem()
+    sync.apply(c, [mk("ti/galileo", name="Galileo", ort="Lugano", bewertung=4.1),
+                   mk("a/helios", name="Helios Mini", bewertung=None),
+                   mk("a/wieder", name="Wieder", bewertung=4.3)], "test")
+    sync.apply(c, [mk("ti/galileo", name="Galileo", ort="Lugano", bewertung=None),
+                   mk("a/helios", name="Helios Mini", bewertung=4.1),
+                   mk("a/wieder", name="Wieder", bewertung=None)], "test")
+    sync.apply(c, [mk("ti/galileo", name="Galileo", ort="Lugano", bewertung=None),
+                   mk("a/helios", name="Helios Mini", bewertung=4.1),
+                   mk("a/wieder", name="Wieder", bewertung=4.1)], "test")
+    c.execute("UPDATE sync_log SET ts = '2026-10-04 04:30:00' WHERE id = 2")
+    c.execute("ALTER TABLE trails DROP COLUMN bewertung_alt")
+    c.execute("ALTER TABLE trails DROP COLUMN bewertung_weg")
+    db.init_db(c)
+    werte = {r[0]: (r[1], r[2]) for r in c.execute("SELECT name, bewertung_alt, bewertung_weg FROM trails")}
+    assert werte == {"Galileo": (4.1, "2026-10-04"), "Helios Mini": (None, None), "Wieder": (None, None)}
+    db.init_db(c)                                                         # zweiter Lauf aendert nichts
+    assert c.execute("SELECT COUNT(*) FROM trails WHERE bewertung_alt IS NOT NULL").fetchone()[0] == 1
+
+    # Anzeige: Kachel, Liste und Detailseite zeigen "<= 4.0" mit Erklaerung
+    from tests.test_app import login
+    import foxtrail
+    import tempfile
+    from foxtrail import users
+    pfad = os.path.join(tempfile.mkdtemp(), "t.db")
+    app = foxtrail.create_app({"DB_PATH": pfad, "TESTING": True, "SECRET_KEY": "test"})
+    with db.session(pfad) as conn:
+        users.add(conn, "admin", "geheim123", is_admin=True)
+        sync.apply(conn, [mk("ti/galileo", name="Galileo", bewertung=4.1)], "test")
+        sync.apply(conn, [mk("ti/galileo", name="Galileo", bewertung=None)], "test")
+        conn.execute("UPDATE trails SET bewertung_weg = '2026-10-04'")
+    cl = app.test_client()
+    login(cl)
+    erkl = "foxtrail.ch zeigt seit 04.10.2026 keine Bewertung mehr (zuletzt 4.1)"
+    kachel = cl.get("/?ansicht=kacheln").get_data(as_text=True)
+    assert "★ ≤ 4.0</span>" in kachel and erkl in kachel
+    liste = cl.get("/?ansicht=liste").get_data(as_text=True)
+    assert "≤ 4.0</span>" in liste and erkl in liste
+    detail = cl.get("/trail/1").get_data(as_text=True)
+    assert "★ ≤ 4.0" in detail and erkl in detail

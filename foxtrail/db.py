@@ -15,6 +15,7 @@ landen, und ein aus dem Archiv heraus als gemacht markierter Trail wandert
 automatisch zurueck in die Hauptliste.
 """
 
+import json
 import sqlite3
 import time
 from contextlib import contextmanager
@@ -32,6 +33,8 @@ CREATE TABLE IF NOT EXISTS trails (
     typ           TEXT NOT NULL DEFAULT 'foxtrail',   -- 'foxtrail' | 'mini' | 'maxi' | 'go'
     region        TEXT NOT NULL DEFAULT '',
     bewertung     REAL,
+    bewertung_alt REAL,                              -- letzte Bewertung, bevor foxtrail.ch sie ausblendete
+    bewertung_weg TEXT,                              -- Datum, seit dem sie fehlt (vermutlich <= 4.0)
     dauer         TEXT NOT NULL DEFAULT '',
     preis         REAL,
     url           TEXT NOT NULL DEFAULT '',
@@ -169,6 +172,21 @@ def _migrate(conn):
     if "bild_url" not in spalten:
         # 2026-09: Titelbild fuer die Kachelansicht; Seed und Abgleich fuellen es.
         conn.execute("ALTER TABLE trails ADD COLUMN bild_url TEXT")
+    if "bewertung_alt" not in spalten:
+        # 2026-10: foxtrail.ch blendet Bewertungen von 4.0 und tiefer offenbar aus. Rueckwirkend
+        # aus dem Protokoll: wessen Bewertung zuletzt auf "keine" fiel und noch fehlt.
+        conn.execute("ALTER TABLE trails ADD COLUMN bewertung_alt REAL")
+        conn.execute("ALTER TABLE trails ADD COLUMN bewertung_weg TEXT")
+        weg = {}
+        for ts, aend in conn.execute("SELECT ts, aenderungen FROM sync_log ORDER BY id").fetchall():
+            for a in json.loads(aend or "[]"):
+                for f, alt, neu in a.get("felder") or []:
+                    if f == "bewertung":
+                        weg[(a["name"], a["ort"])] = (alt, ts[:10]) if alt and not neu else None
+        for (name, ort), w in weg.items():
+            if w:
+                conn.execute("UPDATE trails SET bewertung_alt = ?, bewertung_weg = ? WHERE quelle = 'foxtrail' "
+                             "AND name = ? AND ort = ? AND bewertung IS NULL", (*w, name, ort))
     # 2026-09: Mini/Maxi als eigener Typ (vorher alles 'foxtrail'). Nur Website-Trails -
     # bei manuell erfassten entscheidet der Benutzer selbst. LIKE ist in SQLite fuer
     # ASCII case-insensitive, deckt also "Maxi"/"MAXI" ab (vgl. trails.typ_aus_name).

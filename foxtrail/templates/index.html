@@ -32,7 +32,7 @@
 {%- elif k == 'region' %}<td class="nowrap muted m-region">{{ t.region_label }}</td>
 {%- elif k == 'typ' %}<td class="m-typ">{{ typ_badge(t) }}</td>
 {%- elif k == 'grad' %}<td class="nowrap m-grad">{% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}" title="{{ _('Schwierigkeitsgrad laut foxtrail.ch') }}">{{ t.grad_label }}</span>{% else %}<span class="muted leer">–</span>{% endif %}</td>
-{%- elif k == 'bewertung' %}<td class="r m-bew">{% if t.bewertung %}{{ t.bewertung }}{% else %}<span class="leer">–</span>{% endif %}</td>
+{%- elif k == 'bewertung' %}<td class="r m-bew">{% if t.bewertung %}{{ t.bewertung }}{% elif t.bewertung_tief %}<span class="bew-tief" title="{{ _('foxtrail.ch zeigt seit {datum} keine Bewertung mehr (zuletzt {wert}) – vermutlich 4.0 oder tiefer', datum=t.bewertung_weg|datum, wert=t.bewertung_alt) }}">≤ 4.0</span>{% else %}<span class="leer">–</span>{% endif %}</td>
 {%- elif k == 'dauer' %}<td class="nowrap m-dauer">{{ t.dauer|dauer }}</td>
 {%- elif k == 'preis' %}<td class="r m-preis">{{ t.preis|chf }}</td>
 {%- elif k == 'neu' %}<td class="nowrap m-neu">{{ t.neu_seit|mmjj if t.neu }}</td>
@@ -147,7 +147,8 @@
       <div class="kmeta">{{ typ_badge(t) }}
         {% if t.schwierigkeit %}<span class="grad grad-{{ t.schwierigkeit }}">{{ t.grad_label }}</span>{% endif %}
         {% if t.dauer %}<span>{{ t.dauer|dauer }}</span>{% endif %}
-        {% if t.bewertung %}<span>★ {{ t.bewertung }}</span>{% endif %}
+        {% if t.bewertung %}<span>★ {{ t.bewertung }}</span>
+        {% elif t.bewertung_tief %}<span class="bew-tief" title="{{ _('foxtrail.ch zeigt seit {datum} keine Bewertung mehr (zuletzt {wert}) – vermutlich 4.0 oder tiefer', datum=t.bewertung_weg|datum, wert=t.bewertung_alt) }}">★ ≤ 4.0</span>{% endif %}
       </div>
       {% if t.spielzeit or t.mitspieler or t.url %}
       <div class="kmeta keigen">

@@ -233,6 +233,15 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
     `seed_from_file` trägt `neu_seit` aus dem Seed bei bestehenden Trails nach, wenn dort
     NULL steht; `dev-update.sh` und das community-script rufen `seed` nach dem Update auf.
   - weiterhin gelistet → Metadaten aktualisieren, eigene Einträge unangetastet
+  - **Bewertung ausgeblendet** (2026-10-06, Wunsch von Bruno): foxtrail.ch zeigt offenbar keine
+    Bewertungen von 4.0 und tiefer (keine sichtbare unter 4.1; Galileo fiel von 4.1 auf „keine“,
+    Helios Mini kam mit 4.1 dazu). Fällt eine bekannte Bewertung weg, hält der Abgleich sie in
+    `bewertung_alt` und das Datum in `bewertung_weg` fest; `bewertung` bleibt wie auf der Website
+    (NULL), das Protokoll zeigt sachlich „4.1 → –“. Anzeige „≤ 4.0“ (Liste, Kachel, Detail) mit
+    Tooltip „seit … (zuletzt 4.1)“, Sortierung direkt unter 4.1 (`trails.BEWERTUNG_TIEF`). Kommt
+    wieder eine Bewertung, gilt die und beide Felder werden geleert. Die Migration füllt sie
+    rückwirkend aus `sync_log.aenderungen`. Trails, die nie eine Bewertung hatten (neu oder GO),
+    bleiben „–“ – dort lässt sich „noch keine“ nicht von „zu tief“ unterscheiden.
   - nicht mehr gelistet + gemacht → bleibt in der Hauptliste, „nicht mehr im Angebot
     seit MM/JJ“ (Monat aus `last_seen`, keine eigene Spalte)
   - nicht mehr gelistet + offen → **Archiv**

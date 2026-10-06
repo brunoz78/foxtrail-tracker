@@ -212,6 +212,7 @@ a.kfox:hover, a.kfox:focus-visible { text-decoration: underline; }
 :root[data-theme="dark"] .kbild img { background: #1e1e1e; }
 /* Titelbilder (3:2) fuellen die Flaeche; oben und unten fehlen je knapp 8 % */
 .kbild img.titel { object-fit: cover; }
+.bew-tief { cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; }
 .kleer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   color: var(--green); font-size: 22px; font-weight: bold; text-align: center; padding: 12px; }
 @media (prefers-color-scheme: dark) { :root[data-theme="auto"] .kleer { color: #a9d8b8; } }
