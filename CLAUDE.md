@@ -393,3 +393,8 @@ Alternativ per community-script vom Proxmox-Host aus (README), Update dort mit
 
 - Excel-Export der Liste (Gegenstück zu `import-excel`)
 - Karte nach Region (Filter, Sortierung und Gruppen-Zeilen nach Region gibt es seit 2026-09)
+- Rechnung beim Import als PDF mitspeichern (2026-10-17 besprochen, Bruno: „eventuell später“).
+  Heute verlinkt die Detailseite `api.foxtrail.ch/invoice/print/<bestellung>`; das geht nur, wenn
+  der Browser beim passenden foxtrail.ch-Konto angemeldet ist, sonst 403 „Forbidden resource“.
+  Eine Kopie enthielte Name und Adresse (widerspricht „Kontodaten sofort verwerfen“) – nur mit
+  ausdrücklichem OK, dann nur Admin, nicht für „Nur lesen“, in der Sicherung enthalten.
