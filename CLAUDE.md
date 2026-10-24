@@ -66,6 +66,27 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   `users.darf_schreiben`), Templates blenden Knöpfe über `darf_schreiben` aus. Eigenes Passwort und
   die eigene Spaltenauswahl darf auch „Nur lesen“ ändern. „Nur lesen“ sieht weder Archiv (403, Menü
   „Mehr“ ausgeblendet) noch Team-Code, Bestellnummer und Rechnungslink (`trails.SPALTEN_INTERN`).
+- **Absicherung** (Sicherheits-Review 2026-10-24, Bruno: „alles beheben inklusive CSRF“):
+  **CSRF-Token** je Sitzung (`session["csrf"]`): jedes POST-Formular trägt `{{ csrf_feld() }}`
+  direkt nach dem `<form …>`-Tag, die Passkey-Abfragen schicken den Header `X-CSRF-Token` aus
+  `<meta name="csrf-token">` (`static/webauthn.js`). `_csrf_pruefen` (before_request) weist alles
+  andere mit 400 ab (JSON bei den Passkey-Routen). **Neue Formulare brauchen das Feld** –
+  `tests/test_sicherheit.py` prüft es auf allen Seiten. Im Testmodus ist die Prüfung aus, Tests
+  schalten sie mit `{"CSRF": True}` ein. Für `/admin/sicherung/einlesen` hebt die Prüfung vorher die
+  Upload-Grenze (nur Admin), weil sie das Formular liest. **Weiterleitungen** nur über `_ziel()`
+  (nur „/…“, nie „//“, „/\“ oder Steuerzeichen). **Client-IP**: `ProxyFix` mit
+  `config.proxies()` (`FOXTRAIL_PROXIES`, Default 1 = nginx); nie den ersten Eintrag von
+  `X-Forwarded-For` nehmen, den setzt der Client. **Kopfzeilen** (`_kopfzeilen`): X-Frame-Options
+  DENY, nosniff, Referrer-Policy same-origin, CSP nur `frame-ancestors`/`base-uri`/`form-action`/
+  `object-src` (Inline-Skripte und `onsubmit` bleiben erlaubt); HSTS setzt Brunos nginx. **Sperre**
+  nach Fehlversuchen in der Tabelle `login_sperre` (gemeinsam für alle gunicorn-Prozesse, Einträge
+  ohne Versuch seit einem Tag fallen weg). **TOTP-Code nur einmal** (`twofa.totp_schritt` +
+  `users.totp_verbrauchen`, Spalte `totp_schritt`; auch der Code vom Einrichten ist verbraucht).
+  **Schlussfoto-Download** (`bestellungen.lade_foto`): nur https, nur Hosts mit ausschliesslich
+  öffentlichen Adressen (`_oeffentlich`), Weiterleitungen einzeln geprüft (höchstens drei),
+  gelesen bis `MAX_FOTO_BYTES`. **Sicherung einlesen**: entpackt höchstens 4 × `max_sicherung()`.
+  Bewusst offen gelassen: Abmelden per GET, 2FA entfernen ohne erneutes Passwort, parallele
+  „Jetzt abgleichen“.
 - **Sicherung** (2026-09-21, Wunsch von Bruno): `foxtrail/sicherung.py`, Seite `/admin/sicherung`
   (⚙-Menü, nur Admin) und `manage.py sichern|einlesen`. Eine ZIP-Datei mit `meta.json`, der
   **ganzen SQLite-Datenbank** (konsistente Kopie über die `backup`-API, also auch im laufenden
@@ -337,7 +358,8 @@ proxmox/               community-scripts: ct/, install/, json/ + README.md (Quel
                        Fork brunoz78/ProxmoxVED ist nur die Auslieferung)
 docs/logo.svg          Logo fuer die JSON-Metadaten
 tests/                 pytest: test_scraper (Fixture-HTML), test_sync, test_app (Testclient),
-                       test_bestellungen (anonymisiertes Muster der Kontoseite)
+                       test_bestellungen (anonymisiertes Muster der Kontoseite), test_sicherheit
+                       (CSRF, Weiterleitungen, Kopfzeilen, Proxy-IP, Sperre, TOTP, Foto, ZIP)
 ```
 
 ## Befehle

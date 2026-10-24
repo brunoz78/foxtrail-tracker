@@ -6,7 +6,7 @@
   <p class="muted">{{ _('Eingetragen werden Datum, Mitspieler, Start- und Zielzeit, Team-Code, Bestellnummer und Schlussfoto. Bei bereits gemachten Trails werden fehlende Angaben ergänzt und ein abweichendes Datum korrigiert; die Vorschau zeigt vorher genau, was passiert.') }}</p>
 
   {% if zeilen is none %}
-  <form method="post" autocomplete="off">
+  <form method="post" autocomplete="off">{{ csrf_feld() }}
     <label>{{ _('Konto-Link aus der Mail von foxtrail.ch') }}
       <input type="password" name="link" required autocomplete="off" spellcheck="false"
              placeholder="{{ _('Link „MyAccount öffnen“ aus der Mail') }}"></label>
@@ -21,7 +21,7 @@
     <summary>{{ _('Stattdessen Datei hochladen oder Text einfügen') }}</summary>
   <p class="muted small">{{ _('Im Browser bei foxtrail.ch angemeldet diese Adresse öffnen, mit Ctrl+S als konto.json speichern und hier hochladen:') }}
     <code>https://foxtrail.ch/wp-json/foxtrail/v1/proxy/account</code>. {{ _('Oder den Text der Seite „Deine Bestellungen“ einfügen (dann ohne Zeiten und Foto).') }}</p>
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data">{{ csrf_feld() }}
     <label>{{ _('Datei (konto.json oder gespeicherte Seite)') }}
       <input type="file" name="datei" accept=".json,.html,.htm,.txt"></label>
     <label>{{ _('oder Seitentext einfügen') }}
@@ -55,7 +55,7 @@
     {% endfor %}
     </tbody>
   </table></div>
-  <form method="post">
+  <form method="post">{{ csrf_feld() }}
     <input type="hidden" name="schritt" value="schreiben">
     <input type="hidden" name="daten" value="{{ daten }}">
     <div class="actions">

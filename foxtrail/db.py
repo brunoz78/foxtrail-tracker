@@ -78,7 +78,17 @@ CREATE TABLE IF NOT EXISTS users (
     pw_fest       INTEGER NOT NULL DEFAULT 0,  -- Passwort darf nicht selbst geaendert werden
     twofa_pflicht INTEGER NOT NULL DEFAULT 0,  -- Zweitfaktor muss eingerichtet sein
     totp_secret   TEXT,                        -- Authenticator-App (base32), NULL = keine
+    totp_schritt  INTEGER,                     -- zuletzt benutzter TOTP-Zeitschritt (Code nur einmal)
     passkeys      TEXT NOT NULL DEFAULT '[]'   -- WebAuthn: [{id, public_key, sign_count, name, created}]
+);
+
+-- Sperre nach Fehlversuchen bei der Anmeldung (users.fehlversuch) - in der Datenbank, damit sie
+-- fuer alle gunicorn-Prozesse gemeinsam gilt
+CREATE TABLE IF NOT EXISTS login_sperre (
+    name    TEXT PRIMARY KEY,
+    fehl    INTEGER NOT NULL DEFAULT 0,
+    bis     REAL NOT NULL DEFAULT 0,     -- gesperrt bis (Unix-Zeit)
+    zuletzt REAL NOT NULL                -- letzter Fehlversuch
 );
 
 -- Anmelde-Protokoll (foxtrail/authlog.py)
@@ -148,7 +158,7 @@ def _migrate(conn):
         # 2026-09: Oberflaeche auf Deutsch, Franzoesisch, Italienisch, Englisch
         conn.execute("ALTER TABLE users ADD COLUMN sprache TEXT")
     # 2026-09: erweiterte Benutzerverwaltung (Passwort-Optionen, 2FA)
-    for spalte, typ in (('anzeigename', 'TEXT'), ('pw_wechsel', 'INTEGER NOT NULL DEFAULT 0'), ('pw_fest', 'INTEGER NOT NULL DEFAULT 0'), ('twofa_pflicht', 'INTEGER NOT NULL DEFAULT 0'), ('totp_secret', 'TEXT'), ('passkeys', "TEXT NOT NULL DEFAULT '[]'")):
+    for spalte, typ in (('anzeigename', 'TEXT'), ('pw_wechsel', 'INTEGER NOT NULL DEFAULT 0'), ('pw_fest', 'INTEGER NOT NULL DEFAULT 0'), ('twofa_pflicht', 'INTEGER NOT NULL DEFAULT 0'), ('totp_secret', 'TEXT'), ('passkeys', "TEXT NOT NULL DEFAULT '[]'"), ('totp_schritt', 'INTEGER')):
         if spalte not in u_spalten:
             conn.execute(f"ALTER TABLE users ADD COLUMN {spalte} {typ}")
     if "aenderungen" not in {r[1] for r in conn.execute("PRAGMA table_info(sync_log)")}:

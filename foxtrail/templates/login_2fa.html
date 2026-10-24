@@ -6,7 +6,7 @@
   <h1>{{ _('Zweiter Faktor') }}</h1>
   <p class="muted">{{ _('Anmeldung als {name}', name=anzeigename(u)) }}</p>
   {% if hat_totp %}
-  <form method="post" autocomplete="off">
+  <form method="post" autocomplete="off">{{ csrf_feld() }}
     <label>{{ _('Code aus der Authenticator-App') }}
       <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="8" autofocus required></label>
     <button type="submit" class="voll">{{ _('Anmelden') }}</button>

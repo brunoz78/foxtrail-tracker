@@ -3,6 +3,7 @@
 
 import os
 import sys
+import time
 
 import pyotp
 
@@ -102,7 +103,10 @@ def test_totp_einrichten_und_anmelden(app):
     assert t.get("/").status_code == 302                                   # noch nicht angemeldet
     r = t.post("/login/2fa", data={"code": "123456"}, follow_redirects=True)
     assert "Der Code stimmt nicht." in r.get_data(as_text=True)
-    t.post("/login/2fa", data={"code": pyotp.TOTP(secret).now()})
+    # der Code vom Einrichten ist verbraucht; der des naechsten Zeitschritts gilt (Toleranz)
+    r = t.post("/login/2fa", data={"code": pyotp.TOTP(secret).now()}, follow_redirects=True)
+    assert "Der Code stimmt nicht." in r.get_data(as_text=True)
+    t.post("/login/2fa", data={"code": pyotp.TOTP(secret).at(time.time() + 30)})
     assert t.get("/").status_code == 200
     # Profil: entfernen
     c.post("/profil/totp-entfernen")

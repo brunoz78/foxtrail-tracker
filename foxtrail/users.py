@@ -10,6 +10,7 @@ TOTP-Schluessel und Passkeys (JSON-Liste in users.passkeys).
 
 import json
 import re
+import time
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -301,6 +302,40 @@ def set_totp(conn, username, secret):
 
 def clear_totp(conn, username):
     set_totp(conn, username, None)
+
+
+def totp_verbrauchen(conn, username, schritt):
+    """Ein TOTP-Code gilt nur einmal: True, wenn sein Zeitschritt (twofa.totp_schritt) neuer ist
+    als der zuletzt benutzte - dann ist er ab jetzt verbraucht."""
+    if schritt is None:
+        return False
+    cur = conn.execute("UPDATE users SET totp_schritt = ? WHERE username = ? "
+                       "AND COALESCE(totp_schritt, -1) < ?", (schritt, username, schritt))
+    return cur.rowcount == 1
+
+
+# ---- Sperre nach Fehlversuchen (Tabelle login_sperre, fuer alle Prozesse gemeinsam) ---------- #
+def gesperrt(conn, name):
+    r = conn.execute("SELECT bis FROM login_sperre WHERE name = ?", ((name or "")[:100],)).fetchone()
+    return bool(r and r[0] > time.time())
+
+
+def fehlversuch(conn, name, max_fehl, sperre_s):
+    """Fehlversuch zaehlen; True, wenn er die Sperre ausloest. Eintraege ohne Versuch seit einem
+    Tag fallen weg - erfundene Benutzernamen fuellen die Tabelle so nicht auf Dauer."""
+    name, jetzt = (name or "")[:100], time.time()
+    conn.execute("DELETE FROM login_sperre WHERE zuletzt < ? AND bis < ?", (jetzt - 86400, jetzt))
+    conn.execute("INSERT INTO login_sperre (name, fehl, bis, zuletzt) VALUES (?, 1, 0, ?) "
+                 "ON CONFLICT(name) DO UPDATE SET fehl = fehl + 1, zuletzt = excluded.zuletzt", (name, jetzt))
+    fehl = conn.execute("SELECT fehl FROM login_sperre WHERE name = ?", (name,)).fetchone()[0]
+    if fehl >= max_fehl:
+        conn.execute("UPDATE login_sperre SET fehl = 0, bis = ? WHERE name = ?", (jetzt + sperre_s, name))
+        return True
+    return False
+
+
+def sperre_aufheben(conn, name):
+    conn.execute("DELETE FROM login_sperre WHERE name = ?", ((name or "")[:100],))
 
 
 def add_passkey(conn, username, cred):

@@ -12,19 +12,23 @@ anmelden - der Browser sucht den Passkey selbst.
 import base64
 import datetime
 import functools
+import hmac
 import json
 import os
+import secrets
 import tempfile
-import time
 
 from flask import (Flask, Response, abort, flash, g, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, session, url_for)
+from markupsafe import Markup
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from . import (authlog, bestellungen, config, db, fotos, i18n, sicherung, sync, trails, twofa,
                users, version, zeitplan)
 from .i18n import tr
 
-_ATTEMPTS = {}   # username -> [fails, lock_until_ts]
+# Anfragen, die kein CSRF-Token brauchen: nur lesende Methoden
+_SICHERE_METHODEN = ("GET", "HEAD", "OPTIONS")
 
 
 def create_app(test_config=None):
@@ -41,6 +45,11 @@ def create_app(test_config=None):
         app.config.update(test_config)
     if app.testing:
         app.config["UPDATE_CHECK"] = False                  # Tests fragen nie bei GitHub an
+    # CSRF-Token in allen Formularen; Tests schalten die Pruefung mit {"CSRF": True} gezielt ein
+    app.config["CSRF"] = (test_config or {}).get("CSRF", not app.testing)
+    # Hinter nginx: Client-IP und Schema aus dem Eintrag des eigenen Proxys (config.proxies)
+    if config.proxies():
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=config.proxies(), x_proto=config.proxies())
 
     with db.session(app.config["DB_PATH"]):
         pass   # Schema anlegen
@@ -77,8 +86,7 @@ def create_app(test_config=None):
             me = current_user()
             if me:
                 users.set_sprache(get_conn(), me["username"], wahl)
-        nxt = request.form.get("next") or ""
-        return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
+        return redirect(_ziel(request.form.get("next")))
 
     # ---- Auth ---------------------------------------------------------- #
     def current_user():
@@ -119,24 +127,27 @@ def create_app(test_config=None):
         return wrapped
 
     def _ip():
-        xff = request.headers.get("X-Forwarded-For", "")
-        return (xff.split(",")[0].strip() if xff else request.remote_addr) or ""
+        # Hinter einem Proxy hat ProxyFix remote_addr schon aus dessen Eintrag gesetzt; den
+        # ersten Eintrag von X-Forwarded-For kann der Client selbst faelschen.
+        return request.remote_addr or ""
+
+    def _ziel(nxt):
+        """Weiterleitung nur innerhalb dieser Seite ("/..."), nie auf fremde Adressen."""
+        nxt = nxt or ""
+        if nxt.startswith("/") and not nxt.startswith(("//", "/\\")) and not any(ord(z) < 32 for z in nxt):
+            return nxt
+        return url_for("index")
 
     def _log(ereignis, benutzer, detail=""):
         """Anmelde-Protokoll: benutzer = wer handelt, detail = wen/was es betraf."""
         authlog.schreiben(get_conn(), ereignis, benutzer, _ip(), request.user_agent.string, detail)
 
     def _locked(name):
-        rec = _ATTEMPTS.get(name)
-        return bool(rec and rec[1] > time.time())
+        return users.gesperrt(get_conn(), name)
 
     def _fail(name, ereignis="fail"):
-        rec = _ATTEMPTS.setdefault(name, [0, 0])
-        rec[0] += 1
         _log(ereignis, name)
-        if rec[0] >= config.LOGIN_MAX_FAILS:
-            rec[1] = time.time() + config.LOGIN_LOCK_SECONDS
-            rec[0] = 0
+        if users.fehlversuch(get_conn(), name, config.LOGIN_MAX_FAILS, config.LOGIN_LOCK_SECONDS):
             _log("lock", name)
 
     def _neue_sitzung(**werte):
@@ -151,10 +162,10 @@ def create_app(test_config=None):
     def _fertig_anmelden(username, detail=""):
         nxt = session.get("login_next") or ""
         _neue_sitzung(user=username)
-        _ATTEMPTS.pop(username, None)
+        users.sperre_aufheben(get_conn(), username)
         users.angemeldet(get_conn(), username)
         _log("login", username, detail)
-        return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
+        return redirect(_ziel(nxt))
 
     def _offen():
         """Benutzer im 2FA-Zwischenschritt (Passwort stimmt, zweiter Faktor fehlt noch)."""
@@ -170,6 +181,34 @@ def create_app(test_config=None):
         if me and me.get("pw_wechsel") and not me.get("pw_fest"):
             return redirect(url_for("pw_aendern"))
         return None
+
+    # ---- CSRF: jede aendernde Anfrage bringt das Token der Sitzung mit -------- #
+    def csrf_token():
+        if "csrf" not in session:
+            session["csrf"] = secrets.token_urlsafe(32)
+        return session["csrf"]
+
+    app.jinja_env.globals["csrf_token"] = csrf_token
+    app.jinja_env.globals["csrf_feld"] = lambda: Markup(
+        '<input type="hidden" name="csrf" value="{}">').format(csrf_token())   # format escapt den Wert
+
+    @app.before_request
+    def _csrf_pruefen():
+        """Formulare schicken das Feld "csrf", die Passkey-Abfragen (webauthn.js) den Header
+        X-CSRF-Token. Ergaenzt SameSite=Lax: schuetzt auch vor anderen Seiten derselben Domain."""
+        if request.method in _SICHERE_METHODEN or not app.config["CSRF"]:
+            return None
+        if request.endpoint == "sicherung_einlesen" and (current_user() or {}).get("is_admin"):
+            request.max_content_length = config.max_sicherung()     # gilt ab dem Lesen des Formulars
+        soll = session.get("csrf", "")
+        ist = request.headers.get("X-CSRF-Token") or request.form.get("csrf", "")
+        if soll and hmac.compare_digest(soll.encode(), ist.encode()):
+            return None
+        meldung = tr("Die Anfrage konnte nicht bestätigt werden – bitte die Seite neu laden und "
+                     "nochmals versuchen.")
+        if request.is_json or request.path.startswith(("/login/passkey/", "/2fa/passkey/")):
+            return jsonify({"error": meldung}), 400
+        return render_template("fehler.html", fehler=meldung), 400
 
     @app.template_filter("chf")
     def _chf(v):
@@ -215,12 +254,19 @@ def create_app(test_config=None):
                 "repo_url": version.REPO_URL, "update": update}
 
     @app.after_request
-    def _kein_seitencache(resp):
+    def _kopfzeilen(resp):
         # Seiten zeigen den aktuellen Stand der Liste: nicht zwischenspeichern, auch nicht fuer
         # "Zurueck" im Browser (sonst steht ein eben gemachter Trail scheinbar noch im Archiv).
         # Bilder, CSS usw. behalten ihre eigenen Cache-Zeiten.
         if resp.mimetype == "text/html":
             resp.headers["Cache-Control"] = "no-store"
+        # Nicht in fremde Seiten einbetten (Clickjacking), keine Typ-Raterei, kein Referer nach
+        # aussen, Formulare nur an die eigene Seite. HSTS setzt der Reverse-Proxy.
+        resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("Referrer-Policy", "same-origin")
+        resp.headers.setdefault("Content-Security-Policy",
+                                "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'")
         return resp
 
     @app.errorhandler(403)
@@ -284,7 +330,8 @@ def create_app(test_config=None):
             if _locked(u["username"]):
                 flash(tr("Zu viele Fehlversuche – bitte in {n} Minuten erneut.", n=config.LOGIN_LOCK_SECONDS // 60),
                       "fehler")
-            elif twofa.verify_totp(u.get("totp_secret"), request.form.get("code", "")):
+            elif users.totp_verbrauchen(get_conn(), u["username"], twofa.totp_schritt(
+                    u.get("totp_secret"), request.form.get("code", ""))):          # jeder Code nur einmal
                 return _fertig_anmelden(u["username"])
             else:
                 _fail(u["username"], "fail2fa")
@@ -354,8 +401,10 @@ def create_app(test_config=None):
             session["totp_neu"] = twofa.new_secret()
         secret = session["totp_neu"]
         if request.method == "POST":
-            if twofa.verify_totp(secret, request.form.get("code", "")):
+            schritt = twofa.totp_schritt(secret, request.form.get("code", ""))
+            if schritt is not None:
                 users.set_totp(get_conn(), u["username"], secret)
+                users.totp_verbrauchen(get_conn(), u["username"], schritt)   # gilt nicht nochmals
                 session.pop("totp_neu", None)
                 _log("twofa_on", u["username"], "TOTP")
                 flash(tr("Authenticator-App eingerichtet."))
@@ -482,8 +531,7 @@ def create_app(test_config=None):
             gewaehlt = [k for k in trails.SPALTEN_KEYS if k in request.form.getlist("spalte")]
             users.set_spalten(get_conn(), current_user()["username"], gewaehlt)
             flash(tr("Spaltenauswahl gespeichert."))
-        nxt = request.form.get("next") or ""
-        return redirect(nxt if nxt.startswith("/") and not nxt.startswith("//") else url_for("index"))
+        return redirect(_ziel(request.form.get("next")))
 
     @app.route("/statistik")
     @login_required
@@ -528,15 +576,15 @@ def create_app(test_config=None):
                     flash(tr("Gespeichert – als gemacht markiert (Datum bzw. Mitspieler eingetragen)."))
                 else:
                     flash(tr("Gespeichert."))
-                return redirect(request.form.get("next") or url_for("index"))
+                return redirect(_ziel(request.form.get("next")))
             except trails.TrailError as ex:
                 conn.rollback()                     # nichts halb speichern (manuelle Felder)
                 flash(str(ex), "fehler")
                 t = dict(t, **{k: request.form.get(k, "") for k in
                                ("gemacht_datum", "mitspieler", "bemerkung")})
                 t["gemacht"] = 1 if request.form.get("gemacht") else 0
-        return render_template("trail_form.html", t=t, next=request.args.get("next") or
-                               request.form.get("next") or url_for("index"))
+        return render_template("trail_form.html", t=t,
+                               next=_ziel(request.args.get("next") or request.form.get("next")))
 
     @app.route("/trail/neu", methods=["GET", "POST"])
     @schreiben_required

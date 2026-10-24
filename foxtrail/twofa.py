@@ -15,9 +15,11 @@ die Seite hinter einem Reverse Proxy mit dem oeffentlichen Hostnamen arbeitet.
 """
 
 import base64
+import hmac
 import io
 import ipaddress
 import json
+import time
 
 import pyotp
 import qrcode
@@ -79,6 +81,21 @@ def verify_totp(secret, code):
     if not (secret and code.isdigit()):
         return False
     return pyotp.TOTP(secret).verify(code, valid_window=1)
+
+
+def totp_schritt(secret, code, jetzt=None):
+    """Zeitschritt (30 s), zu dem der Code passt - mit einem Schritt Toleranz wie verify_totp -,
+    sonst None. Fuer die Anmeldung: users.totp_verbrauchen laesst jeden Schritt nur einmal zu."""
+    code = (code or "").strip().replace(" ", "")
+    if not (secret and code.isdigit()):
+        return None
+    totp = pyotp.TOTP(secret)
+    jetzt = time.time() if jetzt is None else jetzt
+    for versatz in (0, -1, 1):
+        t = int(jetzt + versatz * totp.interval)
+        if hmac.compare_digest(totp.at(t).encode(), code.encode()):
+            return t // totp.interval
+    return None
 
 
 def qr_svg(data):

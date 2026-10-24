@@ -4,7 +4,7 @@
 <div class="card narrow">
   <h1>{{ _('Trail manuell erfassen') }}</h1>
   <p class="muted">{{ _('Für Trails, die es auf foxtrail.ch nicht mehr gibt, die ihr aber gemacht habt. Manuell erfasste Trails werden vom Abgleich nie verändert.') }}</p>
-  <form method="post">
+  <form method="post">{{ csrf_feld() }}
     <fieldset><legend>{{ _('Trail-Daten') }}</legend>
       <div class="row">
         <label>{{ _('Ort') }} <input name="ort" value="{{ form.ort or '' }}" required maxlength="100" autofocus></label>

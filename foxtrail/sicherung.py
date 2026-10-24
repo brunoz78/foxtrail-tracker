@@ -186,6 +186,10 @@ def einlesen(zip_pfad, db_path=None, foto_dir=None):
         if DB_NAME not in z.namelist():
             raise SicherungFehler("Das ist keine Sicherung des Foxtrail-Trackers "
                                   "(foxtrail.db fehlt).")
+        # Schutz vor ZIP-Bomben: zipfile liest nie mehr als file_size, die Summe ist verlaesslich
+        entpackt = sum(i.file_size for i in z.infolist())
+        if entpackt > config.max_sicherung() * 4:
+            raise SicherungFehler(f"Die Sicherung wäre entpackt zu gross ({entpackt // 2**20} MB).")
         with tempfile.TemporaryDirectory() as tmp:
             neu = os.path.join(tmp, DB_NAME)
             with z.open(DB_NAME) as quelle, open(neu, "wb") as ziel:

@@ -243,12 +243,14 @@ legt an:
 (Datenbank und Konfiguration bleiben erhalten).
 
 **Reverse-Proxy / HTTPS:** Hinter nginx, Caddy oder Traefik läuft die App ohne weitere
-Einstellungen. Zwei optionale Absicherungen in `/etc/foxtrail-tracker.env`, danach
+Einstellungen. Optionale Absicherungen in `/etc/foxtrail-tracker.env`, danach
 `systemctl restart foxtrail`:
 
 * `FORCE_HTTPS=1` – das Login-Cookie wird nur noch über HTTPS gesendet. Nur setzen, wenn
   ausschliesslich über den Proxy mit HTTPS zugegriffen wird: Über `http://<IP>:8080`
   funktioniert die Anmeldung danach nicht mehr.
+* `FOXTRAIL_PROXIES=0` – nur, wenn **kein** Reverse-Proxy davor steht. Standard ist `1`: die IP
+  im Anmelde-Protokoll kommt dann aus dem Eintrag, den der Proxy anhängt (nicht fälschbar).
 * `BIND=127.0.0.1:8080` – die App ist nur noch im Container selbst erreichbar. Nur
   sinnvoll, wenn der Proxy **im selben Container** läuft. Läuft er woanders (eigener LXC,
   Nginx Proxy Manager, …), `BIND=0.0.0.0:8080` lassen und den direkten Zugriff bei Bedarf
@@ -382,6 +384,7 @@ Alles über Umgebungsvariablen (siehe `deploy/foxtrail-tracker.env.example`):
 | `FOXTRAIL_DB` | `/var/lib/foxtrail-tracker/foxtrail.db` bzw. `data/foxtrail.local.db` | SQLite-Datei |
 | `BIND` | `0.0.0.0:8080` | Adresse für gunicorn (systemd-Unit und Docker); `127.0.0.1:8080` nur, wenn der Reverse-Proxy im selben Container läuft |
 | `FORCE_HTTPS` | `0` | `1` = Session-Cookie nur über HTTPS; dann keine Anmeldung mehr über `http://` |
+| `FOXTRAIL_PROXIES` | `1` | Anzahl Reverse-Proxys vor der App: die Client-IP fürs Anmelde-Protokoll stammt aus deren Eintrag in `X-Forwarded-For`; `0`, wenn die App ohne Proxy erreichbar ist |
 | `FOXTRAIL_LIST_URL` | `https://foxtrail.ch/kategorie/trails/` | Quelle des Abgleichs |
 | `SCRAPER_DELAY` | `1.0` | Pause zwischen Seitenabrufen (Sekunden) |
 | `LOGIN_MAX_FAILS` / `LOGIN_LOCK_SECONDS` | `5` / `300` | Sperre nach Fehlversuchen |

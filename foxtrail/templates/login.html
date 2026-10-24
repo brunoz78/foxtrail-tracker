@@ -16,7 +16,7 @@
   <p class="pkmsg" id="pk-msg"></p>
   <div class="trenner">{{ _('oder mit Passwort') }}</div>
   {% endif %}
-  <form method="post">
+  <form method="post">{{ csrf_feld() }}
     <label>{{ _('Benutzername') }} <input name="username" autocomplete="username" autofocus required></label>
     <label>{{ _('Passwort') }} <input name="password" type="password" autocomplete="current-password" required></label>
     <button type="submit" class="voll">{{ _('Anmelden') }}</button>

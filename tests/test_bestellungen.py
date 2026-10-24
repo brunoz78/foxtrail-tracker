@@ -191,12 +191,21 @@ def test_eintraege_aus_json_roundtrip():
 
 
 class _Antwort:
-    def __init__(self, content=b"\xff\xd8bild", ct="image/jpeg", status=200):
+    def __init__(self, content=b"\xff\xd8bild", ct="image/jpeg", status=200, location=None):
         self.content, self.headers, self.status_code = content, {"Content-Type": ct}, status
+        if location:
+            self.headers["Location"] = location
 
     def raise_for_status(self):
         if self.status_code != 200:
             raise bestellungen.requests.HTTPError("kaputt")
+
+    def iter_content(self, groesse):
+        for i in range(0, len(self.content), groesse):
+            yield self.content[i:i + groesse]
+
+    def close(self):
+        pass
 
 
 def _db():
@@ -246,13 +255,14 @@ def test_anwenden_json_mit_fotos(tmp_path, monkeypatch):
     c = _db()
     aufrufe = []
 
-    def fake_get(url, timeout=None, headers=None):
+    def fake_get(url, **kw):
         aufrufe.append(url)
         if "CCCCCC" in url:
             return _Antwort(status=500)
         return _Antwort()
 
     monkeypatch.setattr(bestellungen.requests, "get", fake_get)
+    monkeypatch.setattr(bestellungen, "_oeffentlich", lambda url: True)
     plan = bestellungen.zuordnen(c, bestellungen.parse(json.dumps(MUSTER_JSON)), heute="2026-09-17")
     res = bestellungen.anwenden(c, plan, "bruno", foto_dir=str(tmp_path / "fotos"))
     assert res == {"gesetzt": 2, "ergaenzt": 0, "gekennzeichnet": 0, "fotos": 1, "foto_fehler": 1}
@@ -265,7 +275,7 @@ def test_anwenden_json_mit_fotos(tmp_path, monkeypatch):
     assert hera["foto"] is None and hera["foto_url"].endswith("/CCCCCC/2.jpg") and hera["mitspieler"] == 6
     assert len(aufrufe) == 2
     # erneuter Lauf: Foto fuer Hera wird nachgeholt (fehlt noch), Columban bleibt unangetastet
-    monkeypatch.setattr(bestellungen.requests, "get", lambda url, timeout=None, headers=None: _Antwort())
+    monkeypatch.setattr(bestellungen.requests, "get", lambda url, **kw: _Antwort())
     plan = bestellungen.zuordnen(c, bestellungen.parse(json.dumps(MUSTER_JSON)), heute="2026-09-17")
     assert [a for _, t, a, _ in plan if t and t["name"] == "Hera"] == ["ergaenzen"]
     res = bestellungen.anwenden(c, plan, "bruno", foto_dir=str(tmp_path / "fotos"))

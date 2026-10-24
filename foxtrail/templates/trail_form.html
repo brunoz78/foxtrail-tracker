@@ -28,7 +28,7 @@
     {% endif %}
     {% if darf_schreiben %}
     <div class="foto-actions">
-      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" enctype="multipart/form-data">
+      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" enctype="multipart/form-data">{{ csrf_feld() }}
         <input type="hidden" name="next" value="{{ next }}">
         <input type="hidden" name="aktion" value="hochladen">
         <label class="upload"><input type="file" name="datei" accept="image/jpeg,image/png,image/webp" required
@@ -36,12 +36,12 @@
         <noscript><button type="submit" class="small">{{ _('Hochladen') }}</button></noscript>
       </form>
       {% if t.foto %}
-      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" onsubmit='return confirm({{ _("Foto wirklich löschen?")|tojson }})'>
+      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}" onsubmit='return confirm({{ _("Foto wirklich löschen?")|tojson }})'>{{ csrf_feld() }}
         <input type="hidden" name="next" value="{{ next }}">
         <button type="submit" name="aktion" value="loeschen" class="secondary small">{{ _('Foto löschen') }}</button>
       </form>
       {% elif t.foto_url %}
-      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}">
+      <form method="post" action="{{ url_for('trail_foto', tid=t.id) }}">{{ csrf_feld() }}
         <input type="hidden" name="next" value="{{ next }}">
         <button type="submit" name="aktion" value="foxtrail" class="secondary small" title="{{ _('Das Schlussfoto aus deiner Bestellung erneut herunterladen') }}">{{ _('Schlussfoto von foxtrail.ch laden') }}</button>
       </form>
@@ -60,7 +60,7 @@
   </dl>
   <div class="actions"><a class="btn-link" href="{{ next }}">{{ _('Zurück') }}</a></div>
   {% else %}
-  <form method="post">
+  <form method="post">{{ csrf_feld() }}
     <input type="hidden" name="next" value="{{ next }}">
     {% if t.quelle == 'manual' %}
     <fieldset><legend>{{ _('Trail-Daten') }}</legend>
@@ -102,7 +102,7 @@
   {% if t.quelle != 'manual' and (t.gemacht or t.bemerkung or t.erfasst_von or t.foto or t.bestellung
                                   or t.team_code or t.start_zeit or t.foto_url) %}
   <form method="post" action="{{ url_for('trail_zuruecksetzen', tid=t.id) }}" class="danger"
-        onsubmit='return confirm({{ _("Alle eigenen Einträge zu diesem Trail entfernen? Gemacht, Datum, Mitspieler, Bemerkung, Importdaten und Foto werden gelöscht.")|tojson }})'>
+        onsubmit='return confirm({{ _("Alle eigenen Einträge zu diesem Trail entfernen? Gemacht, Datum, Mitspieler, Bemerkung, Importdaten und Foto werden gelöscht.")|tojson }})'>{{ csrf_feld() }}
     <input type="hidden" name="next" value="{{ next }}">
     <button type="submit" class="secondary">{{ _('Einträge zurücksetzen') }}</button>
     <span class="muted small">{{ _('Trail wieder auf „offen“ und ohne eigene Angaben') }}</span>
@@ -110,7 +110,7 @@
   {% endif %}
   {% if t.quelle == 'manual' %}
   <form method="post" action="{{ url_for('trail_delete', tid=t.id) }}" class="danger"
-        onsubmit='return confirm({{ _("Diesen manuell erfassten Trail wirklich löschen?")|tojson }})'>
+        onsubmit='return confirm({{ _("Diesen manuell erfassten Trail wirklich löschen?")|tojson }})'>{{ csrf_feld() }}
     <button type="submit" class="secondary">{{ _('Manuellen Trail löschen') }}</button>
   </form>
   {% endif %}

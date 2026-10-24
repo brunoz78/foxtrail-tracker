@@ -60,7 +60,7 @@
 {# Ein GET-Formular fuer Suche UND die Haken-Filter in den Spaltenkoepfen #}
 {# Die Haken im Menue "Spalten" gehoeren per form="spalten-form" zu diesem Formular -
    verschachtelte Formulare gibt es in HTML nicht. #}
-<form id="spalten-form" method="post" action="{{ url_for('spalten_speichern') }}">
+<form id="spalten-form" method="post" action="{{ url_for('spalten_speichern') }}">{{ csrf_feld() }}
   <input type="hidden" name="next" value="{{ request.full_path }}">
 </form>
 <form method="get" id="liste">

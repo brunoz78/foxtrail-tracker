@@ -135,6 +135,7 @@
  "Der Zeitplan-Prozess im Docker-Container meldet sich nicht mehr. Container neu starten und das Log prüfen:": "Il processo di pianificazione nel container Docker non risponde più. Riavviare il container e controllare il log:",
  "Detail": "Dettaglio",
  "Die Adresse passt nicht zum Passkey.": "L’indirizzo non corrisponde alla passkey.",
+ "Die Anfrage konnte nicht bestätigt werden – bitte die Seite neu laden und nochmals versuchen.": "Non è stato possibile verificare la richiesta – ricarica la pagina e riprova.",
  "Die Anmeldung bei foxtrail.ch hat nicht geklappt (keine Sitzung erhalten).": "L'accesso a foxtrail.ch non è riuscito (nessuna sessione ricevuta).",
  "Die Anmeldung mit Passkey geht nur über HTTPS mit einem Hostnamen.": "L'accesso con passkey funziona solo tramite HTTPS con un nome host.",
  "Die Datei enthält alle Daten, auch Passwort-Hashes und Zweitfaktor-Schlüssel. Bewahre sie so sicher auf wie die Anmeldedaten selbst.": "Il file contiene tutti i dati, anche gli hash delle password e le chiavi del secondo fattore. Conservalo in modo sicuro come le credenziali stesse.",

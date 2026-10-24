@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#2e5b3e">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <script>document.documentElement.classList.add('js');
 /* Darstellung (auto/hell/dunkel) vor dem ersten Zeichnen setzen, sonst blitzt die falsche auf */
 try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.documentElement.setAttribute('data-theme', t); } } catch (e) {}</script>
@@ -14,7 +15,7 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
 <body>
 {# Sprachwahl: kleine POST-Formulare (gespeichert beim Benutzer bzw. in der Sitzung) #}
 {% macro sprachwahl() -%}
-<form method="post" action="{{ url_for('sprache_setzen') }}" class="sprachwahl">
+<form method="post" action="{{ url_for('sprache_setzen') }}" class="sprachwahl">{{ csrf_feld() }}
   <input type="hidden" name="next" value="{{ request.full_path }}">
   {% for code, name in sprachen.items() %}<button type="submit" name="sprache" value="{{ code }}" title="{{ name }}"
     class="{{ 'on' if code == sprache }}" lang="{{ code }}" {{ 'aria-current="true"'|safe if code == sprache }}>{{ code|upper }}</button>{% endfor %}

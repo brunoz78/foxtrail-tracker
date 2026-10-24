@@ -21,7 +21,7 @@
   <p class="muted small">{{ _('Für eine Neuinstallation: die Datei auswählen und bestätigen. Datenbank und Fotos werden dabei vollständig ersetzt.') }}</p>
   <div class="flash fehler" role="alert">{{ _('Alles, was jetzt in dieser Installation steht, geht dabei verloren. Die bisherige Datenbank bleibt als Datei „.alt-<Zeitpunkt>“ neben der aktuellen liegen.') }}</div>
   <form method="post" action="{{ url_for('sicherung_einlesen') }}" enctype="multipart/form-data"
-        onsubmit='return confirm({{ _("Wirklich einlesen? Alle jetzigen Daten werden ersetzt.")|tojson }})'>
+        onsubmit='return confirm({{ _("Wirklich einlesen? Alle jetzigen Daten werden ersetzt.")|tojson }})'>{{ csrf_feld() }}
     <label class="upload">{{ _('Datei wählen') }}
       <input type="file" name="datei" accept=".zip,application/zip" required></label>
     <label class="chk"><input type="checkbox" name="bestaetigt" value="1" required>

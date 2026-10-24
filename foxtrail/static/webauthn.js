@@ -72,10 +72,15 @@
     if (!r.ok || j.error) { throw new Error(j.error || ("HTTP " + r.status)); }
     return j;
   }
+  function csrfToken() {
+    var m = document.querySelector('meta[name="csrf-token"]');
+    return m ? m.getAttribute("content") : "";
+  }
   async function postJSON(url, obj) {
     var r = await fetch(url, {
       method: "POST", credentials: "same-origin",
-      headers: { "Content-Type": "application/json" }, body: JSON.stringify(obj)
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken() },
+      body: JSON.stringify(obj)
     });
     var j = await r.json().catch(function () { return {}; });
     if (!r.ok || j.error) { throw new Error(j.error || ("HTTP " + r.status)); }

@@ -19,7 +19,6 @@ from tests.test_sync import mk  # noqa: E402
 
 @pytest.fixture
 def app(tmp_path):
-    foxtrail._ATTEMPTS.clear()
     path = str(tmp_path / "t.db")
     app = foxtrail.create_app({"DB_PATH": path, "TESTING": True, "SECRET_KEY": "test"})
     with db.session(path) as conn:
@@ -199,7 +198,8 @@ def test_import_seite(app, monkeypatch, tmp_path):
     from foxtrail import bestellungen
     from tests.test_bestellungen import MUSTER_JSON, _Antwort
     app.config["FOTO_DIR"] = str(tmp_path / "fotos")
-    monkeypatch.setattr(bestellungen.requests, "get", lambda url, timeout=None, headers=None: _Antwort())
+    monkeypatch.setattr(bestellungen.requests, "get", lambda url, **kw: _Antwort())
+    monkeypatch.setattr(bestellungen, "_oeffentlich", lambda url: True)
     c = app.test_client()
     login(c, "gast")
     assert c.get("/import").status_code == 403                      # nur Admins
@@ -295,8 +295,8 @@ def test_import_laedt_geloeschtes_foto_nicht_neu(app, monkeypatch, tmp_path):
     from foxtrail import bestellungen
     from tests.test_bestellungen import MUSTER_JSON, _Antwort
     geladen = []
-    monkeypatch.setattr(bestellungen.requests, "get",
-                        lambda url, timeout=None, headers=None: geladen.append(url) or _Antwort())
+    monkeypatch.setattr(bestellungen.requests, "get", lambda url, **kw: geladen.append(url) or _Antwort())
+    monkeypatch.setattr(bestellungen, "_oeffentlich", lambda url: True)
     with db.session(app.config["DB_PATH"]) as conn:
         conn.execute("UPDATE trails SET name = 'Columban', foto = '' WHERE slug = 'aargau/aquae'")
         plan = bestellungen.zuordnen(conn, bestellungen.parse(json.dumps(MUSTER_JSON)))

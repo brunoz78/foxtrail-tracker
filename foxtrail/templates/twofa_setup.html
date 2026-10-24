@@ -12,7 +12,7 @@
     <div>
       <p class="muted small">{{ _('Schlüssel zum Eintippen:') }}</p>
       <code class="schluessel">{{ secret }}</code>
-      <form method="post" autocomplete="off">
+      <form method="post" autocomplete="off">{{ csrf_feld() }}
         <label>{{ _('Bestätigungscode') }}
           <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="8" required></label>
         <button type="submit">{{ _('Authenticator-App aktivieren') }}</button>

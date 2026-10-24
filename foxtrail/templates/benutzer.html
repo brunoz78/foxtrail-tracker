@@ -28,13 +28,13 @@
       <a class="btn small" href="{{ url_for('user_admin', edit=u.username) }}#formular">{{ _('Bearbeiten') }}</a>
       {% if has_2fa(u) %}
       <form method="post" action="{{ url_for('user_2fa_reset', name=u.username) }}" class="inline"
-            onsubmit='return confirm({{ _("Zweitfaktor von {name} zurücksetzen?", name=u.username)|tojson }})'>
+            onsubmit='return confirm({{ _("Zweitfaktor von {name} zurücksetzen?", name=u.username)|tojson }})'>{{ csrf_feld() }}
         <button type="submit" class="small secondary">{{ _('2FA zurücksetzen') }}</button>
       </form>
       {% endif %}
       {% if u.username != me.username %}
       <form method="post" action="{{ url_for('user_delete', name=u.username) }}" class="inline"
-            onsubmit='return confirm({{ _("Benutzer {name} wirklich löschen?", name=u.username)|tojson }})'>
+            onsubmit='return confirm({{ _("Benutzer {name} wirklich löschen?", name=u.username)|tojson }})'>{{ csrf_feld() }}
         <button type="submit" class="small secondary">{{ _('Löschen') }}</button>
       </form>
       {% endif %}
@@ -46,7 +46,7 @@
 
 <div class="card narrow" id="formular">
   <h2>{{ _('Benutzer bearbeiten: {name}', name=edit.username) if edit else _('Neuer Benutzer') }}</h2>
-  <form method="post" action="{{ url_for('user_save') }}" autocomplete="off">
+  <form method="post" action="{{ url_for('user_save') }}" autocomplete="off">{{ csrf_feld() }}
     <input type="hidden" name="modus" value="{{ 'bearbeiten' if edit else 'neu' }}">
     <div class="row">
       <label>{{ _('Benutzername') }} <input name="username" value="{{ edit.username if edit else '' }}" required autocomplete="username"

@@ -25,7 +25,7 @@
         <td class="r">
           {% if u.totp_secret %}
           <form method="post" action="{{ url_for('profil_totp_entfernen') }}" class="inline"
-                onsubmit='return confirm({{ _("Authenticator-App entfernen?")|tojson }})'>
+                onsubmit='return confirm({{ _("Authenticator-App entfernen?")|tojson }})'>{{ csrf_feld() }}
             <button type="submit" class="small secondary">{{ _('Entfernen') }}</button>
           </form>
           {% else %}
@@ -39,7 +39,7 @@
         <td>{{ _('aktiv') }}</td>
         <td class="r">
           <form method="post" action="{{ url_for('profil_passkey_entfernen') }}" class="inline"
-                onsubmit='return confirm({{ _("Passkey entfernen?")|tojson }})'>
+                onsubmit='return confirm({{ _("Passkey entfernen?")|tojson }})'>{{ csrf_feld() }}
             <input type="hidden" name="id" value="{{ p.id }}">
             <button type="submit" class="small secondary">{{ _('Entfernen') }}</button>
           </form>

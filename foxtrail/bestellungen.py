@@ -61,9 +61,11 @@ Schlussfoto einmalig nach config.foto_dir() (oeffentliche URL, kein Login noetig
 
 import datetime
 import html
+import ipaddress
 import json
 import os
 import re
+import socket
 import time
 from urllib.parse import parse_qs, urljoin, urlparse
 
@@ -436,19 +438,53 @@ def zuordnen(conn, eintraege, heute=None, benutzer=None):
     return plan
 
 
+def _oeffentlich(url):
+    """Nur https und nur Hosts, die ausschliesslich auf oeffentliche Adressen zeigen: die Adresse
+    stammt aus der importierten Datei, der Server soll dafuer nie ins eigene Netz greifen."""
+    teile = urlparse(url)
+    if teile.scheme != "https" or not teile.hostname:
+        return False
+    try:
+        adressen = {a[4][0] for a in socket.getaddrinfo(teile.hostname, teile.port or 443,
+                                                         proto=socket.IPPROTO_TCP)}
+        return bool(adressen) and all(ipaddress.ip_address(a.split("%")[0]).is_global for a in adressen)
+    except (OSError, UnicodeError, ValueError):
+        return False
+
+
 def lade_foto(url, foto_dir, trail_id):
     """Schlussfoto holen und als <trail_id>.jpg|png ablegen. Gibt den Dateinamen zurueck,
-    None bei jedem Fehler - ein fehlendes Foto darf den Import nie abbrechen."""
+    None bei jedem Fehler - ein fehlendes Foto darf den Import nie abbrechen. Hoechstens
+    _MAX_WEITERLEITUNGEN Weiterleitungen, jede wieder geprueft; gelesen wird nur bis MAX_FOTO_BYTES."""
     try:
-        r = requests.get(url, timeout=20, headers={"User-Agent": config.USER_AGENT})
-        r.raise_for_status()
-        ct = r.headers.get("Content-Type", "")
-        if not ct.startswith("image/") or len(r.content) > MAX_FOTO_BYTES:
+        for _ in range(_MAX_WEITERLEITUNGEN + 1):
+            if not _oeffentlich(url):
+                return None
+            r = requests.get(url, timeout=20, headers={"User-Agent": config.USER_AGENT},
+                             stream=True, allow_redirects=False)
+            if r.status_code in (301, 302, 303, 307, 308) and r.headers.get("Location"):
+                url = urljoin(url, r.headers["Location"])
+                r.close()
+                continue
+            break
+        else:
             return None
+        try:
+            r.raise_for_status()
+            ct = r.headers.get("Content-Type", "")
+            if not ct.startswith("image/"):
+                return None
+            daten = b""
+            for teil in r.iter_content(64 * 1024):
+                daten += teil
+                if len(daten) > MAX_FOTO_BYTES:
+                    return None
+        finally:
+            r.close()
         name = f"{trail_id}.png" if "png" in ct else f"{trail_id}.jpg"
         os.makedirs(foto_dir, exist_ok=True)
         with open(os.path.join(foto_dir, name), "wb") as fh:
-            fh.write(r.content)
+            fh.write(daten)
         return name
     except (requests.RequestException, OSError):
         return None

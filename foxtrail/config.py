@@ -9,6 +9,8 @@ Konfiguration ueber Umgebungsvariablen (z. B. systemd EnvironmentFile).
                        jedem Neustart ein zufaelliger Key erzeugt und alle Logins
                        verfallen)
   FORCE_HTTPS          "1" -> Session-Cookie nur ueber HTTPS (hinter Reverse-Proxy)
+  FOXTRAIL_PROXIES     Anzahl Reverse-Proxys vor der App (Default 1, z. B. nginx); 0 = direkt
+                       erreichbar, dann zaehlen X-Forwarded-For/-Proto nicht
   FOXTRAIL_FOTOS       Ordner fuer Schlussfotos aus dem Bestellungs-Import
                        (Default: <Ordner der DB>/fotos)
   FOXTRAIL_LIST_URL    Kategorie-URL, die der Scraper abgrast
@@ -44,6 +46,15 @@ def foto_dir():
 
 def secret_key():
     return os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
+
+def proxies():
+    """Anzahl Reverse-Proxys vor der App. Von X-Forwarded-For zaehlt nur der Eintrag, den der
+    eigene Proxy angehaengt hat - was der Client selbst mitschickt, steht weiter vorne."""
+    try:
+        return max(0, int(os.environ.get("FOXTRAIL_PROXIES", "1")))
+    except ValueError:
+        return 1
 
 
 def force_https():

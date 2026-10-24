@@ -4,7 +4,7 @@
 <div class="card narrow">
   <h1>{{ _('Passwort ändern') }}</h1>
   {% if erzwungen %}<div class="flash hinweis">{{ _('Bevor es weitergeht, musst du ein eigenes Passwort setzen.') }}</div>{% endif %}
-  <form method="post" autocomplete="off">
+  <form method="post" autocomplete="off">{{ csrf_feld() }}
     <label>{{ _('Altes Passwort') }} <input type="password" name="old" autocomplete="current-password" autofocus required></label>
     <label>{{ _('Neues Passwort') }} <input type="password" name="new" autocomplete="new-password" required minlength="8"
            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}" title="{{ _('Mindestens 8 Zeichen mit Gross- und Kleinbuchstaben, einer Zahl und einem Sonderzeichen.') }}"></label>
