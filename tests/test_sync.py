@@ -537,3 +537,6 @@ def test_tief_nur_fuer_trails_im_angebot():
     assert not ohne["im_angebot"] and not ohne["bewertung_tief"]                   # gemacht, Hauptliste
     assert not gefallen["im_angebot"] and not gefallen["bewertung_tief"]           # offen, Archiv
     assert gefallen["bewertung_alt"] == 4.1                                         # Wert bleibt gespeichert
+    # Sortierung: nicht mehr gelistet ohne Bewertung steht wie "keine Bewertung" am Ende
+    reihe = [t["name"] for t in trails.list_active(c, sort="bewertung", richtung="desc")]
+    assert reihe[-1] == "Ohne"

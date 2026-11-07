@@ -153,7 +153,7 @@ def get(conn, trail_id):
 
 # Bewertungen bis hierhin blendet foxtrail.ch offenbar aus (Beobachtung 2026-10: keine sichtbare
 # unter 4.1, Galileo fiel von 4.1 auf "keine"). Anzeige "≤ 4.0", sortiert direkt unter 4.1;
-# GO-Trails und manuelle ohne Bewertung bleiben leer.
+# GO-Trails, manuelle und nicht mehr gelistete ohne Bewertung bleiben leer.
 BEWERTUNG_TIEF = 4.0
 
 
