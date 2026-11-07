@@ -87,6 +87,14 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
   gelesen bis `MAX_FOTO_BYTES`. **Sicherung einlesen**: entpackt höchstens 4 × `max_sicherung()`.
   Bewusst offen gelassen: Abmelden per GET, 2FA entfernen ohne erneutes Passwort, parallele
   „Jetzt abgleichen“.
+- **Barrierefreiheit** (UI-Review 2026-11-07, Wunsch von Bruno): Text-Kontrast mind. 4.5:1 in hell und
+  dunkel (`--muted` hell `#5a645f`; MINI-Badge behaelt das Gruen `#4caf50`, aber dunkle Schrift;
+  Haken „gemacht“ im Dunkelmodus `#2e7d32`). Etiketten mind. 12 px. Einheitlicher Tastatur-Fokus
+  ueber `--fokus` (in der gruenen Kopfzeile weiss, in Menues und Schublade `--fokus-basis`) – nie
+  `outline: none` ohne Ersatz. „Zum Inhalt springen“ (`.sprunglink` → `main#inhalt`), aktiver
+  Menuepunkt mit `aria-current="page"`, Suchfelder `type="search"` mit `aria-label`.
+  `prefers-reduced-motion` schaltet Uebergaenge ab. Auf dem Handy sind alle Bedienelemente
+  mind. 24 px (Sortier-Links, Filter-▾, Link zu foxtrail.ch).
 - **Sicherung** (2026-09-21, Wunsch von Bruno): `foxtrail/sicherung.py`, Seite `/admin/sicherung`
   (⚙-Menü, nur Admin) und `manage.py sichern|einlesen`. Eine ZIP-Datei mit `meta.json`, der
   **ganzen SQLite-Datenbank** (konsistente Kopie über die `backup`-API, also auch im laufenden

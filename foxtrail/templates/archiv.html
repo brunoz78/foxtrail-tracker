@@ -8,7 +8,8 @@
 <form method="get" class="filter">
   {% if sort != 'ort' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
   {% if richtung != 'asc' %}<input type="hidden" name="dir" value="{{ richtung }}">{% endif %}
-  <input name="q" value="{{ q }}" placeholder="{{ _('Suche Ort, Name, Route') }}">
+  <input type="search" name="q" value="{{ q }}" placeholder="{{ _('Suche Ort, Name, Route') }}"
+         aria-label="{{ _('Suche Ort, Name, Route') }}">
   <button type="submit">{{ _('Suchen') }}</button>
   {% if q %}<a class="btn-link" href="{{ index_url(q='') }}">{{ _('Suche zurücksetzen') }}</a>{% endif %}
   <span class="muted small">{{ _('{n} Trails', n=rows|length) }}</span>

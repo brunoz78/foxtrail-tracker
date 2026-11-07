@@ -1,17 +1,18 @@
 :root {
   --green: #2e5b3e; --green-dark: #23472f; --green-light: #e6f0e9;
-  --bg: #f6f7f5; --card: #fff; --text: #1e2420; --muted: #6b7570; --line: #dfe4e0;
+  --bg: #f6f7f5; --card: #fff; --text: #1e2420; --muted: #5a645f; --line: #dfe4e0;
   --warn-bg: #fff3cd; --warn-text: #7a5a00; --done-bg: #eef7f0;
   --gemacht: #4caf50; --gemacht-bg: #e3f2e4; --gemacht-text: #2e7d32;   /* Gruen wie das MINI-Badge */
+  --fokus-basis: #2e5b3e;              /* Tastatur-Fokus; in der gruenen Kopfzeile weiss */
 }
 @media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] { --bg: #14181a; --card: #1d2326; --text: #e8ebe9; --muted: #98a39d; --line: #2e373b;
           --green-light: #21382a; --done-bg: #1c2b21; --warn-bg: #3a2f10; --warn-text: #f0c24b;
-          --gemacht-bg: #1f3824; --gemacht-text: #3f9443; }
+          --gemacht-bg: #1f3824; --gemacht-text: #2e7d32; --fokus-basis: #8fd0a6; }
 }
 :root[data-theme="dark"] { --bg: #14181a; --card: #1d2326; --text: #e8ebe9; --muted: #98a39d; --line: #2e373b;
           --green-light: #21382a; --done-bg: #1c2b21; --warn-bg: #3a2f10; --warn-text: #f0c24b;
-          --gemacht-bg: #1f3824; --gemacht-text: #3f9443; }
+          --gemacht-bg: #1f3824; --gemacht-text: #2e7d32; --fokus-basis: #8fd0a6; }
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.45 Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
 a { color: var(--green); }
@@ -50,7 +51,7 @@ h2 { font-size: 17px; margin: 24px 0 8px; }
 :root[data-theme="dark"] .flash.fehler { background: #4a1414; border-left-color: #ef5350; color: #ffcdd2; } :root[data-theme="dark"] .flash.hinweis { background: #4a3000; border-left-color: #ffa726; color: #ffe0b2; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
-.tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--line); color: var(--muted); margin-left: 4px; vertical-align: middle; }
+.tag { display: inline-block; font-size: 12px; padding: 1px 6px; border-radius: 4px; background: var(--line); color: var(--muted); margin-left: 4px; vertical-align: middle; }
 .tag.warn { background: var(--warn-bg); color: var(--warn-text); }
 .tag.new { background: var(--green); color: #fff; }
 .ext { text-decoration: none; margin-left: 4px; font-size: 12px; }
@@ -136,10 +137,10 @@ tr.grp td { background: var(--green-light); color: var(--green); font-weight: bo
 :root[data-theme="dark"] tr.grp td { color: #a9d8b8; }
 
 /* ---- Typ-Badges (wie die Bild-Badges auf foxtrail.ch) ------------------- */
-.typ { display: inline-block; font-size: 11px; font-weight: bold; letter-spacing: .04em; padding: 1px 7px; border-radius: 10px;
+.typ { display: inline-block; font-size: 12px; font-weight: bold; letter-spacing: .04em; padding: 1px 7px; border-radius: 10px;
   line-height: 1.5; white-space: nowrap; vertical-align: middle; }
 .typ-std { color: var(--muted); border: 1px solid var(--line); font-weight: normal; letter-spacing: 0; }
-.typ-mini { background: #4caf50; color: #fff; }
+.typ-mini { background: #4caf50; color: #0b2e13; }
 .typ-maxi { background: var(--green); color: #fff; }
 .typ-go { background: #3b4a56; color: #fff; }
 .typ-go svg { vertical-align: -1px; margin-right: 3px; }
@@ -524,3 +525,31 @@ tr.aenderungen li { margin: 3px 0; }
 .pkmsg.err { color: #c62828; }
 :root[data-theme="dark"] .pkmsg.err { color: #ef9a9a; }
 @media (prefers-color-scheme: dark) { :root[data-theme="auto"] .pkmsg.err { color: #ef9a9a; } }
+
+/* ---- Barrierefreiheit (UI-Review 2026-11-07) ------------------------------- */
+/* Tastatur-Fokus: ueberall derselbe sichtbare Rahmen; in der gruenen Kopfzeile weiss, in
+   Menues und in der Schublade (heller bzw. dunkler Grund) wieder in der Grundfarbe */
+:root { --fokus: var(--fokus-basis); }
+:focus-visible { outline: 2px solid var(--fokus); outline-offset: 2px; }
+.top { --fokus: #fff; }
+.top .dd-menu { --fokus: var(--fokus-basis); }
+a.kachel:focus-visible { outline-offset: 6px; }          /* ausserhalb des gruenen Rings */
+/* "Zum Inhalt springen": erst beim Tabben sichtbar */
+.sprunglink { position: absolute; left: 8px; top: -60px; z-index: 100; background: var(--card); color: var(--text);
+  padding: 10px 14px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.sprunglink:focus { top: 8px; }
+/* Wer weniger Bewegung eingestellt hat: keine Animationen, Kacheln heben sich nicht */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important;
+    scroll-behavior: auto !important; }
+  .kzelle:hover, .kzelle:focus-within { transform: none; }
+}
+@media (max-width: 700px) {
+  .js .top nav { --fokus: var(--fokus-basis); }
+  /* Fingerfreundliche Ziele (mind. 24 px, hier ~32 px): Sortier-Links, Filter-Knoepfe, Link zu foxtrail.ch */
+  .kachel-kopf a.sort, table.karten th a.sort { display: inline-block; min-width: 24px; padding: 6px 0;
+    text-align: center; }                                  /* auch das schmale ★ */
+  details.hf summary { padding: 6px 8px; }
+  a.kfox { right: 6px; bottom: 4px; padding: 6px 8px; }
+  form.sprachwahl button { padding: 6px 9px; }
+}

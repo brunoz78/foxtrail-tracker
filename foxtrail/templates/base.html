@@ -13,6 +13,7 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%232e5b3e'/%3E%3C/svg%3E">
 </head>
 <body>
+<a class="sprunglink" href="#inhalt">{{ _('Zum Inhalt springen') }}</a>
 {# Sprachwahl: kleine POST-Formulare (gespeichert beim Benutzer bzw. in der Sitzung) #}
 {% macro sprachwahl() -%}
 <form method="post" action="{{ url_for('sprache_setzen') }}" class="sprachwahl">{{ csrf_feld() }}
@@ -38,9 +39,9 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
   <nav id="hauptnav" aria-label="{{ _('Menü') }}">
     <div class="nav-kopf"><b>🦊 Foxtrail-Tracker</b>
       <button type="button" class="navclose" aria-label="{{ _('Menü schliessen') }}">✕</button></div>
-    <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}">{{ _('Trails') }}
+    <a href="{{ url_for('index') }}" class="{{ 'on' if ep == 'index' }}"{{ ' aria-current="page"'|safe if ep == 'index' }}>{{ _('Trails') }}
       {% if stats %}<span class="pill">{{ stats.gemacht }}/{{ stats.total }}</span>{% endif %}</a>
-    <a href="{{ url_for('statistik') }}" class="{{ 'on' if ep == 'statistik' }}">{{ _('Statistik') }}</a>
+    <a href="{{ url_for('statistik') }}" class="{{ 'on' if ep == 'statistik' }}"{{ ' aria-current="page"'|safe if ep == 'statistik' }}>{{ _('Statistik') }}</a>
     {# Aufklappmenues: <details> geht ohne JavaScript; ein paar Zeilen JS schliessen sie beim
        Klick daneben bzw. wenn ein anderes aufgeht #}
     {% if darf_schreiben %}
@@ -48,10 +49,10 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
       <summary class="{{ 'on' if ep in ('archiv', 'trail_new') }}">{{ _('Mehr') }}
         {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}</summary>
       <div class="dd-menu">
-        <a href="{{ url_for('archiv') }}" class="{{ 'on' if ep == 'archiv' }}">{{ _('Archiv') }}
+        <a href="{{ url_for('archiv') }}" class="{{ 'on' if ep == 'archiv' }}"{{ ' aria-current="page"'|safe if ep == 'archiv' }}>{{ _('Archiv') }}
           {% if stats and stats.archiv %}<span class="pill grey">{{ stats.archiv }}</span>{% endif %}
           <small>{{ _('nicht mehr angebotene, offene Trails') }}</small></a>
-        <a href="{{ url_for('trail_new') }}" class="{{ 'on' if ep == 'trail_new' }}">{{ _('+ Trail manuell erfassen') }}
+        <a href="{{ url_for('trail_new') }}" class="{{ 'on' if ep == 'trail_new' }}"{{ ' aria-current="page"'|safe if ep == 'trail_new' }}>{{ _('+ Trail manuell erfassen') }}
           <small>{{ _('für Trails, die es nicht mehr gibt') }}</small></a>
       </div>
     </details>
@@ -67,15 +68,15 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
           <small>{{ _('Update: im Proxmox-LXC') }} <code>update</code>, {{ _('mit Docker') }} <code>docker compose pull</code></small></a>
         {% endif %}
         {% if me.is_admin %}
-        <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if ep == 'import_bestellungen' }}">{{ _('Import') }}
+        <a href="{{ url_for('import_bestellungen') }}" class="{{ 'on' if ep == 'import_bestellungen' }}"{{ ' aria-current="page"'|safe if ep == 'import_bestellungen' }}>{{ _('Import') }}
           <small>{{ _('Bestellungen von foxtrail.ch übernehmen') }}</small></a>
-        <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if ep == 'sync_admin' }}">{{ _('Abgleich') }}
+        <a href="{{ url_for('sync_admin') }}" class="{{ 'on' if ep == 'sync_admin' }}"{{ ' aria-current="page"'|safe if ep == 'sync_admin' }}>{{ _('Abgleich') }}
           <small>{{ _('Trail-Liste mit foxtrail.ch abgleichen') }}</small></a>
-        <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}">{{ _('Benutzer') }}
+        <a href="{{ url_for('user_admin') }}" class="{{ 'on' if ep == 'user_admin' }}"{{ ' aria-current="page"'|safe if ep == 'user_admin' }}>{{ _('Benutzer') }}
           <small>{{ _('Benutzer anlegen und verwalten') }}</small></a>
-        <a href="{{ url_for('sicherung_admin') }}" class="{{ 'on' if ep == 'sicherung_admin' }}">{{ _('Sicherung') }}
+        <a href="{{ url_for('sicherung_admin') }}" class="{{ 'on' if ep == 'sicherung_admin' }}"{{ ' aria-current="page"'|safe if ep == 'sicherung_admin' }}>{{ _('Sicherung') }}
           <small>{{ _('alles sichern und wieder einlesen') }}</small></a>
-        <a href="{{ url_for('auth_protokoll') }}" class="{{ 'on' if ep == 'auth_protokoll' }}">{{ _('Anmelde-Protokoll') }}
+        <a href="{{ url_for('auth_protokoll') }}" class="{{ 'on' if ep == 'auth_protokoll' }}"{{ ' aria-current="page"'|safe if ep == 'auth_protokoll' }}>{{ _('Anmelde-Protokoll') }}
           <small>{{ _('Anmeldungen, Fehlversuche, Änderungen an Konten') }}</small></a>
         {% endif %}
         <a href="{{ url_for('profil') }}" class="{{ 'on' if ep in ('profil', 'pw_aendern') }}">{{ _('Profil') }}
@@ -120,7 +121,7 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
   <div class="kopf-rechts">{{ themeknopf() }}{{ sprachwahl() }}</div>
   {% endif %}
 </header>
-<main class="{% block main_class %}{% endblock %}">
+<main id="inhalt" class="{% block main_class %}{% endblock %}">
   {% with msgs = get_flashed_messages(with_categories=true) %}
     {% for art, m in msgs %}<div class="flash {{ art }}"{% if art == 'fehler' %} role="alert"{% endif %}>{{ m }}</div>{% endfor %}
   {% endwith %}

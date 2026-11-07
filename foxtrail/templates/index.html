@@ -74,7 +74,8 @@
   {% if f != 'alle' %}<input type="hidden" name="f" value="{{ f }}">{% endif %}
   {% if sort != 'ort' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
   {% if richtung != 'asc' %}<input type="hidden" name="dir" value="{{ richtung }}">{% endif %}
-  <input name="q" value="{{ q }}" placeholder="{{ _('Suche Ort, Name, Route, Bemerkung') }}">
+  <input type="search" name="q" value="{{ q }}" placeholder="{{ _('Suche Ort, Name, Route, Bemerkung') }}"
+         aria-label="{{ _('Suche Ort, Name, Route, Bemerkung') }}">
   <button type="submit">{{ _('Suchen') }}</button>
   {% if q or sel.typ or sel.region or sel.dauer or sel.grad or sel.erfasst %}
   <a class="btn-link" href="{{ index_url(q='', typ=[], region=[], dauer=[], grad=[], erfasst=[]) }}">{{ _('Filter zurücksetzen') }}</a>
