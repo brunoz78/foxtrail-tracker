@@ -519,3 +519,21 @@ def test_ohne_bewertung_gilt_als_tief_ausser_go():
     login(cl)
     detail = cl.get("/trail/1").get_data(as_text=True)
     assert "★ ≤ 4.0" in detail and "foxtrail.ch zeigt keine Bewertung – vermutlich 4.0 oder tiefer" in detail
+
+
+def test_tief_nur_fuer_trails_im_angebot():
+    # "<= 4.0" heisst: foxtrail.ch listet den Trail, zeigt aber keine Bewertung. Wer nicht mehr
+    # gelistet ist (gemacht oder im Archiv), bekommt die Vermutung nicht (Wunsch von Bruno, 2026-11-07)
+    c = conn_mem()
+    weitere = [mk(f"a/weiter{i}", name=f"Weiter {i}") for i in range(4)]       # sonst bricht der Abgleich ab (< 50 %)
+    sync.apply(c, [mk("a/ohne", name="Ohne", bewertung=None), mk("a/gefallen", name="Gefallen", bewertung=4.1),
+                   *weitere], "test")
+    sync.apply(c, [mk("a/ohne", name="Ohne", bewertung=None), mk("a/gefallen", name="Gefallen", bewertung=None),
+                   *weitere], "test")
+    assert trails.get(c, 1)["bewertung_tief"] and trails.get(c, 2)["bewertung_tief"]   # beide im Angebot
+    trails.update_done(c, 1, {"gemacht": "1", "gemacht_datum": "2026-09-01"}, "u")
+    assert sync.apply(c, weitere, "test")["ok"]                                    # beide verschwinden
+    ohne, gefallen = trails.get(c, 1), trails.get(c, 2)
+    assert not ohne["im_angebot"] and not ohne["bewertung_tief"]                   # gemacht, Hauptliste
+    assert not gefallen["im_angebot"] and not gefallen["bewertung_tief"]           # offen, Archiv
+    assert gefallen["bewertung_alt"] == 4.1                                         # Wert bleibt gespeichert

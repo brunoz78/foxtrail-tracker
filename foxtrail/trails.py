@@ -134,10 +134,11 @@ def _row(r):
     # "Neu ab MM/JJ" bleibt, solange neu_seit gesetzt und der Trail im Angebot ist - nie zusammen
     # mit "nicht mehr im Angebot", das hat Vorrang (Wunsch von Bruno, 2026-09-28)
     d["neu"] = bool(d.get("neu_seit") and d.get("im_angebot") and d.get("quelle") == "foxtrail")
-    # foxtrail.ch zeigt keine Bewertung: vermutlich <= BEWERTUNG_TIEF. Gilt fuer alle Website-Trails
-    # ausser GO (die haben nie eine), auch ohne bekannten frueheren Wert (Wunsch von Bruno, 2026-10-06)
+    # foxtrail.ch listet den Trail, zeigt aber keine Bewertung: vermutlich <= BEWERTUNG_TIEF. Gilt fuer
+    # alle Website-Trails im Angebot ausser GO (die haben nie eine), auch ohne bekannten frueheren Wert
+    # (Wunsch von Bruno, 2026-10-06); nicht mehr gelistete bekommen die Vermutung nicht (2026-11-07)
     d["bewertung_tief"] = bool(not d.get("bewertung") and d.get("quelle") == "foxtrail"
-                               and d.get("typ") != "go")
+                               and d.get("typ") != "go" and d.get("im_angebot"))
     d["grad_label"] = tr(GRAD_LABEL.get(d.get("schwierigkeit") or "", ""))
     d["spielzeit_min"] = spielzeit_min(d.get("start_zeit"), d.get("ziel_zeit"))
     d["spielzeit"] = spielzeit_label(d["spielzeit_min"])

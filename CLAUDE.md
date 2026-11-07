@@ -272,6 +272,8 @@ gehören ihr. Disclaimer im README und im Footer nicht entfernen.
     rückwirkend aus `sync_log.aenderungen`. **Alle** Website-Trails ohne Bewertung gelten als
     „≤ 4.0“ (2026-10-06, Wunsch von Bruno), auch ohne bekannten früheren Wert (dann Tooltip ohne
     Datum) – ausser GO-Trails (haben nie eine) und manuell erfasste (`trails._row` → `bewertung_tief`).
+    Nur für Trails **im Angebot** (2026-11-07, Bruno): nicht mehr gelistete (gemacht oder Archiv,
+    auch die ehemaligen aus dem Seed) zeigen „–“; `bewertung_alt` bleibt trotzdem gespeichert.
   - nicht mehr gelistet + gemacht → bleibt in der Hauptliste, „nicht mehr im Angebot
     seit MM/JJ“ (Monat aus `last_seen`, keine eigene Spalte)
   - nicht mehr gelistet + offen → **Archiv**
