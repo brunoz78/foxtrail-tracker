@@ -79,7 +79,7 @@ try { var t = localStorage.getItem('foxtrail-theme'); if (t) { document.document
         <a href="{{ url_for('auth_protokoll') }}" class="{{ 'on' if ep == 'auth_protokoll' }}"{{ ' aria-current="page"'|safe if ep == 'auth_protokoll' }}>{{ _('Anmelde-Protokoll') }}
           <small>{{ _('Anmeldungen, Fehlversuche, Änderungen an Konten') }}</small></a>
         {% endif %}
-        <a href="{{ url_for('profil') }}" class="{{ 'on' if ep in ('profil', 'pw_aendern') }}">{{ _('Profil') }}
+        <a href="{{ url_for('profil') }}" class="{{ 'on' if ep in ('profil', 'pw_aendern') }}"{{ ' aria-current="page"'|safe if ep in ('profil', 'pw_aendern') }}>{{ _('Profil') }}
           <small>{{ _('Passwort und Zweitfaktor') }}</small></a>
         <div class="dd-sprache"><span>{{ _('Sprache') }}</span>{{ sprachwahl() }}</div>
         <a href="{{ repo_url }}" class="dd-trenner" target="_blank" rel="noopener">{{ _('Über Foxtrail-Tracker') }} ↗

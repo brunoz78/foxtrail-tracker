@@ -5,6 +5,7 @@ import datetime
 import io
 import json
 import os
+import re
 import sys
 import time
 
@@ -788,3 +789,19 @@ def test_abgleich_zyklus(app, monkeypatch):
 
 def test_healthz(app):
     assert app.test_client().get("/healthz").data == b"ok"
+
+
+def test_barrierefreiheit_markup(app):
+    # Sprunglink und Ziel auf jeder Seite, genau ein aktiver Menuepunkt, Suchfelder mit Namen
+    c = app.test_client()
+    login(c)
+    for pfad, aktiv in (("/", "Trails"), ("/statistik", "Statistik"), ("/archiv", "Archiv"),
+                        ("/profil", "Profil"), ("/passwort", "Profil")):
+        html = c.get(pfad).get_data(as_text=True)
+        assert 'class="sprunglink" href="#inhalt"' in html and '<main id="inhalt"' in html, pfad
+        treffer = re.findall(r'aria-current="page">\s*([^<\s][^<]*)', html)
+        assert [t.strip() for t in treffer] == [aktiv], (pfad, treffer)
+    for pfad in ("/", "/archiv"):
+        html = c.get(pfad).get_data(as_text=True)
+        feld = re.search(r'<input type="search" name="q"[^>]*>', html)
+        assert feld and 'aria-label="' in feld.group(0), pfad

@@ -8,11 +8,11 @@
 @media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] { --bg: #14181a; --card: #1d2326; --text: #e8ebe9; --muted: #98a39d; --line: #2e373b;
           --green-light: #21382a; --done-bg: #1c2b21; --warn-bg: #3a2f10; --warn-text: #f0c24b;
-          --gemacht-bg: #1f3824; --gemacht-text: #2e7d32; --fokus-basis: #8fd0a6; }
+          --gemacht-bg: #1f3824; --fokus-basis: #8fd0a6; }
 }
 :root[data-theme="dark"] { --bg: #14181a; --card: #1d2326; --text: #e8ebe9; --muted: #98a39d; --line: #2e373b;
           --green-light: #21382a; --done-bg: #1c2b21; --warn-bg: #3a2f10; --warn-text: #f0c24b;
-          --gemacht-bg: #1f3824; --gemacht-text: #2e7d32; --fokus-basis: #8fd0a6; }
+          --gemacht-bg: #1f3824; --fokus-basis: #8fd0a6; }
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.45 Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
 a { color: var(--green); }
@@ -162,7 +162,7 @@ form label.upload { display: inline-block; margin: 0; cursor: pointer; font-size
   border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; background: var(--card); position: relative; }
 form label.upload:hover { border-color: var(--green); }
 form label.upload input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; margin: 0; }
-form label.upload:focus-within { outline: 2px solid var(--green); outline-offset: 1px; }
+form label.upload:focus-within { outline: 2px solid var(--fokus); outline-offset: 1px; }
 a.thumb { display: inline-block; vertical-align: middle; margin-left: 6px; line-height: 0; }
 a.thumb img { width: 44px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 0 0 1px var(--line); }
 a.thumb:hover img { box-shadow: 0 0 0 2px var(--green); }
@@ -298,6 +298,8 @@ dl.rekorde dd { margin: 0; }
   .js .top nav a:hover, .js .top nav a.on, .js .top nav details.dd summary:hover,
   .js .top nav details.dd summary.on, .js .top nav details.dd[open] summary { background: var(--green-light); }
   .js .top nav .pill { background: var(--green-light); color: var(--green); }
+  /* "js" sitzt am <html> selbst, also :root.js - nicht ":root .js" */
+  :root.js[data-theme="dark"] .top nav .pill:not(.grey) { color: #a9d8b8; }
   .js .top nav .pill.grey { background: var(--line); color: var(--muted); }
   .js .top nav .themebtn { display: flex; align-items: center; gap: 10px; width: 100%;
     padding: 12px 10px; border-color: var(--line); color: var(--text); font-size: 16px; }
@@ -400,7 +402,7 @@ form.inline .pw input { padding-right: 40px; }
 button.pw-auge { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: transparent;
   border: 0; color: var(--muted); padding: 6px 8px; line-height: 0; cursor: pointer; }
 button.pw-auge:hover { background: transparent; color: var(--green); }
-button.pw-auge:focus-visible { outline: 2px solid var(--green); border-radius: 4px; }
+button.pw-auge:focus-visible { outline: 2px solid var(--fokus); border-radius: 4px; }
 
 /* ---- Spaltenauswahl der Liste ------------------------------------------------ */
 details.spw { position: relative; }
@@ -431,6 +433,8 @@ details.spw .hf-menu { padding-bottom: 0; }
 .sp-actions { position: sticky; bottom: 0; background: var(--card); padding: 8px 0; flex-wrap: wrap; gap: 8px; }
 .sp-actions button[disabled] { opacity: .5; cursor: default; }
 .sp-mark { color: var(--green); font-weight: bold; margin-left: 4px; }
+@media (prefers-color-scheme: dark) { :root[data-theme="auto"] .sp-mark { color: #a9d8b8; } }
+:root[data-theme="dark"] .sp-mark { color: #a9d8b8; }
 .sp-hinweis { background: var(--green-light); border-radius: 4px; padding: 4px 6px; margin: 0 0 6px; }
 
 /* Mitlaufende Scrollleiste ueber der Tabelle */
@@ -534,11 +538,20 @@ tr.aenderungen li { margin: 3px 0; }
 .top { --fokus: #fff; }
 .top .dd-menu { --fokus: var(--fokus-basis); }
 a.kachel:focus-visible { outline-offset: 6px; }          /* ausserhalb des gruenen Rings */
+.seg a:focus-visible { outline-offset: -3px; }           /* .seg hat overflow: hidden */
+.seg a.on:focus-visible { outline-color: #fff; }         /* aktiver Teil ist gruen */
+/* Suchfeld: keine Sonderdarstellung von WebKit (iOS), Rahmen und Ecken wie alle Felder */
+input[type=search] { -webkit-appearance: none; appearance: none; }
 /* "Zum Inhalt springen": erst beim Tabben sichtbar */
-.sprunglink { position: absolute; left: 8px; top: -60px; z-index: 100; background: var(--card); color: var(--text);
-  padding: 10px 14px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
-.sprunglink:focus { top: 8px; }
+.sprunglink { position: absolute; left: 8px; top: 8px; z-index: 100; background: var(--card); color: var(--text);
+  padding: 10px 14px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  transform: translateY(calc(-100% - 40px)); }
+.sprunglink:focus { transform: none; }
+.sprunglink:focus-visible { outline-offset: -4px; }       /* Rahmen innen: aussen waere gruen auf gruen */
 /* Wer weniger Bewegung eingestellt hat: keine Animationen, Kacheln heben sich nicht */
+@media (max-width: 700px) and (prefers-color-scheme: dark) {
+  :root.js[data-theme="auto"] .top nav .pill:not(.grey) { color: #a9d8b8; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important;
     scroll-behavior: auto !important; }
@@ -549,7 +562,9 @@ a.kachel:focus-visible { outline-offset: 6px; }          /* ausserhalb des gruen
   /* Fingerfreundliche Ziele (mind. 24 px, hier ~32 px): Sortier-Links, Filter-Knoepfe, Link zu foxtrail.ch */
   .kachel-kopf a.sort, table.karten th a.sort { display: inline-block; min-width: 24px; padding: 6px 0;
     text-align: center; }                                  /* auch das schmale ★ */
-  details.hf summary { padding: 6px 8px; }
-  a.kfox { right: 6px; bottom: 4px; padding: 6px 8px; }
+  details.hf summary { min-width: 24px; padding: 6px 8px; text-align: center; }
+  a.kfox { right: 6px; bottom: 6px; padding: 4px 8px; }       /* ~27 px, ragt kaum in die Zeile darueber */
+  .ext { display: inline-block; min-width: 24px; padding: 4px 0; text-align: center; }
+  table.karten td.m-name > a:first-child { display: inline-block; padding: 4px 0; }   /* Trail-Name in der Liste */
   form.sprachwahl button { padding: 6px 9px; }
 }
